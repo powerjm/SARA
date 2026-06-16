@@ -1,0 +1,59 @@
+# Example experiment matrix.
+#
+# Used by `sara batch --config experiments.example.yaml`.
+# Copy to experiments.yaml and edit for your run plan; experiments.yaml is
+# gitignored to prevent committing API keys or in-progress matrices.
+
+# How many independent runs per (binary, backend, strategy) cell.
+# Higher absorbs more backend stochasticity; multiplies total cost linearly.
+# Decided (Step 5): 5 replicates — tighter Wilson intervals and steadier medians.
+replicates: 5
+
+# Per-run hard caps plus the per-backend cost partition.
+limits:
+  # Per individual run. The harness aborts the run when either trips
+  # (-> Outcome.FAILURE / FailureMode.BUDGET_EXHAUSTED).
+  tokens: 200000
+  wall_clock_seconds: 1800
+
+  # Cost cap is partitioned PER BACKEND (Step-5 decision): each backend gets its
+  # own USD budget so a pricey premium model can't starve the cheaper ones. Once
+  # a backend's cumulative spend (this batch + spend already on disk) reaches its
+  # cap, its remaining cells are halted while the others continue. Omit a backend
+  # (or set 0) for no cap.
+  usd_per_backend:
+    claude-sonnet: 25.0
+    claude-opus: 50.0
+
+# Output directory; gitignored.
+output_dir: "./runs"
+
+# Backends to test. Each name must be present in backends.registry.
+backends:
+  - claude-sonnet
+  - claude-opus
+  # Phase 3 backends:
+  # - gpt-5
+  # - gemini-2
+  # - llama-3.3-70b
+  # - mixtral-8x22b-instruct
+  # - dolphin-mixtral-uncensored
+
+# Prompting strategies to test. Names must match keys in agent.prompts.STRATEGIES.
+strategies:
+  - zero_shot
+  - chain_of_thought
+  - react
+
+# Binary IDs to test against. Must exist in corpus/manifest.yaml.
+binaries:
+  - sample-overflow
+  # - cgc-cromu-00001
+  # - picoctf-rop-1
+  # ...
+
+# Override per-cell config if needed (e.g., a specific binary needs a longer cap).
+overrides: {}
+  # cgc-cromu-00001:
+  #   limits:
+  #     wall_clock_seconds: 3600

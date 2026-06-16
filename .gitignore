@@ -1,0 +1,51 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- Virtual environments ---
+.venv/
+venv/
+env/
+
+# --- Editor / OS ---
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# --- Environment ---
+.env
+.env.*
+!.env.example
+
+# --- Experimental data (NEVER COMMIT) ---
+runs/
+corpus/binaries/*
+!corpus/binaries/.gitkeep
+
+# --- Hypothesis ---
+.hypothesis/
+
+# --- Jupyter ---
+.ipynb_checkpoints/
+# The notebooks under analysis/notebooks/*.ipynb are committed deliverables
+# (Step 6); only their executed copies and generated figures are build output.
+analysis/figures/
+
+# --- Terraform ---
+infra/terraform/.terraform/
+infra/terraform/*.tfstate*
+infra/terraform/.terraform.lock.hcl
+
+# --- Packer ---
+infra/packer/packer_cache/
+infra/packer/*.box

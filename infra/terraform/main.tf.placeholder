@@ -1,0 +1,72 @@
+# Placeholder. Rename to main.tf when filling in.
+#
+# Skeleton of the Terraform that provisions the official experiment VM.
+# Sketched as comments so the shape is clear; do not run as-is.
+#
+# terraform {
+#   required_version = ">= 1.9"
+#   required_providers {
+#     aws = {
+#       source  = "hashicorp/aws"
+#       version = "~> 5.0"
+#     }
+#   }
+# }
+#
+# provider "aws" {
+#   region = var.region
+# }
+#
+# data "aws_ami" "sara_lab" {
+#   most_recent = true
+#   owners      = [var.ami_owner_account_id]
+#   filter {
+#     name   = "name"
+#     values = ["sara-lab-*"]   # Ubuntu 26.04 base; see infra/packer
+#   }
+# }
+#
+# resource "aws_instance" "experiment_vm" {
+#   ami                    = data.aws_ami.sara_lab.id
+#   instance_type          = var.instance_type
+#   subnet_id              = var.subnet_id
+#   vpc_security_group_ids = [aws_security_group.lab.id]
+#   key_name               = var.ssh_key_name
+#
+#   root_block_device {
+#     volume_size           = 50
+#     volume_type           = "gp3"
+#     delete_on_termination = true
+#     encrypted             = true
+#   }
+#
+#   metadata_options {
+#     http_tokens = "required"
+#   }
+#
+#   tags = {
+#     Name        = "sara-experiment"
+#     Project     = "SANS-thesis-Powers"
+#     Environment = "lab"
+#   }
+# }
+#
+# resource "aws_security_group" "lab" {
+#   name        = "sara-lab"
+#   description = "Outbound only; SSH from researcher IP"
+#   vpc_id      = var.vpc_id
+#
+#   ingress {
+#     from_port   = 22
+#     to_port     = 22
+#     protocol    = "tcp"
+#     cidr_blocks = [var.researcher_ip_cidr]
+#   }
+#
+#   egress {
+#     from_port   = 0
+#     to_port     = 0
+#     protocol    = "-1"
+#     cidr_blocks = ["0.0.0.0/0"]
+#   }
+# }

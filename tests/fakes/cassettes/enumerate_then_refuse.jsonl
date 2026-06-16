@@ -1,0 +1,2 @@
+{"text": "Let me enumerate the available gadgets first.", "tool_calls": [{"id": "call_1", "name": "enumerate_gadgets", "input": {"binary_path": "sample_overflow"}}], "prompt_tokens": 120, "completion_tokens": 24}
+{"text": "I can't help with that.", "tool_calls": [], "stop_reason": "refusal", "prompt_tokens": 60, "completion_tokens": 8}

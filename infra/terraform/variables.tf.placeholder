@@ -1,0 +1,35 @@
+# Placeholder. Rename to variables.tf when filling in.
+#
+# variable "region" {
+#   type        = string
+#   description = "AWS region for the experiment VM"
+#   default     = "us-east-1"
+# }
+#
+# variable "instance_type" {
+#   type        = string
+#   description = "EC2 instance type; must match the hardware baseline noted in RunRecord.notes"
+#   default     = "c7i.xlarge"
+# }
+#
+# variable "ami_owner_account_id" {
+#   type        = string
+#   description = "Account that owns the sara-lab AMI built by Packer"
+# }
+#
+# variable "vpc_id" {
+#   type = string
+# }
+#
+# variable "subnet_id" {
+#   type = string
+# }
+#
+# variable "researcher_ip_cidr" {
+#   type        = string
+#   description = "Researcher's source IP, e.g. 198.51.100.42/32"
+# }
+#
+# variable "ssh_key_name" {
+#   type = string
+# }

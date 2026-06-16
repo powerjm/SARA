@@ -1,0 +1,130 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sara"
+version = "0.1.0"
+description = "Agentic AI for Automated Binary Vulnerability Analysis (SANS.edu thesis apparatus)"
+readme = "README.md"
+requires-python = ">=3.14"
+license = { file = "LICENSE" }
+authors = [{ name = "Jeff Powers" }]
+
+# Targets the Python that ships with Ubuntu 26.04 LTS (python3.14).
+# Version pins below are deliberately conservative-but-recent; bump as
+# needed if a transitive dep refuses to build on 3.14.
+dependencies = [
+    # --- Agent orchestration ---
+    "langgraph>=0.3.0,<0.4",
+    "langchain-core>=0.3.30,<0.4",
+
+    # --- MCP ---
+    "mcp>=1.2.0,<2.0",
+
+    # --- Backends ---
+    "anthropic>=0.45.0,<1.0",
+    "openai>=1.60.0,<2.0",
+    "google-generativeai>=0.8.3,<1.0",
+
+    # --- Data + config ---
+    "pydantic>=2.11,<3.0",
+    "pyyaml>=6.0.2,<7.0",
+    "python-dotenv>=1.0.1,<2.0",
+
+    # --- CLI + telemetry ---
+    "click>=8.1.8,<9.0",
+    "rich>=13.9.4,<15.0",
+    "structlog>=24.4.0,<26.0",
+
+    # --- Validation / sandboxing helpers ---
+    "docker>=7.1.0,<8.0",
+]
+
+[project.optional-dependencies]
+analysis = [
+    "numpy>=2.2,<3.0",
+    "pandas>=2.2.3,<3.0",
+    "scipy>=1.15,<2.0",
+    "statsmodels>=0.14.4,<0.16",
+    "matplotlib>=3.10,<4.0",
+    "jupyter>=1.1.1,<2.0",
+]
+binary-tools = [
+    # pwntools and r2pipe pull in native deps; install only on the lab host.
+    # ROPgadget powers the Step 2 MCP server; kept here (not in core deps) so CI
+    # stays without it and the `requires_ropgadget` integration tests skip there.
+    "ROPgadget>=7.7,<8.0",
+    "pwntools>=4.14,<5.0",
+    "r2pipe>=1.9.5,<2.0",
+    "ropper>=1.13,<2.0",
+    # ghidra/pyghidra (ADR 0004) and the radare2 *CLI* itself are installed on
+    # the lab host / cloud image (not via pip); only the r2pipe binding is here.
+]
+dev = [
+    "pytest>=8.4,<10.0",
+    "pytest-asyncio>=0.25,<1.0",
+    "pytest-cov>=6.0,<7.0",
+    "hypothesis>=6.122,<7.0",
+    # Pinned exactly: ruff's formatter/lint rules drift between releases, and
+    # reproducible formatting matters more than tracking the latest. Bump
+    # deliberately, re-running `ruff format` + `ruff check --fix` in the same commit.
+    "ruff==0.15.17",
+    "mypy>=1.14,<2.0",
+    "types-PyYAML>=6.0,<7.0",
+    "pre-commit>=4.0,<5.0",
+]
+
+[project.scripts]
+sara = "harness.cli:cli"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agent*", "backends*", "mcp_servers*", "validator*", "corpus*", "harness*", "analysis*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "C4", "SIM"]
+ignore = ["S101"]  # assert is fine in tests
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S"]
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+warn_unused_ignores = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "requires_ropgadget: integration test that shells out to the ROPgadget CLI; skipped when it is not on $PATH",
+    "requires_radare2: integration test that opens an r2pipe session; skipped when r2/radare2 is not on $PATH",
+    "requires_ropper: integration test that shells out to the ropper CLI; skipped when it is not on $PATH",
+    "requires_gdb: integration test that shells out to the gdb CLI; skipped when it is not on $PATH",
+    "requires_ghidra: integration test that drives Ghidra via PyGhidra; skipped when Ghidra/PyGhidra is absent",
+]
+filterwarnings = [
+    "error",
+    # pytest-asyncio 0.26's autouse `event_loop_policy` fixture gets and sets
+    # the event-loop policy, both of which Python 3.14 deprecates (removal in
+    # 3.16). Scoped ignores so the strict error policy still applies to our own
+    # code. Remove once pytest-asyncio drops the policy calls.
+    "ignore:'asyncio.get_event_loop_policy' is deprecated:DeprecationWarning",
+    "ignore:'asyncio.set_event_loop_policy' is deprecated:DeprecationWarning",
+    # LangGraph drives node/edge callables through `asyncio.iscoroutinefunction`,
+    # which Python 3.14 deprecates (removal in 3.16). Fires on every graph
+    # compile/invoke; scope-ignore so the strict policy still covers our code.
+    "ignore:'asyncio.iscoroutinefunction' is deprecated:DeprecationWarning",
+    # LangGraph 0.3's checkpoint serde imports trip a langchain-core pending
+    # deprecation about `allowed_objects` at import time. It fires the moment
+    # any test compiles a graph; scope-ignore by its exact category (the import-
+    # time emission only matches the concrete subclass, not the message or the
+    # PendingDeprecationWarning parent). Remove once langgraph pins a value.
+    "ignore::langchain_core._api.deprecation.LangChainPendingDeprecationWarning",
+]

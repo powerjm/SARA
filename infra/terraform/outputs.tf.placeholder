@@ -1,0 +1,16 @@
+# Placeholder. Rename to outputs.tf when filling in.
+#
+# output "experiment_vm_id" {
+#   value       = aws_instance.experiment_vm.id
+#   description = "EC2 instance ID of the experiment VM"
+# }
+#
+# output "experiment_vm_public_ip" {
+#   value       = aws_instance.experiment_vm.public_ip
+#   description = "Public IP for SSH access"
+# }
+#
+# output "experiment_vm_ami_id" {
+#   value       = data.aws_ami.sara_lab.id
+#   description = "AMI ID actually used; record this in run-record notes"
+# }
