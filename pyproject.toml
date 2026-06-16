@@ -64,7 +64,7 @@ binary-tools = [
 dev = [
     "pytest>=8.4,<10.0",
     "pytest-asyncio>=0.25,<1.0",
-    "pytest-cov>=6.0,<7.0",
+    "pytest-cov>=7.1.0,<8.0",
     "hypothesis>=6.122,<7.0",
     # Pinned exactly: ruff's formatter/lint rules drift between releases, and
     # reproducible formatting matters more than tracking the latest. Bump
