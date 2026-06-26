@@ -26,6 +26,24 @@ _PDJ = json.dumps(
     ]
 )
 
+# radare2 6.0 (shipped on Ubuntu 26.04) renamed the address field `offset` ->
+# `addr` in aflj/pdj/search. These canned outputs pin the 6.x schema so the
+# parsers stay compatible with both lines (regression for the silent
+# zero-results bug against a 6.x radare2).
+_AFLJ_V6 = json.dumps(
+    [
+        {"name": "sym.win", "addr": 0x401166, "size": 71},
+        {"name": "main", "addr": 0x4011D0, "size": 42},
+    ]
+)
+
+_PDJ_V6 = json.dumps(
+    [
+        {"addr": 0x401166, "disasm": "push rbp", "bytes": "55"},
+        {"addr": 0x401167, "opcode": "mov rbp, rsp", "bytes": "4889e5"},
+    ]
+)
+
 _IJ = json.dumps(
     {
         "bin": {
@@ -51,6 +69,20 @@ def test_parse_functions() -> None:
 def test_parse_functions_empty() -> None:
     assert r2.parse_functions("") == []
     assert r2.parse_functions("[]") == []
+
+
+def test_parse_functions_radare2_6_addr_field() -> None:
+    """radare2 6.x emits `addr` instead of `offset`; both must parse."""
+    functions = r2.parse_functions(_AFLJ_V6)
+    assert len(functions) == 2
+    assert functions[0] == r2.Function(name="sym.win", offset=0x401166, size=71)
+    assert {f.name for f in functions} == {"sym.win", "main"}
+
+
+def test_parse_disasm_radare2_6_addr_field() -> None:
+    instructions = r2.parse_disasm(_PDJ_V6)
+    assert [i.offset for i in instructions] == [0x401166, 0x401167]
+    assert instructions[0].opcode == "push rbp"
 
 
 def test_parse_disasm_prefers_disasm_then_opcode() -> None:

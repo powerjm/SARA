@@ -201,10 +201,14 @@ def decompile_function(binary_path: str, name_or_addr: str) -> dict[str, Any]:
 
     Returns the decompiled C text. Requires a live Ghidra; integration-only.
     """
-    from ghidra.app.decompiler import DecompInterface  # lazy: Ghidra-only
-
     session = _GhidraSession(binary_path)
     with session.flat_api() as flat:
+        # Import the Ghidra Java API *inside* the session: the `ghidra.*` modules
+        # only resolve through JPype once the JVM has been started, which
+        # `flat_api()` (via `_ensure_started`) guarantees. Importing it at
+        # function top — before the JVM is up — raises ModuleNotFoundError.
+        from ghidra.app.decompiler import DecompInterface
+
         program = flat.getCurrentProgram()
         function = _resolve_function(flat, name_or_addr)
         decompiler = DecompInterface()

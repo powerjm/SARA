@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Packer provisioner 2/3 — binary-analysis tools + the apparatus itself.
 # Clones the repo at the pinned ref into /opt/sara, bootstraps the venv, installs
-# the Python-based tools (ROPgadget, ropper), optionally installs Ghidra, and
-# builds the validator sandbox image so a provisioned instance can run the matrix
-# without any further setup.
+# the Python binary tools (the pinned `binary-tools` extra), optionally installs
+# Ghidra + its bundled PyGhidra bridge, and builds the validator sandbox image so
+# a provisioned instance can run the matrix without any further setup.
 
 set -euo pipefail
 
@@ -22,8 +22,15 @@ sudo git -C "${SARA_DIR}" checkout "${REPO_REF}"
 echo ">> bootstrapping the apparatus (venv + pinned deps)"
 sudo make -C "${SARA_DIR}" bootstrap
 
-echo ">> installing Python binary tools (ROPgadget, ropper)"
-sudo "${SARA_DIR}/.venv/bin/pip" install ROPgadget ropper
+echo ">> installing the binary-tools extra (ROPgadget, ropper, r2pipe)"
+# Install the vendored, py3.14-patched filebytes wheel FIRST so ropper's dep is
+# pre-satisfied — upstream filebytes can't build on Python 3.14 (ADR 0008). Then
+# install the pinned extra from pyproject.toml (the single source of truth;
+# hand-listing tools here previously omitted r2pipe, which the radare2 MCP server
+# needs, leaving a baked image unable to run that server).
+sudo "${SARA_DIR}/.venv/bin/pip" install \
+    "${SARA_DIR}/vendor/filebytes/filebytes-0.10.2-py3-none-any.whl"
+sudo "${SARA_DIR}/.venv/bin/pip" install -e "${SARA_DIR}[binary-tools]"
 
 echo ">> building the validator sandbox image (sara-sandbox:latest)"
 sudo make -C "${SARA_DIR}" sandbox-build
@@ -36,6 +43,14 @@ if [[ -n "${GHIDRA_URL}" ]]; then
         sudo unzip -q "${tmp}/ghidra.zip" -d /opt
         sudo ln -sfn "$(find /opt -maxdepth 1 -type d -name 'ghidra_*' | head -1)" /opt/ghidra
         echo "GHIDRA_INSTALL_DIR=/opt/ghidra" | sudo tee -a /etc/environment >/dev/null
+        # PyGhidra (the CPython<->Ghidra bridge, ADR 0004) ships *inside* the
+        # distribution as a wheel. Installing that wheel — rather than pulling
+        # pyghidra from PyPI — pins the bridge to the pinned Ghidra automatically.
+        # Without it `import pyghidra` fails and the four Ghidra-backed tools
+        # (disassemble/decompile/list_imports/get_xrefs) cannot run.
+        echo ">> installing the bundled PyGhidra wheel into the venv"
+        sudo "${SARA_DIR}/.venv/bin/pip" install \
+            /opt/ghidra/Ghidra/Features/PyGhidra/pypkg/dist/pyghidra-*.whl
     else
         echo "!! Ghidra download failed; continuing without it (its tests skip when absent)" >&2
     fi

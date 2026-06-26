@@ -24,8 +24,11 @@ sudo apt install -y \
   openjdk-21-jdk \
   docker.io docker-buildx
 sudo usermod -aG docker "$USER"               # log out/in for the group to take effect
-.venv/bin/pip install ROPgadget ropper        # Python-based binary tools (after bootstrap)
-# Ghidra (Step 7 only): download the release, unzip to /opt/ghidra, add it to PATH (JDK 21).
+.venv/bin/pip install vendor/filebytes/filebytes-0.10.2-py3-none-any.whl  # py3.14 fix, before the extra (ADR 0008)
+.venv/bin/pip install -e ".[binary-tools]"     # ROPgadget, ropper, r2pipe (after bootstrap)
+# Ghidra (Step 7 only): download Ghidra 11.4.3, unzip to /opt/ghidra, set GHIDRA_INSTALL_DIR (JDK 21),
+# then install its bundled PyGhidra bridge so `import pyghidra` works:
+#   .venv/bin/pip install "$GHIDRA_INSTALL_DIR"/Ghidra/Features/PyGhidra/pypkg/dist/pyghidra-*.whl
 ```
 
 Notes: CI needs only the `build-essential` + Docker subset (the binary tools are

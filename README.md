@@ -52,7 +52,10 @@ git clone <repo-url> sara && cd sara
 
 # 2. Bootstrap (creates venv, installs pinned deps, sets up pre-commit)
 make bootstrap
-.venv/bin/pip install ROPgadget ropper    # Python-based binary tools
+.venv/bin/pip install vendor/filebytes/filebytes-0.10.2-py3-none-any.whl  # py3.14 fix, before the extra (ADR 0008)
+.venv/bin/pip install -e ".[binary-tools]"    # ROPgadget, ropper, r2pipe (lab host)
+# Ghidra (optional): unzip Ghidra 11.4.3 to /opt/ghidra, set GHIDRA_INSTALL_DIR, then install its
+# bundled bridge: .venv/bin/pip install "$GHIDRA_INSTALL_DIR"/Ghidra/Features/PyGhidra/pypkg/dist/pyghidra-*.whl
 
 # 3. Verify everything works
 make test

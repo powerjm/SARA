@@ -32,6 +32,14 @@ runs/
 corpus/binaries/*
 !corpus/binaries/.gitkeep
 
+# --- Ghidra project artifacts ---
+# PyGhidra writes a <binary>_ghidra.{gpr,rep} project next to the analysed
+# binary during the `requires_ghidra` integration tests; never commit it.
+*.gpr
+*.rep/
+*.lock
+*_ghidra/
+
 # --- Hypothesis ---
 .hypothesis/
 
