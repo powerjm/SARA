@@ -54,9 +54,12 @@ def test_premium_costs_usd_local_costs_hardware() -> None:
         if category == BackendCategory.PREMIUM:
             assert r.cost.usd > 0.0
             assert r.cost.hardware_usd_estimate == 0.0
+            # Synthetic premium records are self-describing like real ones.
+            assert r.cost.pricing is not None
         else:
             assert r.cost.usd == 0.0
             assert r.cost.hardware_usd_estimate > 0.0
+            assert r.cost.pricing is None
 
 
 def test_successes_have_validator_refusals_do_not() -> None:

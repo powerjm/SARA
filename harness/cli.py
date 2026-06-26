@@ -15,6 +15,7 @@ The validator sandbox stays the single execution path (ADR 0002).
 
 from __future__ import annotations
 
+from datetime import date
 from pathlib import Path
 
 import click
@@ -22,12 +23,16 @@ from dotenv import load_dotenv
 from rich.console import Console
 from rich.table import Table
 
-from backends import registry
+from backends import pricing, registry
 from harness import corpus, persistence
 from harness.matrix import BatchConfig, completed_counts, estimate_cost, plan, run_batch
 from harness.runner import RunSettings, replay_run, run_one, verify_binary
 
 console = Console()
+
+# A run for record should not use rates older than this (advisory; warns, does
+# not block). Matches scripts/refresh_pricing.py --check.
+_PRICING_MAX_AGE_DAYS = 30
 
 # Load .env once so RUN_OUTPUT_DIR / caps / API keys are available to every
 # command (a missing .env is fine — real environment values still win).
@@ -120,6 +125,20 @@ def batch(config: Path, dry_run: bool) -> None:
         cap = cfg.cap_for(backend_name)
         cap_text = f" (cap ${cap:.2f})" if cap > 0 else ""
         console.print(f"  {backend_name}: ~${estimate.get(backend_name, 0.0):.2f}{cap_text}")
+
+    # Pricing provenance + freshness gate: the estimate (and every recorded
+    # cost) is only as good as backends/pricing.yaml. Surface its version/age so
+    # a run for record doesn't silently use stale rates.
+    age = pricing.age_days(date.today())
+    console.print(
+        f"[dim]pricing v{pricing.PRICING_VERSION} (oldest rate as of "
+        f"{pricing.oldest_as_of()}, {age}d old)[/]"
+    )
+    if age > _PRICING_MAX_AGE_DAYS:
+        console.print(
+            f"[yellow]warning:[/] pricing is >{_PRICING_MAX_AGE_DAYS}d old — verify and refresh "
+            "via [bold]scripts/refresh_pricing.py[/] before a run for record"
+        )
 
     if dry_run:
         console.print("[dim]dry run — nothing executed.[/]")

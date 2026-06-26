@@ -11,6 +11,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 from typing import Any
 
+from backends import pricing
 from backends.base import Message, ToolSpec
 from backends.google_backend import GoogleBackend
 from backends.lmstudio_backend import LMStudioBackend
@@ -53,6 +54,11 @@ def test_openai_text_response_and_cost() -> None:
     assert resp.tokens.completion == 20
     # gpt-5 priced (1.25, 10.0)/Mtok -> 100*1.25e-6 + 20*10e-6.
     assert resp.cost.usd == (100 * 1.25 + 20 * 10.0) / 1_000_000
+    # The rates that produced the cost are recorded for later audit.
+    assert resp.cost.pricing is not None
+    assert resp.cost.pricing.prompt_per_mtok == 1.25
+    assert resp.cost.pricing.completion_per_mtok == 10.0
+    assert resp.cost.pricing.pricing_version == pricing.PRICING_VERSION
 
 
 def test_openai_parses_tool_calls() -> None:
@@ -89,6 +95,7 @@ def test_lmstudio_zero_cost_and_category() -> None:
     resp = backend.chat(_MESSAGES, _TOOLS, 256)
     assert resp.text == "local reply"
     assert resp.cost.usd == 0.0  # local models record no token cost
+    assert resp.cost.pricing is None  # ... and carry no pricing snapshot
     assert backend.category == BackendCategory.OPEN_WEIGHT
 
 
@@ -126,6 +133,8 @@ def test_google_text_response_and_cost() -> None:
     assert resp.text == "gemini hello"
     assert resp.tokens.prompt == 100
     assert resp.cost.usd == (100 * 1.25 + 20 * 10.0) / 1_000_000
+    assert resp.cost.pricing is not None
+    assert resp.cost.pricing.pricing_version == pricing.PRICING_VERSION
 
 
 def test_google_parses_function_call() -> None:

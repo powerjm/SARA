@@ -82,6 +82,11 @@ sara = "harness.cli:cli"
 where = ["."]
 include = ["agent*", "backends*", "mcp_servers*", "validator*", "corpus*", "harness*", "analysis*"]
 
+[tool.setuptools.package-data]
+# Ship the pricing source with the package (read at runtime by backends.pricing).
+# Under `pip install -e .` it is read from the source tree regardless.
+backends = ["pricing.yaml"]
+
 [tool.ruff]
 line-length = 100
 target-version = "py314"

@@ -28,6 +28,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import UUID
 
+from backends import pricing
 from harness.record import (
     BackendCategory,
     BackendInfo,
@@ -91,10 +92,9 @@ _MECHANICAL_FAILURE_MODES: tuple[FailureMode, ...] = (
     FailureMode.OTHER,
 )
 
-# Per-million-token USD prices for premium (cloud-API) backends. Local backends
-# record usd=0.0 and rely on hardware_usd_estimate instead.
-_PREMIUM_PROMPT_USD_PER_MTOK = 3.0
-_PREMIUM_COMPLETION_USD_PER_MTOK = 15.0
+# Premium backends are priced from the single source of truth (backends/pricing
+# .yaml via backends.pricing); local backends record usd=0.0 and rely on
+# hardware_usd_estimate instead.
 # Hardware amortisation for local runs, in USD per wall-clock hour.
 _LOCAL_USD_PER_HOUR = 1.5
 
@@ -178,17 +178,22 @@ def _make_validator(
 
 
 def _make_cost(
-    category: BackendCategory,
+    backend: BackendInfo,
     tokens: TokenUsage,
     wall_clock_seconds: float,
 ) -> CostRecord:
-    """USD for premium backends; hardware estimate for local backends."""
-    if category == BackendCategory.PREMIUM:
-        usd = (
-            tokens.prompt * _PREMIUM_PROMPT_USD_PER_MTOK
-            + tokens.completion * _PREMIUM_COMPLETION_USD_PER_MTOK
-        ) / 1_000_000
-        return CostRecord(usd=round(usd, 6))
+    """USD (from the central pricing source) for premium backends; hardware
+    estimate for local backends. Premium records embed the pricing snapshot so
+    the synthetic data is valid schema-v2 and self-describing, like real runs."""
+    if backend.category == BackendCategory.PREMIUM:
+        price = pricing.price_for(backend.name)
+        if price is not None:
+            usd = (
+                tokens.prompt * price.prompt_per_mtok
+                + tokens.completion * price.completion_per_mtok
+            ) / 1_000_000
+            return CostRecord(usd=round(usd, 6), pricing=pricing.snapshot_for(backend.name))
+        return CostRecord(usd=0.0)
     return CostRecord(
         usd=0.0,
         hardware_usd_estimate=round(wall_clock_seconds / 3600.0 * _LOCAL_USD_PER_HOUR, 6),
@@ -237,7 +242,7 @@ def _make_record(
         failure_mode=failure_mode,
         iterations=iterations,
         tokens=tokens,
-        cost=_make_cost(backend.category, tokens, wall_clock),
+        cost=_make_cost(backend, tokens, wall_clock),
         trace_path=Path(f"runs/{run_id}/trace.jsonl"),
         payload_path=payload_path,
         validator=validator,

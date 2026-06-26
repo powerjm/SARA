@@ -16,30 +16,21 @@ canned response without network or an API key.
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass
 from typing import Any
 
+from backends import pricing
 from backends.base import Backend, ChatResponse, Message, ToolSpec
+from backends.pricing import Pricing  # re-export: back-compat alias for ModelPrice
 from harness.record import BackendCategory, CostRecord, TokenUsage
 
 # --------------------------------------------------------------------------- #
 # Pricing                                                                     #
 # --------------------------------------------------------------------------- #
 
-
-@dataclass(frozen=True)
-class Pricing:
-    """USD per million tokens. Update when changing the deployed model."""
-
-    prompt_per_mtok: float
-    completion_per_mtok: float
-
-
-# Pinned list pricing as of 2026-05. Verify before each run for record.
-PRICING: dict[str, Pricing] = {
-    "gemini-2.5-pro": Pricing(prompt_per_mtok=1.25, completion_per_mtok=10.0),
-    "gemini-2.5-flash": Pricing(prompt_per_mtok=0.30, completion_per_mtok=2.5),
-}
+# Prices live in backends/pricing.yaml (single source of truth, refreshed via
+# scripts/refresh_pricing.py). ``PRICING`` is a back-compat view over that file
+# scoped to this provider's models; do not hard-code rates here.
+PRICING: dict[str, Pricing] = pricing.subset(["gemini-2.5-pro", "gemini-2.5-flash"])
 
 # Gemini finish reasons that mean the model declined / was content-filtered.
 _REFUSAL_FINISH_REASONS = frozenset(
@@ -48,13 +39,13 @@ _REFUSAL_FINISH_REASONS = frozenset(
 
 
 def _compute_cost(model: str, tokens: TokenUsage) -> CostRecord:
-    pricing = PRICING.get(model)
-    if pricing is None:
+    p = pricing.price_for(model)
+    if p is None:
         return CostRecord(usd=0.0)
     usd = (
-        tokens.prompt * pricing.prompt_per_mtok + tokens.completion * pricing.completion_per_mtok
+        tokens.prompt * p.prompt_per_mtok + tokens.completion * p.completion_per_mtok
     ) / 1_000_000
-    return CostRecord(usd=usd)
+    return CostRecord(usd=usd, pricing=pricing.snapshot_for(model))
 
 
 # --------------------------------------------------------------------------- #

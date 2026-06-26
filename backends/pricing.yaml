@@ -1,0 +1,52 @@
+# Model pricing — the single source of truth.
+#
+# This file is the ONE place model prices live. The provider backends, the
+# registry's dry-run estimator, and the synthetic dataset all read it through
+# `backends/pricing.py`; nothing hard-codes rates anymore. Each run record
+# embeds a snapshot of the rates used (see harness.record.PricingSnapshot), so
+# the prices that produced a recorded cost are auditable forever.
+#
+# Prices are USD per million tokens, split (prompt, completion). Local models
+# served via LM Studio are deliberately absent — they have no per-token price
+# (cost is recorded as usd=0.0 + a hardware estimate).
+#
+# DO NOT hand-edit casually before a run for record: update via
+# `scripts/refresh_pricing.py` (review the diff, bump `pricing_version`), so the
+# change is deliberate and auditable. `--check` warns when this file is stale.
+
+pricing_version: "2026-06-25"
+
+models:
+  claude-sonnet-4-6:
+    prompt_per_mtok: 3.0
+    completion_per_mtok: 15.0
+    as_of: "2026-06-25"
+    source: "https://platform.claude.com/docs/en/about-claude/pricing"
+  claude-opus-4-7:
+    prompt_per_mtok: 5.0
+    completion_per_mtok: 25.0
+    as_of: "2026-06-25"
+    source: "https://platform.claude.com/docs/en/about-claude/pricing"
+  gpt-5:
+    prompt_per_mtok: 1.25
+    completion_per_mtok: 10.0
+    as_of: "2026-06-25"
+    source: "https://openai.com/api/pricing/"
+  gpt-5-mini:
+    prompt_per_mtok: 0.25
+    completion_per_mtok: 2.0
+    as_of: "2026-06-25"
+    source: "https://openai.com/api/pricing/"
+  # Gemini 2.5 Pro lists a higher tier for prompts above 200k tokens
+  # ($2.50/$15); we pin the <=200k tier here. Revisit if runs routinely exceed
+  # a 200k-token prompt.
+  gemini-2.5-pro:
+    prompt_per_mtok: 1.25
+    completion_per_mtok: 10.0
+    as_of: "2026-06-25"
+    source: "https://ai.google.dev/gemini-api/docs/pricing"
+  gemini-2.5-flash:
+    prompt_per_mtok: 0.30
+    completion_per_mtok: 2.5
+    as_of: "2026-06-25"
+    source: "https://ai.google.dev/gemini-api/docs/pricing"

@@ -73,6 +73,16 @@ def test_defaults_present() -> None:
     assert "claude-opus" in registry.known()
 
 
+def test_qwen_7b_smoke_backend_registered() -> None:
+    # The small smoke-test backend resolves to the 7B model id and is labelled
+    # OPEN_WEIGHT (intact-alignment), like its 32B sibling.
+    assert "qwen2.5-coder-7b" in registry.known()
+    assert registry.category("qwen2.5-coder-7b") == BackendCategory.OPEN_WEIGHT
+    backend = registry.get("qwen2.5-coder-7b")
+    assert backend.name == "qwen2.5-coder-7b-instruct"
+    assert backend.category == BackendCategory.OPEN_WEIGHT
+
+
 def test_temperature_out_of_range_rejected() -> None:
     class _Bad(_FakeBackend):
         def __init__(self) -> None:

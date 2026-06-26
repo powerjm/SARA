@@ -19,6 +19,7 @@ from harness.record import (
     CostRecord,
     FailureMode,
     Outcome,
+    PricingSnapshot,
     PromptingStrategy,
     RunRecord,
     TokenUsage,
@@ -109,6 +110,46 @@ def test_valid_failure_record_roundtrips() -> None:
     restored = RunRecord.model_validate_json(payload)
     assert restored.outcome == Outcome.FAILURE
     assert restored.failure_mode == FailureMode.HALLUCINATED_GADGET
+
+
+def test_new_records_default_to_schema_v2() -> None:
+    kwargs = _base_kwargs()
+    kwargs["outcome"] = Outcome.KNOWN_REDISCOVERY
+    assert RunRecord(**kwargs).schema_version == "2"
+
+
+def test_pricing_snapshot_roundtrips() -> None:
+    kwargs = _base_kwargs()
+    kwargs["outcome"] = Outcome.KNOWN_REDISCOVERY
+    kwargs["cost"] = CostRecord(
+        usd=0.42,
+        pricing=PricingSnapshot(
+            prompt_per_mtok=3.0,
+            completion_per_mtok=15.0,
+            pricing_version="2026-06-25",
+            as_of="2026-06-25",
+        ),
+    )
+    record = RunRecord(**kwargs)
+    restored = RunRecord.model_validate_json(record.model_dump_json())
+    assert restored.cost.pricing is not None
+    assert restored.cost.pricing.prompt_per_mtok == 3.0
+    assert restored.cost.pricing.completion_per_mtok == 15.0
+    assert restored.cost.pricing.pricing_version == "2026-06-25"
+
+
+def test_legacy_v1_record_without_pricing_still_loads() -> None:
+    """A schema_version="1" record predates cost.pricing; it must still
+    deserialize (back-compat), with cost.pricing defaulting to None."""
+    kwargs = _base_kwargs()
+    kwargs["outcome"] = Outcome.KNOWN_REDISCOVERY
+    data = RunRecord(**kwargs).model_dump()
+    data["schema_version"] = "1"
+    data["cost"] = {"usd": 0.42}  # no "pricing" key, as v1 records had none
+    restored = RunRecord.model_validate(data)
+    assert restored.schema_version == "1"
+    assert restored.cost.usd == 0.42
+    assert restored.cost.pricing is None
 
 
 def test_token_usage_total_is_computed() -> None:

@@ -149,6 +149,9 @@ def test_documented_chain_yields_known_rediscovery_record(
     assert record.iterations == 1
     assert record.tokens.total == 240
     assert record.cost.usd == pytest.approx(0.0012)
+    # The FakeBackend's model ("fake") is unpriced, so no snapshot is attached
+    # (the usd above comes from the scripted turns, not the pricing table).
+    assert record.cost.pricing is None
     assert record.payload_path is not None
     # The record round-trips through the schema (the analysis-side contract).
     assert RunRecord.model_validate_json(record.model_dump_json()).outcome == record.outcome

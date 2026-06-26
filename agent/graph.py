@@ -560,7 +560,10 @@ def build_run_record(
         failure_mode=result.failure_mode,
         iterations=_assistant_round_count(state),
         tokens=TokenUsage(prompt=state.prompt_tokens, completion=state.completion_tokens),
-        cost=CostRecord(usd=state.cost_usd),
+        # Record the rates that produced ``usd`` (constant per run) so the cost
+        # is auditable/recomputable from the stored record (ADR 0007). None for
+        # local/unpriced backends.
+        cost=CostRecord(usd=state.cost_usd, pricing=backend.pricing_snapshot()),
         trace_path=trace_path,
         payload_path=state.candidate_payload_path,
         validator=result.validator_output,

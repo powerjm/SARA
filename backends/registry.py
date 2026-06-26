@@ -16,6 +16,7 @@ import os
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from backends import pricing as pricing_table
 from backends.base import Backend
 from harness.record import BackendCategory
 
@@ -30,7 +31,11 @@ Pricing = tuple[float, float]
 class _Entry:
     category: BackendCategory
     factory: Callable[[], Backend]
-    pricing: Pricing | None = None
+    # The API model string this cell resolves to (e.g. "claude-sonnet-4-6").
+    # Pricing is derived from it through backends.pricing — the single source of
+    # truth — so rates are never duplicated here. ``None`` for unpriced backends
+    # (local LM Studio models, the scripted fake).
+    model: str | None = None
 
 
 # Name -> registry entry.
@@ -42,12 +47,12 @@ def register(
     category: BackendCategory,
     factory: Callable[[], Backend],
     *,
-    pricing: Pricing | None = None,
+    model: str | None = None,
 ) -> None:
     """Add a backend to the registry. Raises if name is already taken."""
     if name in _REGISTRY:
         raise ValueError(f"backend {name!r} already registered")
-    _REGISTRY[name] = _Entry(category=category, factory=factory, pricing=pricing)
+    _REGISTRY[name] = _Entry(category=category, factory=factory, model=model)
 
 
 def get(name: str) -> Backend:
@@ -65,10 +70,18 @@ def category(name: str) -> BackendCategory:
 
 
 def pricing(name: str) -> Pricing | None:
-    """The (prompt, completion) USD-per-Mtok pricing, or ``None`` if untracked."""
+    """The (prompt, completion) USD-per-Mtok pricing, or ``None`` if untracked.
+
+    Derived from the cell's model via ``backends.pricing`` (the single source of
+    truth) — rates are not stored on the registry entry, so they cannot drift
+    from what the backends actually charge.
+    """
     if name not in _REGISTRY:
         raise KeyError(f"unknown backend: {name!r}. Known: {sorted(_REGISTRY)}")
-    return _REGISTRY[name].pricing
+    model = _REGISTRY[name].model
+    if model is None:
+        return None
+    return pricing_table.tuple_for(model)
 
 
 def known() -> list[str]:
@@ -79,27 +92,21 @@ def known() -> list[str]:
 def _register_defaults() -> None:
     """Wire up the default backends. Called at import time."""
     # Import inside the function so missing optional SDKs don't break
-    # `import backends`.
-    from backends.anthropic_backend import PRICING as ANTHROPIC_PRICING
+    # `import backends`. Pricing is derived from each cell's ``model`` through
+    # backends.pricing (no rates duplicated here).
     from backends.anthropic_backend import AnthropicBackend
 
     register(
         "claude-sonnet",
         BackendCategory.PREMIUM,
         lambda: AnthropicBackend(model="claude-sonnet-4-6"),
-        pricing=(
-            ANTHROPIC_PRICING["claude-sonnet-4-6"].prompt_per_mtok,
-            ANTHROPIC_PRICING["claude-sonnet-4-6"].completion_per_mtok,
-        ),
+        model="claude-sonnet-4-6",
     )
     register(
         "claude-opus",
         BackendCategory.PREMIUM,
         lambda: AnthropicBackend(model="claude-opus-4-7"),
-        pricing=(
-            ANTHROPIC_PRICING["claude-opus-4-7"].prompt_per_mtok,
-            ANTHROPIC_PRICING["claude-opus-4-7"].completion_per_mtok,
-        ),
+        model="claude-opus-4-7",
     )
 
     # The scripted FakeBackend is a *test-only* backend: it is registered as
@@ -122,31 +129,23 @@ def _register_defaults() -> None:
         register("fake", BackendCategory.PREMIUM, _make_fake)
 
     # --- OpenAI (Premium) ---
-    from backends.openai_backend import PRICING as OPENAI_PRICING
     from backends.openai_backend import OpenAIBackend
 
     register(
         "gpt-5",
         BackendCategory.PREMIUM,
         lambda: OpenAIBackend(model="gpt-5"),
-        pricing=(
-            OPENAI_PRICING["gpt-5"].prompt_per_mtok,
-            OPENAI_PRICING["gpt-5"].completion_per_mtok,
-        ),
+        model="gpt-5",
     )
 
     # --- Google Gemini (Premium) ---
-    from backends.google_backend import PRICING as GOOGLE_PRICING
     from backends.google_backend import GoogleBackend
 
     register(
         "gemini-2.5-pro",
         BackendCategory.PREMIUM,
         lambda: GoogleBackend(model="gemini-2.5-pro"),
-        pricing=(
-            GOOGLE_PRICING["gemini-2.5-pro"].prompt_per_mtok,
-            GOOGLE_PRICING["gemini-2.5-pro"].completion_per_mtok,
-        ),
+        model="gemini-2.5-pro",
     )
 
     # --- LM Studio (local; Open Weight + Unrestricted, per ADR 0005) ---
@@ -164,6 +163,15 @@ def _register_defaults() -> None:
         "qwen2.5-coder-32b",
         BackendCategory.OPEN_WEIGHT,
         lambda: LMStudioBackend("qwen2.5-coder-32b-instruct", BackendCategory.OPEN_WEIGHT),
+    )
+    # Small, fast, strong-tool-calling sibling of the 32B above. Intended for
+    # smoke-testing the LM Studio transport and the agent tool loop on modest
+    # hardware (~6-8 GB VRAM at Q4) -- NOT a run-for-record model. Same
+    # OPEN_WEIGHT category so an accidental real run is still correctly labelled.
+    register(
+        "qwen2.5-coder-7b",
+        BackendCategory.OPEN_WEIGHT,
+        lambda: LMStudioBackend("qwen2.5-coder-7b-instruct", BackendCategory.OPEN_WEIGHT),
     )
     register(
         "dolphin-mixtral-8x7b",

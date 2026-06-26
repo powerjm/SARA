@@ -18,39 +18,37 @@ from __future__ import annotations
 
 import json
 import os
-from dataclasses import dataclass
 from typing import Any
 
+# Import specific symbols (not the module) because ``pricing`` is a parameter
+# name below; aliasing the module would shadow it.
 from backends.base import Backend, ChatResponse, Message, ToolSpec
-from harness.record import BackendCategory, CostRecord, TokenUsage
+from backends.pricing import PRICING_VERSION, Pricing, subset
+from harness.record import BackendCategory, CostRecord, PricingSnapshot, TokenUsage
 
 # --------------------------------------------------------------------------- #
 # Pricing                                                                     #
 # --------------------------------------------------------------------------- #
 
-
-@dataclass(frozen=True)
-class Pricing:
-    """USD per million tokens. Update when changing the deployed model."""
-
-    prompt_per_mtok: float
-    completion_per_mtok: float
+# Prices live in backends/pricing.yaml (single source of truth, refreshed via
+# scripts/refresh_pricing.py). ``PRICING`` is a back-compat view over that file
+# scoped to this provider's models; do not hard-code rates here.
+PRICING: dict[str, Pricing] = subset(["gpt-5", "gpt-5-mini"])
 
 
-# Pinned list pricing as of 2026-05. Verify before each run for record.
-PRICING: dict[str, Pricing] = {
-    "gpt-5": Pricing(prompt_per_mtok=1.25, completion_per_mtok=10.0),
-    "gpt-5-mini": Pricing(prompt_per_mtok=0.25, completion_per_mtok=2.0),
-}
-
-
-def _compute_cost(pricing: Pricing | None, tokens: TokenUsage) -> CostRecord:
-    if pricing is None:
+def _compute_cost(price: Pricing | None, tokens: TokenUsage) -> CostRecord:
+    if price is None:
         return CostRecord(usd=0.0)
     usd = (
-        tokens.prompt * pricing.prompt_per_mtok + tokens.completion * pricing.completion_per_mtok
+        tokens.prompt * price.prompt_per_mtok + tokens.completion * price.completion_per_mtok
     ) / 1_000_000
-    return CostRecord(usd=usd)
+    snapshot = PricingSnapshot(
+        prompt_per_mtok=price.prompt_per_mtok,
+        completion_per_mtok=price.completion_per_mtok,
+        pricing_version=PRICING_VERSION,
+        as_of=price.as_of,
+    )
+    return CostRecord(usd=usd, pricing=snapshot)
 
 
 # --------------------------------------------------------------------------- #

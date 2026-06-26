@@ -13,40 +13,31 @@ RunRecord; analysis scripts re-compute from raw tokens if needed.
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass
 from typing import Any
 
+from backends import pricing
 from backends.base import Backend, ChatResponse, Message, ToolSpec
+from backends.pricing import Pricing  # re-export: back-compat alias for ModelPrice
 from harness.record import BackendCategory, CostRecord, TokenUsage
 
 # --------------------------------------------------------------------------- #
 # Pricing                                                                     #
 # --------------------------------------------------------------------------- #
 
-
-@dataclass(frozen=True)
-class Pricing:
-    """USD per million tokens. Update when changing the deployed model."""
-
-    prompt_per_mtok: float
-    completion_per_mtok: float
-
-
-# Pinned to claude-sonnet-4-6 list pricing as of 2026-05. Verify before each run.
-PRICING: dict[str, Pricing] = {
-    "claude-sonnet-4-6": Pricing(prompt_per_mtok=3.0, completion_per_mtok=15.0),
-    "claude-opus-4-7": Pricing(prompt_per_mtok=15.0, completion_per_mtok=75.0),
-}
+# Prices live in backends/pricing.yaml (single source of truth, refreshed via
+# scripts/refresh_pricing.py). ``PRICING`` is a back-compat view over that file
+# scoped to this provider's models; do not hard-code rates here.
+PRICING: dict[str, Pricing] = pricing.subset(["claude-sonnet-4-6", "claude-opus-4-7"])
 
 
 def _compute_cost(model: str, tokens: TokenUsage) -> CostRecord:
-    p = PRICING.get(model)
+    p = pricing.price_for(model)
     if p is None:
         return CostRecord(usd=0.0)
     usd = (
         tokens.prompt * p.prompt_per_mtok + tokens.completion * p.completion_per_mtok
     ) / 1_000_000
-    return CostRecord(usd=usd)
+    return CostRecord(usd=usd, pricing=pricing.snapshot_for(model))
 
 
 # --------------------------------------------------------------------------- #

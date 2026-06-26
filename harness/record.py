@@ -102,6 +102,22 @@ class TokenUsage(BaseModel):
         return self.prompt + self.completion
 
 
+class PricingSnapshot(BaseModel):
+    """The per-million-token rates that produced a run's ``usd`` cost.
+
+    Embedded in :class:`CostRecord` so a recorded run's cost is auditable and
+    recomputable forever (``tokens × rates == usd``). ``pricing_version`` /
+    ``as_of`` tie the snapshot back to the committed ``backends/pricing.yaml``
+    entry (which also carries the source URL). ``None`` on a CostRecord means a
+    local/unpriced backend or a legacy schema_version="1" record.
+    """
+
+    prompt_per_mtok: NonNegativeFloat
+    completion_per_mtok: NonNegativeFloat
+    pricing_version: str
+    as_of: str  # ISO date, e.g. "2026-06-25"
+
+
 class CostRecord(BaseModel):
     """USD cost. Local models record 0.0 and rely on hardware_utilization fields."""
 
@@ -109,6 +125,9 @@ class CostRecord(BaseModel):
     # Approximate hardware cost for local runs, computed from wall_clock_seconds
     # and a configured $/hour rate. Populated by the harness, not the backend.
     hardware_usd_estimate: NonNegativeFloat = 0.0
+    # The rates that produced ``usd``. None for local/unpriced backends and for
+    # legacy schema_version="1" records (which predate this field).
+    pricing: PricingSnapshot | None = None
 
 
 class ValidatorOutput(BaseModel):
@@ -142,7 +161,10 @@ class RunRecord(BaseModel):
     `runs/<run_id>/trace.jsonl` and a payload at `runs/<run_id>/payload.bin`.
     """
 
-    schema_version: Literal["1"] = "1"
+    # v2 added the optional ``cost.pricing`` snapshot (see PricingSnapshot and
+    # docs/SCHEMA_MIGRATIONS.md). Both versions are accepted on read: a v1
+    # record simply has ``cost.pricing is None``. New records are written as v2.
+    schema_version: Literal["1", "2"] = "2"
 
     run_id: UUID = Field(default_factory=uuid4)
     binary_id: str  # foreign key into corpus/manifest.yaml
@@ -193,6 +215,7 @@ __all__ = [
     "CostRecord",
     "FailureMode",
     "Outcome",
+    "PricingSnapshot",
     "PromptingStrategy",
     "RunRecord",
     "TokenUsage",

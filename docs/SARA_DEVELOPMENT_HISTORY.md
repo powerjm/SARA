@@ -224,6 +224,7 @@ Each was flagged on the step it blocked and resolved by Jeff before that step sh
 | 5 | ~~Difficulty-tier analysis: within / across / both~~ — **decided: both** | ~~Step 6~~ |
 | 6 | ~~Open-weight vs unrestricted category boundary~~ — **decided: safety-alignment status** (→ ADR 0005) | ~~Step 7~~ |
 | 7 | ~~Ghidra bridge + JDK 21 pin~~ — **decided: PyGhidra on Ghidra 11.4.3 + JDK 21** (→ ADR 0004) | ~~Step 7~~ |
+| 8 | ~~Pricing source (versioned file vs live fetch) + cost provenance~~ — **decided: one versioned `backends/pricing.yaml`, snapshot embedded per run (schema v2)** (→ ADR 0007) | ~~Step 8~~ |
 
 ---
 

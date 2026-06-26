@@ -16,7 +16,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Protocol
 
-from harness.record import BackendCategory, CostRecord, TokenUsage
+from harness.record import BackendCategory, CostRecord, PricingSnapshot, TokenUsage
 
 # --------------------------------------------------------------------------- #
 # Wire types                                                                  #
@@ -130,6 +130,20 @@ class Backend(ABC):
     @abstractmethod
     def count_tokens(self, text: str) -> int:
         """Best-effort token count, used for budget enforcement before sending."""
+
+    def pricing_snapshot(self) -> PricingSnapshot | None:
+        """The pricing snapshot to embed in this run's record.
+
+        Authoritative and constant for a run (the model does not change
+        mid-run), so the harness records it once rather than threading the
+        per-call snapshot through state. Reads the single source of truth in
+        ``backends.pricing``; returns ``None`` for local/unpriced backends whose
+        model is absent from ``pricing.yaml``. Imported lazily to match the
+        deferred-SDK-import pattern used by the concrete backends.
+        """
+        from backends import pricing
+
+        return pricing.snapshot_for(self.name)
 
     # --- Refusal detection --------------------------------------------- #
     # Policy (Step 4 decision): prefer provider response metadata; fall back

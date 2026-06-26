@@ -78,7 +78,10 @@ invariants **at construction time** (e.g. a success carries no failure mode; a
 failure must name one).
 
 Changing a field here is a **versioning event**: bump `schema_version` and add a
-migration note. This is a high-review-cost file (see `CONTRIBUTING.md`).
+migration note in [`SCHEMA_MIGRATIONS.md`](SCHEMA_MIGRATIONS.md). This is a
+high-review-cost file (see `CONTRIBUTING.md`). The current version is **2**;
+readers also accept v1 (see the migration log for the v1 → v2 pricing-snapshot
+change).
 
 The independent vs dependent variables and where each lives in the schema are
 tabulated in
@@ -121,6 +124,15 @@ LangGraph was chosen for inspectable, replayable control flow
 harness only ever sees a normalised `CostRecord`. Refusal detection lives on the
 base class (`detect_refusal`, metadata-first: Anthropic `stop_reason` /
 OpenAI-family `finish_reason`, keyword fallback), so every backend inherits it.
+
+Model prices are **not** hard-coded in the backends. They live in one versioned
+file, [`backends/pricing.yaml`](../backends/pricing.yaml), loaded by
+[`backends/pricing.py`](../backends/pricing.py) — the single source of truth read
+by the backends, the registry's `--dry-run` estimator, and the synthetic dataset
+alike. Each run embeds the rates it used (`CostRecord.pricing`, a
+`PricingSnapshot`) so a recorded cost is auditable forever; prices are refreshed
+deliberately via [`scripts/refresh_pricing.py`](../scripts/refresh_pricing.py),
+never fetched at run time ([ADR 0007](adr/0007-pricing-source-and-provenance.md)).
 
 [`backends/registry.py`](../backends/registry.py) is the single source of truth
 for known backends; the CLI `--backend` flag resolves through `registry.get()`.
@@ -233,7 +245,9 @@ thing that differs between a laptop and a cloud VM.
    place `(Outcome, FailureMode)` is decided.
 4. **`StrEnum`, not string literals**, for outcomes / failure modes / strategies /
    categories.
-5. **Cost lives in the backend.** The harness sees only normalised `CostRecord`s.
+5. **Cost lives in the backend; prices live in one file.** The harness sees only
+   normalised `CostRecord`s, and every rate comes from `backends/pricing.yaml`
+   (never hard-coded, never fetched at run time). (ADR 0007)
 6. **State stays small.** Large artifacts go to `trace.jsonl`, not `AgentState`.
 7. **Each step ships complete** — no stubs, real tests; `make format && make lint
    && make test` before every commit.
