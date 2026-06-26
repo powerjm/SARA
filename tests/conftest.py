@@ -57,13 +57,17 @@ def gdb_on_path() -> bool:
 
 
 def ghidra_available() -> bool:
-    """True when Ghidra/PyGhidra is available (import, CLI, or install dir)."""
-    try:
-        import pyghidra  # noqa: F401
-    except ImportError:
-        pass
-    else:
-        return True
+    """True when the Ghidra tools can actually run.
+
+    Both pieces are required: the **PyGhidra bridge must be importable** and a
+    **Ghidra install must be discoverable** for it to start. PyGhidra's
+    ``start()`` resolves the distribution via ``GHIDRA_INSTALL_DIR`` (or a
+    ``ghidra`` on ``$PATH``). Requiring the import too means a host that has the
+    install dir set but no ``pyghidra`` wheel *skips* the integration tests
+    rather than running and failing them with ``ModuleNotFoundError``.
+    """
+    if importlib.util.find_spec("pyghidra") is None:
+        return False
     if shutil.which("ghidra") is not None:
         return True
     install_dir = os.environ.get("GHIDRA_INSTALL_DIR")

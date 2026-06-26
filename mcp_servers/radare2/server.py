@@ -75,11 +75,27 @@ class BinaryInfo:
 # ---------------------------------------------------------------------------
 
 
+def _entry_address(entry: dict[str, Any]) -> int | None:
+    """Address of an `aflj` / `pdj` / search-hit entry, or None if absent.
+
+    radare2 **6.0 renamed the JSON address field `offset` -> `addr`** across
+    `aflj`, `pdj`, and `/j`. Accept both so the parsers work on the 5.x line (the
+    canned-JSON unit tests pin the `offset` schema) and on the 6.x line that
+    Ubuntu 26.04 ships (which emits `addr`). Without this, the permissive parsers
+    silently dropped *every* entry against a 6.x radare2 — analysis returned zero
+    functions / instructions even though the tool ran fine.
+    """
+    value = entry.get("offset")
+    if value is None:
+        value = entry.get("addr")
+    return None if value is None else int(value)
+
+
 def parse_functions(json_str: str) -> list[Function]:
     """Parse `aflj` output into typed Function records.
 
-    Permissive: skips entries that lack the expected keys, so a radare2 version
-    that adds/renames fields does not crash the parser.
+    Permissive: skips entries that lack an address, so a radare2 version that
+    adds/renames other fields does not crash the parser.
     """
     raw = json.loads(json_str) if json_str.strip() else []
     if not isinstance(raw, list):
@@ -88,13 +104,13 @@ def parse_functions(json_str: str) -> list[Function]:
     for entry in raw:
         if not isinstance(entry, dict):
             continue
-        offset = entry.get("offset")
+        offset = _entry_address(entry)
         if offset is None:
             continue
         functions.append(
             Function(
                 name=str(entry.get("name", "")),
-                offset=int(offset),
+                offset=offset,
                 size=int(entry.get("size", 0)),
             )
         )
@@ -114,7 +130,7 @@ def parse_disasm(json_str: str) -> list[Instruction]:
     for entry in raw:
         if not isinstance(entry, dict):
             continue
-        offset = entry.get("offset")
+        offset = _entry_address(entry)
         if offset is None:
             continue
         opcode = entry.get("disasm")
@@ -122,7 +138,7 @@ def parse_disasm(json_str: str) -> list[Instruction]:
             opcode = entry.get("opcode", "")
         instructions.append(
             Instruction(
-                offset=int(offset),
+                offset=offset,
                 opcode=str(opcode),
                 bytes=str(entry.get("bytes", "")),
             )
@@ -297,8 +313,10 @@ def search_pattern(
     addresses: list[int] = []
     if isinstance(hits, list):
         for hit in hits:
-            if isinstance(hit, dict) and "offset" in hit:
-                addresses.append(int(hit["offset"]))
+            if isinstance(hit, dict):
+                addr = _entry_address(hit)
+                if addr is not None:
+                    addresses.append(addr)
     total_found = len(addresses)
     truncated = total_found > max_results
     if truncated:

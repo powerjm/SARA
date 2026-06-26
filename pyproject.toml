@@ -51,15 +51,24 @@ analysis = [
     "jupyter>=1.1.1,<2.0",
 ]
 binary-tools = [
-    # pwntools and r2pipe pull in native deps; install only on the lab host.
-    # ROPgadget powers the Step 2 MCP server; kept here (not in core deps) so CI
-    # stays without it and the `requires_ropgadget` integration tests skip there.
+    # Lab-host-only binary-analysis tooling (native deps); CI stays without it so
+    # the `requires_*` integration tests skip there. ROPgadget powers the Step 2
+    # MCP server; r2pipe drives the radare2 server; ropper complements ROPgadget.
     "ROPgadget>=7.7,<8.0",
-    "pwntools>=4.14,<5.0",
     "r2pipe>=1.9.5,<2.0",
     "ropper>=1.13,<2.0",
-    # ghidra/pyghidra (ADR 0004) and the radare2 *CLI* itself are installed on
-    # the lab host / cloud image (not via pip); only the r2pipe binding is here.
+    # ropper needs `filebytes`, whose sdist `setup.py` uses `ast.Str` (removed in
+    # Python 3.12) and so cannot build on the 3.14 target. Install the vendored,
+    # one-line-patched wheel *before* this extra so ropper's dep is pre-satisfied
+    # (ADR 0008): `pip install vendor/filebytes/filebytes-0.10.2-py3-none-any.whl`.
+    #
+    # pwntools is intentionally NOT here: nothing in the apparatus imports `pwn`
+    # (the pwntools MCP server reimplements its slice in pure Python — see its
+    # docstring), and pwntools pins an older `unicorn` that has no Python-3.14
+    # wheel and fails to build, which would break this whole extra (ADR 0008).
+    #
+    # ghidra/pyghidra (ADR 0004) and the radare2 *CLI* itself are installed on the
+    # lab host / cloud image (not via pip); only the r2pipe binding is here.
 ]
 dev = [
     "pytest>=8.4,<10.0",
