@@ -1,6 +1,10 @@
 # infra/
 
-Infrastructure-as-code for the cloud VM image that hosts the official experimental runs. Local development happens on the workstation; the *record* runs (the ones whose `RunRecord`s go into the thesis) all happen on the cloud VM so every backend gets the same hardware baseline.
+Infrastructure-as-code for the cloud VM image that hosts the official
+experimental runs. Local development happens on the workstation; the cloud option
+gives every backend the same recorded hardware baseline (the *record* runs can
+come from either environment as long as the one used is captured in the
+replication snapshot).
 
 ## Layout
 
@@ -8,39 +12,64 @@ Infrastructure-as-code for the cloud VM image that hosts the official experiment
 infra/
   README.md              <- this file
   packer/                <- VM image build (Packer)
-    README.md
+    sara-lab.pkr.hcl     <- the image template
+    variables.pkr.hcl    <- build-time variables
+    provision/           <- install-base / install-tools / setup-experimenter
   terraform/             <- VM provisioning + networking (Terraform)
-    README.md
-    main.tf.placeholder
-    variables.tf.placeholder
-    outputs.tf.placeholder
+    main.tf variables.tf outputs.tf
+    lab.tfvars.example   <- copy to lab.tfvars (gitignored) and fill in
 ```
 
-> Files end with `.placeholder` until the design lands. This avoids `terraform init` accidentally picking up empty files and creating empty state.
+These are real, reviewable IaC (AWS). They have **not** been `packer build` /
+`terraform apply`-tested from this checkout (no cloud account is wired up here);
+run `packer validate .` and `terraform validate` on a host with the tools and
+credentials before a real build. Everything is parameterised — no account IDs,
+IPs, or keys are committed.
 
-## Build sequence (Phase 7)
+## Build + provision sequence
 
 ```bash
-# 1. Build the AMI/disk image with the apparatus + sandbox already baked in.
+# 1. Build the AMI with the apparatus + sandbox image + binary tools baked in.
 cd infra/packer
 packer init .
-packer build sara-lab.pkr.hcl
+packer validate .
+packer build -var repo_ref=<run-for-record-tag> sara-lab.pkr.hcl
+#   -> writes packer-manifest.json with the new AMI id; the AMI's hash is the
+#      apparatus/version baseline recorded in the replication snapshot.
 
-# 2. Provision a VM from the image.
+# 2. Provision an instance from that AMI.
 cd ../terraform
+cp lab.tfvars.example lab.tfvars   # fill in key_name + researcher_cidr (your /32)
 terraform init
-terraform apply
+terraform validate
+terraform apply -var-file=lab.tfvars
+terraform output ssh_command
 
-# 3. SSH into the VM, clone this repo at the pinned commit, and run experiments.
+# 3. SSH in, switch to the experimenter user, run the matrix (see docs/REPRODUCTION.md).
 ```
+
+## CPU baseline, GPU optional
+
+The baseline image and the default `instance_type` (`c7i.xlarge`) run the **API
+backends** (Anthropic / OpenAI / Google) on CPU — sufficient for the full
+cross-backend matrix without local models. Running *local* open-weight /
+unrestricted models in the cloud additionally needs a **GPU** instance, NVIDIA
+drivers, and an LM Studio / llama.cpp server; that is an explicit extension, not
+part of the baseline (intentionally — the hardware baseline stays simple and the
+GPU path is only needed for the local-model category).
 
 ## What the official VM provides
 
 - Ubuntu 26.04 LTS (matched to `Dockerfile.sandbox`).
-- Python 3.14 from the default Ubuntu 26.04 repositories.
-- Docker 24+, configured for rootless operation.
-- The validator sandbox image pre-pulled with its digest pinned in `/etc/environment`.
-- All optional binary-analysis tools (Ghidra, radare2, ROPgadget, Ropper, pwntools, GDB) pre-installed.
-- A non-root researcher user `experimenter` with `docker` group membership.
+- Python 3.14, Docker, JDK 21.
+- The `sara-sandbox:latest` validator image, pre-built; its id pinned in
+  `/etc/sara-version` and `VALIDATOR_IMAGE` set in `/etc/environment`.
+- The binary-analysis tools (radare2, ROPgadget, Ropper, GDB; Ghidra when
+  `GHIDRA_URL` is supplied at build time).
+- The apparatus cloned at the build `repo_ref` under `/opt/sara` (symlinked to
+  `~experimenter/sara`), bootstrapped, with `make test` run during the build.
+- A non-root `experimenter` user in the `docker` group.
 
-The image baseline is treated as a dependent variable of the experiment: its hash is recorded in every `RunRecord.notes` field that runs from it.
+The image hash is treated as a dependent variable of the experiment: its
+provenance (`/etc/sara-version`) is captured by the replication snapshot's
+environment summary.

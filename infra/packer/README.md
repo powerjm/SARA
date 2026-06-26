@@ -1,52 +1,44 @@
 # packer/
 
-Builds the cloud VM image (AMI) used by `../terraform/` to provision the experiment VM. Placeholder until Phase 7.
+Builds the cloud VM image (AMI) used by `../terraform/` to provision the
+experiment VM.
 
-## Planned image contents
+## Files
 
-- Ubuntu 26.04 LTS as the base.
-- Python 3.14 from the default Ubuntu 26.04 repositories.
-- Docker 24+.
-- The `sara-sandbox:latest` validator image, pulled and pinned by digest.
-- Ghidra 11+, radare2, ROPgadget, Ropper, pwntools, GDB, gdbserver.
-- A non-root `experimenter` user with docker group membership and rootless Docker pre-configured.
-- This repository cloned at `/home/experimenter/sara` at the commit recorded in `/etc/sara-version`.
+- `sara-lab.pkr.hcl` — the image template (an `amazon-ebs` source on Ubuntu
+  26.04 + three shell provisioners + a manifest post-processor).
+- `variables.pkr.hcl` — build-time variables (`region`, `build_instance_type`,
+  `root_volume_gb`, `repo_url`, `repo_ref`).
+- `provision/install-base.sh` — toolchain, Python 3.14, Docker, JDK 21, extras.
+- `provision/install-tools.sh` — clones the apparatus at `repo_ref`, bootstraps
+  it, installs ROPgadget/Ropper, builds `sara-sandbox:latest`, runs `make test`,
+  and installs Ghidra when `GHIDRA_URL` is supplied.
+- `provision/setup-experimenter.sh` — creates the non-root `experimenter` user,
+  hands it the apparatus, pins `VALIDATOR_IMAGE`, and records provenance in
+  `/etc/sara-version`.
 
-## Planned Packer template skeleton
+## Build
 
-```hcl
-# packer/sara-lab.pkr.hcl  (Phase 7 deliverable)
-#
-# packer {
-#   required_plugins {
-#     amazon = {
-#       version = ">= 1.3"
-#       source  = "github.com/hashicorp/amazon"
-#     }
-#   }
-# }
-#
-# source "amazon-ebs" "lab" {
-#   ami_name      = "sara-lab-{{timestamp}}"
-#   instance_type = "c7i.xlarge"
-#   region        = "us-east-1"
-#   source_ami_filter {
-#     filters = {
-#       # Ubuntu 26.04 LTS, x86_64, HVM, EBS-backed.
-#       name                = "ubuntu/images/hvm-ssd-gp3/ubuntu-*-26.04-amd64-server-*"
-#       root-device-type    = "ebs"
-#       virtualization-type = "hvm"
-#     }
-#     most_recent = true
-#     owners      = ["099720109477"]  # Canonical
-#   }
-#   ssh_username = "ubuntu"
-# }
-#
-# build {
-#   sources = ["source.amazon-ebs.lab"]
-#   provisioner "shell" { script = "./provision/install-base.sh" }
-#   provisioner "shell" { script = "./provision/install-tools.sh" }
-#   provisioner "shell" { script = "./provision/setup-experimenter.sh" }
-# }
+```bash
+packer init .
+packer validate .
+packer build \
+  -var repo_ref=<run-for-record-tag> \
+  -var repo_url=<your fork or mirror, if not the default> \
+  sara-lab.pkr.hcl
 ```
+
+The build writes `packer-manifest.json` (the new AMI id + region). Pin the
+run-for-record to a tag and pass it as `repo_ref` so the image's
+`/etc/sara-version` matches the thesis citation.
+
+## Notes
+
+- **CPU baseline.** The image targets the API backends on CPU. Local models in
+  the cloud are an explicit GPU extension (NVIDIA drivers + LM Studio), not baked
+  in here — see `../README.md`.
+- **Ghidra is optional.** It is large and its release asset carries a build-date
+  suffix; set `GHIDRA_URL` (and `GHIDRA_VERSION`) to the pinned 11.4.3 asset to
+  include it. When absent, the Ghidra tool's tests skip (they never fail).
+- **Untested from this checkout.** No AWS account is wired up here; run `packer
+  validate .` with credentials before building for real.

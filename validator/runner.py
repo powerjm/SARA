@@ -87,6 +87,31 @@ def _excerpt(text: str, limit: int = _EXCERPT_LIMIT) -> str:
     return f"{text[:limit]}... [truncated {len(text) - limit} chars]"
 
 
+def _stage_workdir(binary_path: Path, payload_path: Path) -> Path:
+    """Copy the target + payload into a private temp dir for the read-only mount.
+
+    Permissions matter for correctness, not just hygiene: the sandbox container
+    runs as a **non-root** user (uid 1500) that is a *different* uid than the
+    host user which created this directory. ``mkdtemp`` makes the directory mode
+    ``0o700`` (owner-only), so without widening it the container cannot even
+    traverse ``/work`` to open the payload — the run fails with
+    ``cannot open /work/payload: Permission denied`` and every outcome collapses
+    to FAILURE regardless of the chain. The directory is therefore made
+    world-traversable (``0o755``) and the files world-readable / read-exec. This
+    is safe: the mount is read-only, nothing inside is writable, and the dir
+    holds only these two already-world-readable files.
+    """
+    workdir = Path(tempfile.mkdtemp(prefix="sara-validator-"))
+    target = workdir / _TARGET_NAME
+    payload = workdir / _PAYLOAD_NAME
+    shutil.copy(binary_path, target)
+    shutil.copy(payload_path, payload)
+    target.chmod(0o555)
+    payload.chmod(0o444)
+    workdir.chmod(0o755)
+    return workdir
+
+
 def execute(
     binary_path: Path,
     payload_path: Path,
@@ -156,15 +181,8 @@ def execute(
 
         client = docker.from_env()
 
-    workdir = Path(tempfile.mkdtemp(prefix="sara-validator-"))
+    workdir = _stage_workdir(binary_path, payload_path)
     try:
-        target = workdir / _TARGET_NAME
-        payload = workdir / _PAYLOAD_NAME
-        shutil.copy(binary_path, target)
-        shutil.copy(payload_path, payload)
-        target.chmod(0o555)
-        payload.chmod(0o444)
-
         started = time.monotonic()
         try:
             container = client.containers.run(

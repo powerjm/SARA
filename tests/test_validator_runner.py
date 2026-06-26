@@ -16,6 +16,8 @@ The fixture's documented chain is ``[0x4011ad, 0x4011ae, 0x401166]`` — the
 
 from __future__ import annotations
 
+import shutil
+import stat
 from pathlib import Path
 
 import pytest
@@ -23,7 +25,7 @@ import pytest
 from agent.state import AgentState, BinaryContext
 from harness.record import FailureMode, Outcome
 from validator.classifier import classify
-from validator.runner import chain_fingerprint, execute
+from validator.runner import _stage_workdir, chain_fingerprint, execute
 from validator.runner_test_helpers import (
     FakeDockerClient,
     failing_to_start_client,
@@ -45,6 +47,38 @@ def binary_and_payload(tmp_path: Path) -> tuple[Path, Path]:
     binary.write_bytes(b"\x7fELF fake binary")
     payload.write_bytes(b"A" * 72 + b"\xad\x11\x40\x00\x00\x00\x00\x00")
     return binary, payload
+
+
+def test_stage_workdir_is_readable_by_nonroot_sandbox(
+    binary_and_payload: tuple[Path, Path],
+) -> None:
+    """The staged dir must be traversable (o+rx) by the uid-1500 sandbox user.
+
+    Regression for the real-sandbox bug the Step 8 smoke test surfaced: a
+    ``0o700`` temp dir owned by the host user made the non-root container fail
+    with ``cannot open /work/payload: Permission denied``, collapsing every
+    outcome to FAILURE regardless of the chain. The directory must grant others
+    read+execute; the files must be readable but never group/other-writable.
+    """
+    binary, payload = binary_and_payload
+    workdir = _stage_workdir(binary, payload)
+    try:
+        dir_mode = stat.S_IMODE(workdir.stat().st_mode)
+        assert dir_mode & stat.S_IROTH and dir_mode & stat.S_IXOTH, oct(dir_mode)
+
+        target = workdir / "target"
+        staged_payload = workdir / "payload"
+        assert target.is_file() and staged_payload.is_file()
+
+        target_mode = stat.S_IMODE(target.stat().st_mode)
+        payload_mode = stat.S_IMODE(staged_payload.stat().st_mode)
+        assert target_mode & stat.S_IROTH and target_mode & stat.S_IXOTH  # read+exec
+        assert payload_mode & stat.S_IROTH  # readable
+        # Nothing staged is writable by group or other (defence in depth).
+        assert not (target_mode & (stat.S_IWGRP | stat.S_IWOTH))
+        assert not (payload_mode & (stat.S_IWGRP | stat.S_IWOTH))
+    finally:
+        shutil.rmtree(workdir, ignore_errors=True)
 
 
 def _state() -> AgentState:

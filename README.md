@@ -22,7 +22,7 @@ Development followed one linear plan — eight steps, done in order, each shippe
 | 5 | `sara run` + `sara batch` produce real data | **done** |
 | 6 | Analysis notebooks turn data into Findings | **done** |
 | 7 | Every backend + every tool | **done** |
-| 8 | Run for record: hardened, reproducible, local or cloud | next |
+| 8 | Run for record: hardened, reproducible, local or cloud | in progress |
 
 ---
 

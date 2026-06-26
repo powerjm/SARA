@@ -51,17 +51,19 @@ binaries:
 # documented in each challenge's CGC `README.md` (linked per entry).
 #
 # These are BUILD-FROM-SOURCE, not download-and-hash: cb-multios renames the
-# challenge directories (e.g. CROMU_00004 -> a descriptive name), so the upstream
-# ID is the key here and `corpus/scripts/build.py` resolves the renamed dir by
-# grepping the checkout for that ID, then builds, hashes, pins, and installs the
-# ELF into corpus/binaries/<id>. `fetch.py` skips `git+` sources.
+# challenge directories (e.g. CROMU_00004 -> PCM_Message_decoder). Each entry
+# records the renamed dir under `build.challenge` (resolved from the AUTHOR_ID/
+# SERVICE_ID mapping in docs/CGCQualifyingEventChallengeMapping.md; build.py
+# falls back to grepping the checkout for the CGC id when no override is given).
+# The whole set builds in one reproducible command — no host toolchain install:
+#   corpus/scripts/cb-multios/build.sh        # checkout@pin -> image -> build -> pin
+# which builds static, non-PIE, NX-enforced ELFs and pins/installs them via
+# build.py. `fetch.py` skips `git+` sources. See corpus/scripts/cb-multios/.
 #
-# Per entry you still owe (left as TODO, by design — these need a built binary in
-# hand and your analysis, not a guess):
-#   * sha256                       — pin after the first build (build.py --update)
-#   * protections                  — confirm with checksec; rebuild -no-pie
-#                                     -fno-stack-protector if you want clean
-#                                     static-address ROP (set to [nx] as the target)
+# DONE for every cgc-* entry below (built 2026-06, commit pinned in source_url):
+#   * sha256        — pinned to this lab host's static non-PIE/NX build
+#   * protections   — [nx]: EXEC (non-PIE), NX on, no canary, no RELRO (checksec'd)
+# Still owed per entry (need a built binary in hand + your analysis, not a guess):
 #   * documented_gadget_addresses  — the ordered corpus-truth chain (ADR 0003)
 #   * success_marker               — the string your PoC prints to prove control
 #
@@ -75,8 +77,10 @@ binaries:
 
   - id: cgc-cadet-00001
     name: "DARPA CGC CADET_00001 — palindrome service (stack overflow)"
-    source_url: "git+https://github.com/trailofbits/cb-multios@TODO-PIN-COMMIT"
-    sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+    source_url: "git+https://github.com/trailofbits/cb-multios@810d7b24b1f62f56ef49b148fe155b0d0629cad2"
+    build:
+      challenge: Palindrome  # cb-multios renamed dir for CADET_00001 (AUTHOR_ID CADET / SERVICE_ID 00001)
+    sha256: "494f5bcb1294586947b889a6d2937d505424f40a88a14b199954296f2ec25d97"
     architecture: i386
     protections:
       - nx
@@ -97,8 +101,10 @@ binaries:
 
   - id: cgc-cromu-00004
     name: "DARPA CGC CROMU_00004 — PCM audio decoder (stack overflow)"
-    source_url: "git+https://github.com/trailofbits/cb-multios@TODO-PIN-COMMIT"
-    sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+    source_url: "git+https://github.com/trailofbits/cb-multios@810d7b24b1f62f56ef49b148fe155b0d0629cad2"
+    build:
+      challenge: PCM_Message_decoder  # cb-multios renamed dir for CROMU_00004 (AUTHOR_ID CROMU / SERVICE_ID 00004)
+    sha256: "698dbc01859f95895333506c926f7e24d340d3e86e4fb065da4497c060110061"
     architecture: i386
     protections:
       - nx
@@ -117,8 +123,10 @@ binaries:
 
   - id: cgc-cromu-00001
     name: "DARPA CGC CROMU_00001 — messaging app (integer overflow -> heap overflow)"
-    source_url: "git+https://github.com/trailofbits/cb-multios@TODO-PIN-COMMIT"
-    sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+    source_url: "git+https://github.com/trailofbits/cb-multios@810d7b24b1f62f56ef49b148fe155b0d0629cad2"
+    build:
+      challenge: basic_messaging  # cb-multios renamed dir for CROMU_00001 (AUTHOR_ID CROMU / SERVICE_ID 00001)
+    sha256: "5435ad7708d8e7c2a2861906211dcc640365fb415bd404aabd5f28f7a63409b6"
     architecture: i386
     protections:
       - nx
@@ -138,8 +146,10 @@ binaries:
 
   - id: cgc-kprca-00007
     name: "DARPA CGC KPRCA_00007 — router CLI (out-of-bounds array index)"
-    source_url: "git+https://github.com/trailofbits/cb-multios@TODO-PIN-COMMIT"
-    sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+    source_url: "git+https://github.com/trailofbits/cb-multios@810d7b24b1f62f56ef49b148fe155b0d0629cad2"
+    build:
+      challenge: router_simulator  # cb-multios renamed dir for KPRCA_00007 (AUTHOR_ID KPRCA / SERVICE_ID 00007)
+    sha256: "2c75235e215499fd0dab47b48e829d2b1dd1b23284181e804b2295fd4dd0a446"
     architecture: i386
     protections:
       - nx
@@ -158,8 +168,10 @@ binaries:
 
   - id: cgc-cromu-00002
     name: "DARPA CGC CROMU_00002 — particle physics sim (OOB write)"
-    source_url: "git+https://github.com/trailofbits/cb-multios@TODO-PIN-COMMIT"
-    sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+    source_url: "git+https://github.com/trailofbits/cb-multios@810d7b24b1f62f56ef49b148fe155b0d0629cad2"
+    build:
+      challenge: Particle_Simulator  # cb-multios renamed dir for CROMU_00002 (AUTHOR_ID CROMU / SERVICE_ID 00002)
+    sha256: "75dc93660e3423af582ca169c7748ff91633fefa68db4977788d05139813675a"
     architecture: i386
     protections:
       - nx

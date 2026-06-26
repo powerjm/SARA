@@ -45,6 +45,9 @@ analysis/figures/
 infra/terraform/.terraform/
 infra/terraform/*.tfstate*
 infra/terraform/.terraform.lock.hcl
+# Account-specific vars (researcher IP, key name, …); keep only the example.
+infra/terraform/*.tfvars
+!infra/terraform/*.tfvars.example
 
 # --- Packer ---
 infra/packer/packer_cache/

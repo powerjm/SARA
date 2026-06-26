@@ -1,0 +1,20 @@
+# Copy to lab.tfvars and fill in. lab.tfvars is gitignored (account-specific).
+#
+#   cp lab.tfvars.example lab.tfvars && $EDITOR lab.tfvars
+#   terraform apply -var-file=lab.tfvars
+
+region          = "us-east-1"
+
+# An existing EC2 key pair name in that region (for SSH).
+key_name        = "my-lab-keypair"
+
+# Your own IP as a /32 — never 0.0.0.0/0.
+researcher_cidr = "203.0.113.4/32"
+
+# Optional: pin a specific AMI. Empty string auto-selects the newest sara-lab-*.
+# ami_id        = "ami-0123456789abcdef0"
+
+# Hardware baseline (keep fixed across a run for record). CPU default below.
+instance_type   = "c7i.xlarge"
+
+root_volume_gb  = 30

@@ -70,6 +70,22 @@ python -m corpus.scripts.build --id cgc-cromu-00004 --from /path/to/built/Audio_
 python -m corpus.scripts.verify
 ```
 
+### The current CGC set (one-shot, reproducible)
+
+The `cgc-*` entries already carry a pinned `source_url` commit and a
+`build.challenge` dir override, so the whole build is a single command that needs
+no host toolchain install (it compiles inside Docker):
+
+```bash
+corpus/scripts/cb-multios/build.sh        # checkout@pin -> image -> build -> pin+install
+```
+
+This produces i386, **non-PIE / NX-enforced / no-canary / statically-linked**
+ELFs (matching `protections: [nx]`, the clean static-address ROP target). Static
+linking is required because the validator sandbox mounts only the ELF. See
+[`corpus/scripts/cb-multios/README.md`](scripts/cb-multios/README.md) for the
+exact recipe and the CGC-id → cb-multios-dir mapping.
+
 > The cb-multios build is not guaranteed byte-identical across toolchains, so a
 > CGC entry's `sha256` pins *your* lab-host build (as the fixture's `build.sh`
 > does). Re-pin deliberately with `--update` when the toolchain changes.
