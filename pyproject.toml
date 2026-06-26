@@ -20,7 +20,7 @@ dependencies = [
     "langchain-core>=0.3.30,<0.4",
 
     # --- MCP ---
-    "mcp>=1.2.0,<2.0",
+    "mcp>=1.28.1,<2.0",
 
     # --- Backends ---
     "anthropic>=0.45.0,<1.0",
