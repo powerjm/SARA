@@ -46,7 +46,8 @@ echo "### configure exit: ${cfg} ###"
 [ "${cfg}" -eq 0 ] || exit "${cfg}"
 
 # The cb-multios challenge dirs backing each manifest entry (build.challenge).
-TARGETS=(Palindrome PCM_Message_decoder basic_messaging router_simulator Particle_Simulator)
+TARGETS=(Palindrome PCM_Message_decoder basic_messaging router_simulator Particle_Simulator \
+         Hug_Game CGC_Hangman_Game FailAV EternalPass)
 rc=0
 for t in "${TARGETS[@]}"; do
   echo "### build target: ${t} ###"

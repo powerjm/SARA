@@ -141,9 +141,37 @@ Landed in the code-reframing pass:
 - `corpus/manifest.yaml`: the per-binary `success_marker` is retired; the
   validator uses the global `SUCCESS_MARKER` (an entry may still override it).
 
+Landed in the corpus-truth completion pass (per-target feasibility resolved for
+the original tier-0–3 set):
+
+- `corpus/exploits/cgc-cromu-00004.py` — the tier-1 shell PoC. Same two-stage
+  template as CADET: the integer-division width check (`DataSize*8/NumSamples`
+  truncates to 16) is bypassed to drive a `0x14`-byte stack overflow past the
+  1 MiB PCM buffer to `main`'s saved EIP, through a PCM/morse parse that must not
+  abort, then a `.bss` pivot to `execve("/bin/sh", 0, 0)`. Reproduces
+  `succeeded=True` in the sandbox; its chain is in `documented_gadget_addresses`.
+- `cgc-cromu-00001`, `cgc-kprca-00007`, `cgc-cromu-00002` — assessed **infeasible**
+  and left as measured failures (no PoC, `documented_gadget_addresses: []`),
+  matching this ADR's feasibility outlook. Each vuln was fully characterized and
+  the specific blocker recorded: cromu-00001 is a stack-VLA overflow (not the
+  heap overflow the manifest note assumed) whose only primitive is a
+  message-bounded append-write that cannot cover both the frame pointer and the
+  saved return dword, with no reachable stack pivot; kprca-00007's OOB gives a
+  routing-trie write whose length-byte precondition is unsatisfiable for every
+  fixed code-pointer target; cromu-00002's final-frame OOB is an increment-by-1
+  against an ASLR-randomized `mmap` address with no information leak. Higher-tier
+  targets becoming measured failures is the anticipated outcome under this model.
+- `corpus/scripts/verify.py` — implemented (was a Phase-4 stub). It drives
+  `harness.runner.verify_binary` over every manifest entry, reproducing each
+  binary that ships a `corpus/exploits/<id>.py` in the sandbox and asserting the
+  marker fires (PASS/FAIL); entries with no PoC are reported `SKIP` (ungated
+  measured failures), so `verify` gates exactly the binaries with a known-good
+  shell PoC. Tested in `tests/test_verify.py`.
+
 Still deferred (gated on per-target feasibility, not code reframing):
 
-- Reference shell PoCs for the remaining binaries that are feasible; `verify.py`.
+- Reference shell PoCs for any additional binaries later added to the corpus that
+  turn out feasible; each is auto-gated by `verify.py` once its PoC lands.
 
 ## Alternatives considered
 

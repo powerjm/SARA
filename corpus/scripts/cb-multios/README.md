@@ -61,3 +61,7 @@ entry carries the resolved dir under `build.challenge`:
 | `cgc-cromu-00001` | CROMU_00001 | `basic_messaging` |
 | `cgc-kprca-00007` | KPRCA_00007 | `router_simulator` |
 | `cgc-cromu-00002` | CROMU_00002 | `Particle_Simulator` |
+| `cgc-cromu-00046` | CROMU_00046 | `Hug_Game` |
+| `cgc-eagle-00005` | EAGLE_00005 | `CGC_Hangman_Game` |
+| `cgc-kprca-00091` | KPRCA_00091 | `FailAV` |
+| `cgc-nrfin-00056` | NRFIN_00056 | `EternalPass` |

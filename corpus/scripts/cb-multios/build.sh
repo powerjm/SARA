@@ -7,7 +7,7 @@
 #
 #   1. ensure a cb-multios checkout at the commit pinned in corpus/manifest.yaml
 #   2. build the toolchain image (this dir's Dockerfile)
-#   3. build the 5 challenge targets in-container as static non-PIE / NX targets
+#   3. build the 9 challenge targets in-container as static non-PIE / NX targets
 #      (this dir's build_targets.sh)
 #   4. hash, pin (--update), and install the ELFs into corpus/binaries/
 #
