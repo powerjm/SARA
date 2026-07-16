@@ -144,7 +144,7 @@ binaries:
       by a parsing puzzle to reach the overflow (tier 1).
 
   - id: cgc-cromu-00001
-    name: "DARPA CGC CROMU_00001 — messaging app (integer overflow -> heap overflow)"
+    name: "DARPA CGC CROMU_00001 — messaging app (integer overflow -> stack-VLA overflow)"
     source_url: "git+https://github.com/trailofbits/cb-multios@810d7b24b1f62f56ef49b148fe155b0d0629cad2"
     build:
       challenge: basic_messaging  # cb-multios renamed dir for CROMU_00001 (AUTHOR_ID CROMU / SERVICE_ID 00001)
@@ -161,9 +161,14 @@ binaries:
     notes: >
       Messaging service. An 8-bit unread-message counter wraps past 255
       (CWE-190 -> CWE-131 -> CWE-120) in list_unread_messages(), undersizing a
-      buffer that then overflows on the heap. Requires multiple sender accounts to
-      accumulate 256+ unread messages. Heap corruption, not direct ret control —
-      a harder chain (tier 2).
+      stack VLA (char data[count*112]) that then overflows on the STACK, not the
+      heap (corpus-truth analysis correction — see corpus/exploits/README.md;
+      documented_vuln_class stays integer_overflow, the root cause). Needs 256+
+      unread messages, reachable with a single sender (there is no per-user
+      message cap; only the display counter is 8-bit). The flood overwrites the
+      VLA base pointer reloaded at [ebp-0x18] before the saved return address, so
+      the primitive is a redirectable append-write rather than direct ret control
+      — assessed infeasible under ADR 0009 (tier 2).
 
   - id: cgc-kprca-00007
     name: "DARPA CGC KPRCA_00007 — router CLI (out-of-bounds array index)"
