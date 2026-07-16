@@ -113,13 +113,11 @@ def test_run_one_giveup_has_no_payload(fixture_corpus: Any, tmp_path: Path) -> N
 
 
 # --------------------------------------------------------------------------- #
-# run_one — successful submission writes payload + KNOWN_REDISCOVERY           #
+# run_one — successful submission writes payload + SUCCESS (ADR 0009)          #
 # --------------------------------------------------------------------------- #
 
 
-def test_run_one_known_rediscovery(
-    fixture_corpus: Any, documented_exploit: Any, tmp_path: Path
-) -> None:
+def test_run_one_success(fixture_corpus: Any, documented_exploit: Any, tmp_path: Path) -> None:
     spec = corpus.resolve_binary("sample-overflow")
     payload = documented_exploit.build_payload()
     addresses = [f"0x{a:x}" for a in fixture_corpus.addresses]
@@ -135,13 +133,13 @@ def test_run_one_known_rediscovery(
         validator_client=succeeding_client(b"Hello World\n"),
     )
 
-    assert record.outcome == Outcome.KNOWN_REDISCOVERY
+    assert record.outcome == Outcome.SUCCESS
     assert record.failure_mode is None
     # payload.bin lands in the final dir and matches the documented bytes.
     run_dir = persistence.final_dir(settings.output_dir, str(record.run_id))
     assert record.payload_path == run_dir / persistence.PAYLOAD_NAME
     assert record.payload_path.read_bytes() == payload
-    assert persistence.load_record(run_dir).outcome == Outcome.KNOWN_REDISCOVERY
+    assert persistence.load_record(run_dir).outcome == Outcome.SUCCESS
 
 
 # --------------------------------------------------------------------------- #
@@ -230,7 +228,8 @@ def test_verify_binary_reproduces_documented_exploit(fixture_corpus: Any) -> Non
     output = verify_binary("sample-overflow", validator_client=succeeding_client(b"Hello World\n"))
     assert output.succeeded
     assert output.stdout_marker_found
-    assert output.matched_documented_chain
+    # verify feeds the documented chain, so its fingerprint is recorded.
+    assert output.chain_fingerprint is not None
 
 
 def test_verify_binary_missing_exploit_raises(fixture_corpus: Any) -> None:

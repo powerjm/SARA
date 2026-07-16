@@ -2,11 +2,13 @@
 Corpus resolution.
 
 Turns a ``binary_id`` (the foreign key used everywhere in the experiment) into a
-concrete :class:`BinarySpec`: the on-disk binary, its static context, the success
-marker, and the documented-chain fingerprint the validator uses to decide
-KNOWN_REDISCOVERY. The single source of truth is ``corpus/manifest.yaml`` (see
-``corpus/README.md``); the binaries themselves are gitignored and live under
-``corpus/binaries/``.
+concrete :class:`BinarySpec`: the on-disk binary, its static context, and the
+success marker a spawned shell must print (ADR 0009). The marker is the universal
+``SUCCESS_MARKER`` unless a manifest entry overrides it. The documented gadget
+addresses ride along as a *baseline* reference chain (for cross-model uniqueness
+analysis), not as an outcome oracle. The single source of truth is
+``corpus/manifest.yaml`` (see ``corpus/README.md``); the binaries themselves are
+gitignored and live under ``corpus/binaries/``.
 
 Both the manifest and the binaries directory can be redirected with environment
 variables (``SARA_CORPUS_MANIFEST`` / ``SARA_CORPUS_BINARIES_DIR``) so the same
@@ -24,7 +26,7 @@ from typing import Any
 import yaml
 
 from agent.state import BinaryContext
-from validator.runner import chain_fingerprint
+from validator.runner import SUCCESS_MARKER
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 _DEFAULT_MANIFEST = _REPO_ROOT / "corpus" / "manifest.yaml"
@@ -45,8 +47,9 @@ class BinarySpec:
     architecture: str
     protections: list[str]
     success_marker: str
+    # Baseline reference chain (ADR 0009): the documented gadget addresses, kept
+    # for cross-model uniqueness analysis, not as an outcome oracle.
     documented_gadget_addresses: list[int]
-    documented_chain_fingerprint: str | None
     difficulty_tier: int | None = None
     notes: str = ""
 
@@ -137,7 +140,6 @@ def resolve_binary(
         )
 
     addresses = _parse_addresses(entry.get("documented_gadget_addresses"))
-    fingerprint = chain_fingerprint(addresses) if addresses else None
 
     tier = entry.get("difficulty_tier")
     return BinarySpec(
@@ -145,9 +147,10 @@ def resolve_binary(
         binary_path=binary_path,
         architecture=str(entry.get("architecture", "unknown")),
         protections=list(entry.get("protections") or []),
-        success_marker=str(entry.get("success_marker", "")),
+        # The marker is universal (ADR 0009); a manifest entry may still override
+        # it for a binary whose reference shell prints something else.
+        success_marker=str(entry.get("success_marker") or SUCCESS_MARKER),
         documented_gadget_addresses=addresses,
-        documented_chain_fingerprint=fingerprint,
         difficulty_tier=int(tier) if tier is not None else None,
         notes=str(entry.get("notes", "")).strip(),
     )

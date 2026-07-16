@@ -84,11 +84,11 @@ def test_route_default_goes_to_propose() -> None:
     assert route_after_reason(s) == "propose"
 
 
-def test_classify_success_returns_known_rediscovery() -> None:
+def test_classify_success_returns_success() -> None:
     s = _state()
     s.termination_reason = "success"
     outcome, fm = classify_outcome(s)
-    assert outcome == Outcome.KNOWN_REDISCOVERY
+    assert outcome == Outcome.SUCCESS
     assert fm is None
 
 

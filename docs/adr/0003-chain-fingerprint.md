@@ -1,6 +1,11 @@
 # ADR 0003 — Chain fingerprint is the ordered gadget-address sequence
 
-Status: Accepted (Step 3)
+Status: Accepted (Step 3). **Repurposed by [ADR 0009](0009-shell-success-marker.md):**
+the ordered-fingerprint definition below still stands, but it no longer decides a
+`KNOWN_REDISCOVERY` vs `NEW_DISCOVERY` outcome (those outcomes were collapsed into a
+single `SUCCESS`). The fingerprint is now recorded per run and clustered across
+models at analysis time to measure chain uniqueness. Read the sections below as the
+historical rationale for the *encoding*; ignore the KNOWN/NEW framing.
 
 ## Context
 

@@ -10,8 +10,8 @@ paths through the production ``run_one`` harness:
 * the candidate payload is executed in the real, locked-down Docker sandbox,
 * a real ``{record.json, trace.jsonl, payload.bin}`` triple is persisted.
 
-The done-when (Step 8) is the headline assertion: exactly one ``KNOWN_REDISCOVERY``
-record lands on disk. The whole thing runs in well under five minutes.
+The done-when (Step 8) is the headline assertion: exactly one ``SUCCESS`` record
+lands on disk (ADR 0009). The whole thing runs in well under five minutes.
 
 It is gated so the everyday suite stays green off the lab host: the
 ``requires_ropgadget`` marker skips it when the ROPgadget CLI is absent, and the
@@ -58,7 +58,7 @@ def _require_docker_sandbox_or_skip(image: str) -> None:
         pytest.skip(f"sandbox image {image!r} not present; run `make sandbox-build` first")
 
 
-def test_smoke_e2e_known_rediscovery(
+def test_smoke_e2e_success(
     fixture_corpus: Any,
     documented_exploit: Any,
     tmp_path: Path,
@@ -121,15 +121,16 @@ def test_smoke_e2e_known_rediscovery(
         validator_client=None,  # real docker.from_env() -> real sandbox
     )
 
-    assert record.outcome == Outcome.KNOWN_REDISCOVERY
+    assert record.outcome == Outcome.SUCCESS
     assert record.failure_mode is None
     assert record.validator is not None
     assert record.validator.succeeded
-    assert record.validator.matched_documented_chain
+    # The candidate chain's fingerprint is recorded for uniqueness analysis.
+    assert record.validator.chain_fingerprint is not None
 
-    # Exactly one KNOWN_REDISCOVERY record landed on disk, and it round-trips.
+    # Exactly one SUCCESS record landed on disk, and it round-trips.
     records = sorted(settings.output_dir.glob("*/record.json"))
     assert len(records) == 1
     persisted = load_record(records[0].parent)
-    assert persisted.outcome == Outcome.KNOWN_REDISCOVERY
+    assert persisted.outcome == Outcome.SUCCESS
     assert persisted.payload_path is not None and Path(persisted.payload_path).is_file()

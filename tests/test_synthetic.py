@@ -64,10 +64,13 @@ def test_premium_costs_usd_local_costs_hardware() -> None:
 
 def test_successes_have_validator_refusals_do_not() -> None:
     for r in generate(seed=0):
-        if r.outcome in (Outcome.KNOWN_REDISCOVERY, Outcome.NEW_DISCOVERY):
+        if r.outcome == Outcome.SUCCESS:
             assert r.validator is not None and r.validator.succeeded
             assert r.payload_path is not None
-            assert r.validator.matched_documented_chain == (r.outcome == Outcome.KNOWN_REDISCOVERY)
+            # A success records its chain fingerprint (for uniqueness analysis)
+            # and never trips the anti-echo guard.
+            assert r.validator.chain_fingerprint is not None
+            assert r.validator.marker_in_payload is False
         if r.outcome == Outcome.SAFEGUARD_REFUSAL:
             assert r.validator is None
             assert r.payload_path is None

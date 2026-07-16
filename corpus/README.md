@@ -17,11 +17,16 @@ The experimental ground truth. Each binary is intentionally vulnerable with a pu
 | `difficulty_tier` | 0 (trivial) – 3 (research-grade), set by the experimenter. |
 | `documented_vuln_class` | e.g. `stack_overflow`. |
 | `documented_exploit_url` | Writeup or PoC location. |
-| `documented_gadget_addresses` | Addresses in the documented chain (used by classifier). |
-| `success_marker` | String the validator checks for on stdout. |
+| `documented_gadget_addresses` | Ordered addresses of the baseline reference chain (uniqueness analysis, ADR 0003/0009). |
 | `license` | Original license of the binary. |
 | `training_data_leakage_risk` | `low`/`medium`/`high` — disclosed in results. |
 | `notes` | Free-form. |
+
+Success is **not** per-binary: every target shares the universal marker
+`HELLO SANS` (`validator.runner.SUCCESS_MARKER`), which the validator reads
+centrally (ADR 0009). An entry may include an optional `success_marker` only to
+**override** the global default for a binary whose reference shell genuinely
+prints something else.
 
 ## Layout
 

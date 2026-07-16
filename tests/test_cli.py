@@ -95,7 +95,6 @@ def test_verify_pass(monkeypatch: pytest.MonkeyPatch) -> None:
             succeeded=True,
             return_code=0,
             stdout_marker_found=True,
-            matched_documented_chain=True,
         ),
     )
     result = CliRunner().invoke(cli, ["verify", "--binary", "sample-overflow"])
@@ -111,7 +110,6 @@ def test_verify_fail_exits_nonzero(monkeypatch: pytest.MonkeyPatch) -> None:
             succeeded=False,
             return_code=1,
             stdout_marker_found=False,
-            matched_documented_chain=False,
             stderr_excerpt="boom",
         ),
     )
@@ -125,7 +123,7 @@ def test_replay_prints_result(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -
         succeeded=True,
         return_code=0,
         stdout_marker_found=True,
-        matched_documented_chain=False,
+        chain_fingerprint=None,
     )
     monkeypatch.setattr(cli_mod, "replay_run", lambda run_id, **kw: (None, output))
     result = CliRunner().invoke(cli, ["replay", "--run-id", "abc", "--output-dir", str(tmp_path)])

@@ -40,6 +40,7 @@ from harness.record import (
     TokenUsage,
     ValidatorOutput,
 )
+from validator.runner import SUCCESS_MARKER, chain_fingerprint
 
 # Fixed epoch so timestamps are deterministic (never datetime.now()).
 _EPOCH = datetime(2026, 1, 1, 0, 0, 0, tzinfo=UTC)
@@ -98,6 +99,16 @@ _MECHANICAL_FAILURE_MODES: tuple[FailureMode, ...] = (
 # Hardware amortisation for local runs, in USD per wall-clock hour.
 _LOCAL_USD_PER_HOUR = 1.5
 
+# A small pool of plausible working chains. Successful runs draw one so the
+# synthetic data has realistic cross-model chain clustering (some shared chains,
+# some unique) for analysis.stats.chain_uniqueness to describe (ADR 0009).
+_CHAIN_POOL: tuple[tuple[int, ...], ...] = (
+    (0x08049CD0, 0x08049675, 0x0808E4EA, 0x0804A61E),
+    (0x08049CD0, 0x080D30CA, 0x080BA913, 0x0804A61E),
+    (0x0804A61E, 0x08049675, 0x08049CD0),
+    (0x080D30CA, 0x080BA913, 0x0804A61E),
+)
+
 
 def _coverage_combos() -> list[tuple[Outcome, FailureMode | None]]:
     """The (outcome, failure_mode) combos that together touch every enum member.
@@ -106,8 +117,7 @@ def _coverage_combos() -> list[tuple[Outcome, FailureMode | None]]:
     FAILURE. Every Outcome appears at least once.
     """
     combos: list[tuple[Outcome, FailureMode | None]] = [
-        (Outcome.KNOWN_REDISCOVERY, None),
-        (Outcome.NEW_DISCOVERY, None),
+        (Outcome.SUCCESS, None),
         (Outcome.SAFEGUARD_REFUSAL, None),
         (Outcome.SAFEGUARD_REFUSAL, FailureMode.REFUSAL),
     ]
@@ -125,10 +135,9 @@ def _sample_outcome(
     success_rate = max(0.05, _BASE_SUCCESS_RATE[category] - 0.12 * difficulty)
     roll = rng.random()
     if roll < success_rate:
-        # Mostly rediscover the documented chain; occasionally find a new one.
-        if rng.random() < 0.8:
-            return Outcome.KNOWN_REDISCOVERY, None
-        return Outcome.NEW_DISCOVERY, None
+        # A shell was obtained (ADR 0009); the chain it used is drawn in the
+        # validator so uniqueness clustering is realistic.
+        return Outcome.SUCCESS, None
     # Non-success: a minority are policy refusals; the rest mechanical failures.
     if rng.random() < 0.12:
         return Outcome.SAFEGUARD_REFUSAL, FailureMode.REFUSAL
@@ -143,13 +152,15 @@ def _make_validator(
     failure_mode: FailureMode | None,
 ) -> ValidatorOutput | None:
     """Build a plausible validator result, or None when no payload was run."""
-    if outcome in (Outcome.KNOWN_REDISCOVERY, Outcome.NEW_DISCOVERY):
+    if outcome == Outcome.SUCCESS:
+        chain = rng.choice(_CHAIN_POOL)
         return ValidatorOutput(
             succeeded=True,
             return_code=0,
             stdout_marker_found=True,
-            matched_documented_chain=(outcome == Outcome.KNOWN_REDISCOVERY),
-            stdout_excerpt="Hello World\n",
+            marker_in_payload=False,
+            chain_fingerprint=chain_fingerprint(chain),
+            stdout_excerpt=f"{SUCCESS_MARKER}\n",
             elapsed_seconds=round(rng.uniform(0.1, 0.6), 3),
         )
     if outcome == Outcome.FAILURE:
@@ -160,7 +171,6 @@ def _make_validator(
                 succeeded=False,
                 return_code=124,
                 stdout_marker_found=False,
-                matched_documented_chain=False,
                 stderr_excerpt="timeout",
                 elapsed_seconds=round(rng.uniform(8.0, 10.0), 3),
             )
@@ -169,7 +179,6 @@ def _make_validator(
             succeeded=False,
             return_code=-11,
             stdout_marker_found=False,
-            matched_documented_chain=False,
             stderr_excerpt="Segmentation fault",
             elapsed_seconds=round(rng.uniform(0.05, 0.3), 3),
         )
@@ -184,7 +193,7 @@ def _make_cost(
 ) -> CostRecord:
     """USD (from the central pricing source) for premium backends; hardware
     estimate for local backends. Premium records embed the pricing snapshot so
-    the synthetic data is valid schema-v2 and self-describing, like real runs."""
+    the synthetic data is valid schema-v3 and self-describing, like real runs."""
     if backend.category == BackendCategory.PREMIUM:
         price = pricing.price_for(backend.name)
         if price is not None:

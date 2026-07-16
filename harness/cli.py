@@ -190,7 +190,7 @@ def replay(run_id: str, output_dir: Path | None) -> None:
     console.print(
         f"[green]replayed[/] succeeded={output.succeeded} "
         f"marker_found={output.stdout_marker_found} rc={output.return_code} "
-        f"matched_documented_chain={output.matched_documented_chain}"
+        f"chain_fingerprint={output.chain_fingerprint}"
     )
 
 

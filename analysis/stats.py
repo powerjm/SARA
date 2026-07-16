@@ -10,6 +10,8 @@ Implements the inference plan from the Scientific Method Worksheet:
   * Wilson score interval    — small-n confidence intervals for success rates.
   * Bonferroni correction    — applied at the call site, helper provided here.
   * Effect sizes             — Cohen's g, Kendall's W, matched-pairs r.
+  * Chain uniqueness         — descriptive, cross-model: how many distinct working
+                               chains a binary has and how rare each is (ADR 0009).
 
 Inputs are paired-by-binary matrices: rows are binaries, columns are backends.
 For outcomes, cells are 0/1 (success / non-success). For time/cost/iterations,
@@ -36,6 +38,7 @@ References
 from __future__ import annotations
 
 import math
+from collections import defaultdict
 from collections.abc import Sequence
 from dataclasses import dataclass
 from itertools import combinations
@@ -373,13 +376,67 @@ def pairwise_labels(labels: Sequence[str]) -> list[tuple[str, str]]:
     return list(combinations(labels, 2))
 
 
+# --------------------------------------------------------------------------- #
+# Chain uniqueness (ADR 0009)                                                 #
+# --------------------------------------------------------------------------- #
+
+
+@dataclass(frozen=True, slots=True)
+class ChainUniqueness:
+    """Cross-model chain uniqueness for one binary (ADR 0009).
+
+    Repurposes the ADR 0003 chain fingerprint: instead of matching one
+    documented chain, it clusters the fingerprints of *working* chains across
+    backends to describe how many distinct exploits exist and how rare each is.
+    """
+
+    binary_id: str
+    n_success_runs: int  # successful runs with a recorded fingerprint
+    n_distinct_chains: int  # distinct fingerprints among them
+    n_unique_chains: int  # chains found by exactly one backend
+    distinct_ratio: float  # n_distinct_chains / n_success_runs (0.0 if none)
+    unique_discoverers: tuple[str, ...]  # backends that solely found >= 1 chain
+
+
+def chain_uniqueness(binary_id: str, backend_chains: Sequence[tuple[str, str]]) -> ChainUniqueness:
+    """Summarise the distinct working chains for one binary across backends.
+
+    ``backend_chains`` is the per-binary list of ``(backend_name,
+    chain_fingerprint)`` pairs from ``analysis.aggregate.collect_success_chains``
+    — one entry per successful run that committed a chain. A chain is *unique*
+    when exactly one backend produced it; a backend is a *unique discoverer* when
+    it solely produced at least one chain. An empty input yields an all-zero
+    summary (no successes to cluster).
+    """
+    backends_by_chain: dict[str, set[str]] = defaultdict(set)
+    for backend_name, fingerprint in backend_chains:
+        backends_by_chain[fingerprint].add(backend_name)
+
+    n_success = len(backend_chains)
+    n_distinct = len(backends_by_chain)
+    unique_discoverers = sorted(
+        {next(iter(backends)) for backends in backends_by_chain.values() if len(backends) == 1}
+    )
+    n_unique = sum(1 for backends in backends_by_chain.values() if len(backends) == 1)
+    return ChainUniqueness(
+        binary_id=binary_id,
+        n_success_runs=n_success,
+        n_distinct_chains=n_distinct,
+        n_unique_chains=n_unique,
+        distinct_ratio=(n_distinct / n_success if n_success else 0.0),
+        unique_discoverers=tuple(unique_discoverers),
+    )
+
+
 __all__ = [
+    "ChainUniqueness",
     "CochranQResult",
     "FriedmanResult",
     "McNemarResult",
     "WilcoxonResult",
     "WilsonCI",
     "bonferroni_alpha",
+    "chain_uniqueness",
     "cochrans_q",
     "friedman",
     "mcnemar_exact",

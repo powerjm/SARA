@@ -43,7 +43,7 @@ def test_valid_record_satisfies_invariants(record: RunRecord) -> None:
     """The three outcome/failure-mode invariants hold for every valid record."""
     if record.outcome == Outcome.FAILURE:
         assert record.failure_mode is not None
-    elif record.outcome in (Outcome.KNOWN_REDISCOVERY, Outcome.NEW_DISCOVERY):
+    elif record.outcome == Outcome.SUCCESS:
         assert record.failure_mode is None
     elif record.outcome == Outcome.SAFEGUARD_REFUSAL:
         assert record.failure_mode in (None, FailureMode.REFUSAL)

@@ -113,7 +113,6 @@ def run_one(
         strategy=prompts.get(strategy),
         tools=tools or ToolLayer(),
         success_marker=spec.success_marker,
-        documented_chain_fingerprint=spec.documented_chain_fingerprint,
         validator_image=settings.validator_image,
         validator_client=validator_client,
         validator_timeout_seconds=settings.validator_timeout_seconds,
@@ -177,7 +176,6 @@ def replay_run(
         spec.binary_path,
         payload_path,
         success_marker=spec.success_marker,
-        documented_chain_fingerprint=spec.documented_chain_fingerprint,
         client=validator_client,
     )
     return record, output
@@ -214,7 +212,6 @@ def verify_binary(
             payload_path,
             success_marker=spec.success_marker,
             candidate_chain=chain_addresses,
-            documented_chain_fingerprint=spec.documented_chain_fingerprint,
             client=validator_client,
         )
 

@@ -80,13 +80,17 @@ def cost_records() -> st.SearchStrategy[CostRecord]:
     return st.builds(CostRecord, usd=nonneg_floats, hardware_usd_estimate=nonneg_floats)
 
 
+chain_fingerprints = st.none() | st.text(alphabet="0123456789abcdef", min_size=64, max_size=64)
+
+
 def validator_outputs() -> st.SearchStrategy[ValidatorOutput]:
     return st.builds(
         ValidatorOutput,
         succeeded=st.booleans(),
         return_code=return_codes,
         stdout_marker_found=st.booleans(),
-        matched_documented_chain=st.booleans(),
+        marker_in_payload=st.booleans(),
+        chain_fingerprint=chain_fingerprints,
         stdout_excerpt=safe_text,
         stderr_excerpt=safe_text,
         elapsed_seconds=nonneg_floats,
@@ -101,10 +105,7 @@ def validator_outputs() -> st.SearchStrategy[ValidatorOutput]:
 def valid_outcome_failure() -> st.SearchStrategy[tuple[Outcome, FailureMode | None]]:
     """Every (outcome, failure_mode) pairing the schema accepts."""
     return st.one_of(
-        st.tuples(
-            st.sampled_from([Outcome.KNOWN_REDISCOVERY, Outcome.NEW_DISCOVERY]),
-            st.none(),
-        ),
+        st.tuples(st.just(Outcome.SUCCESS), st.none()),
         st.tuples(st.just(Outcome.FAILURE), st.sampled_from(list(FailureMode))),
         st.tuples(
             st.just(Outcome.SAFEGUARD_REFUSAL),
@@ -119,9 +120,9 @@ def failure_without_mode() -> st.SearchStrategy[tuple[Outcome, None]]:
 
 
 def success_with_mode() -> st.SearchStrategy[tuple[Outcome, FailureMode]]:
-    """Invalid: success outcomes must not carry a failure_mode."""
+    """Invalid: a success outcome must not carry a failure_mode."""
     return st.tuples(
-        st.sampled_from([Outcome.KNOWN_REDISCOVERY, Outcome.NEW_DISCOVERY]),
+        st.just(Outcome.SUCCESS),
         st.sampled_from(list(FailureMode)),
     )
 

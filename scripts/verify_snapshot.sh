@@ -107,7 +107,6 @@ for run_dir in runs:
         spec.binary_path,
         payload,
         success_marker=spec.success_marker,
-        documented_chain_fingerprint=spec.documented_chain_fingerprint,
     )
     same_success = out.succeeded == record.validator.succeeded
     same_marker = out.stdout_marker_found == record.validator.stdout_marker_found
