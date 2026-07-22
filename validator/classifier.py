@@ -52,6 +52,14 @@ def classify(
         return Outcome.FAILURE, FailureMode.BUDGET_EXHAUSTED
     if reason == "tool_use_malformed":
         return Outcome.FAILURE, FailureMode.TOOL_USE_MALFORMED
+    if reason == "truncated":
+        # The model's reply kept hitting the per-call output cap, so its tool
+        # call never arrived intact even after the bounded retries (ADR 0013).
+        # Distinct in the trace's ``termination_reason``; folded into OTHER here
+        # to keep TOOL_USE_MALFORMED reserved for genuinely malformed submissions
+        # (a within-budget bad tool call) and BUDGET_EXHAUSTED for the run-level
+        # token/iteration/wall-clock caps.
+        return Outcome.FAILURE, FailureMode.OTHER
     if validator_output is not None and validator_output.elapsed_seconds <= 0:
         # Validator never ran (no candidate submitted): treat as other.
         return Outcome.FAILURE, FailureMode.OTHER

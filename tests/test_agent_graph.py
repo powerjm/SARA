@@ -32,6 +32,7 @@ from agent.graph import (
     node_reason,
     node_validate,
     route_after_reason,
+    route_after_validate,
 )
 from agent.state import AgentState, BinaryContext, Message
 from agent.tools import ToolLayer
@@ -69,17 +70,20 @@ def test_propose_advances_iteration() -> None:
     assert out.iteration == 1
 
 
-def test_validate_terminates_state() -> None:
+def test_validate_without_pending_does_not_execute_or_terminate() -> None:
+    # ADR 0014: with no staged candidate (pending_validation False), validate is
+    # a no-op that loops back to reason — it does not run docker or terminate.
     s = _state()
     out = node_validate(s)
-    assert out.terminated is True
-    assert out.termination_reason is not None
+    assert out.terminated is False
+    assert out.validation_attempts == 0
+    assert out.iteration == 1
 
 
-def test_route_when_terminated_goes_to_validate() -> None:
+def test_route_when_terminated_goes_to_finalize() -> None:
     s = _state()
     s.terminated = True
-    assert route_after_reason(s) == "validate"
+    assert route_after_reason(s) == "finalize"
 
 
 def test_route_when_assistant_has_tool_calls_loops_to_enumerate() -> None:
@@ -90,20 +94,31 @@ def test_route_when_assistant_has_tool_calls_loops_to_enumerate() -> None:
     assert route_after_reason(s) == "enumerate"
 
 
-def test_route_when_candidate_payload_present_goes_to_validate() -> None:
+def test_route_candidate_payload_no_longer_shortcuts_to_validate() -> None:
+    # ADR 0014: validation is submit-driven; a committed payload with no fresh
+    # tool call no longer forces validate — it takes the normal no-tool-call path.
     s = _state()
     s.candidate_payload_path = Path("/tmp/payload.bin")
-    assert route_after_reason(s) == "validate"
+    s.messages.append(Message(role="assistant", content="done"))
+    assert route_after_reason(s) == "reason"  # nudge, not validate
+
+
+def test_route_after_validate_success_finalizes_else_reason() -> None:
+    # A successful execution terminates -> finalize; a failed one loops to reason.
+    s = _state()
+    assert route_after_validate(s) == "reason"
+    s.terminated = True
+    assert route_after_validate(s) == "finalize"
 
 
 def test_route_no_tool_call_nudges_then_gives_up() -> None:
     # A no-tool-call turn loops back for bounded nudges (ADR 0012), then gives up
-    # via propose once the nudge budget is spent.
+    # to finalize once the nudge budget is spent (ADR 0014).
     s = _state()
     s.messages.append(Message(role="assistant", content="final answer"))
     assert route_after_reason(s) == "reason"  # nudge_count 0 < default max_nudges
     s.nudge_count = 2  # default max_nudges
-    assert route_after_reason(s) == "propose"
+    assert route_after_reason(s) == "finalize"
 
 
 def test_route_no_tool_call_gives_up_when_nudges_disabled() -> None:
@@ -111,7 +126,7 @@ def test_route_no_tool_call_gives_up_when_nudges_disabled() -> None:
     s.messages.append(Message(role="assistant", content="final answer"))
     assert route_after_reason(
         s, AgentConfig(strategy=STRATEGY, tools=ToolLayer(), max_nudges=0)
-    ) == ("propose")
+    ) == ("finalize")
 
 
 def test_classify_success_returns_success() -> None:

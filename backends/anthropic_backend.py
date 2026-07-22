@@ -60,6 +60,13 @@ class AnthropicBackend(Backend):
 
     category = BackendCategory.PREMIUM
 
+    # Some Anthropic models (the opus reasoning line) deprecated the
+    # ``temperature`` sampling param and return 400 ("temperature is deprecated
+    # for this model") if it is sent, so the backend omits it for those models —
+    # their runs are non-deterministic, an API limitation, mirroring the gpt-5
+    # handling in OpenAIBackend. Sonnet still accepts and honors it.
+    _MODELS_WITHOUT_TEMPERATURE: frozenset[str] = frozenset({"claude-opus-4-7"})
+
     def __init__(
         self,
         model: str = "claude-sonnet-4-6",
@@ -67,10 +74,15 @@ class AnthropicBackend(Backend):
         temperature: float = 0.2,
         seed: int | None = 0,
         api_key: str | None = None,
+        client: Any = None,
     ) -> None:
         super().__init__(temperature=temperature, seed=seed)
         self.name = model
         self.version = model
+        # An injected client (tests) skips the key requirement and SDK import.
+        if client is not None:
+            self._client = client
+            return
         self._api_key = api_key or os.environ.get("ANTHROPIC_API_KEY")
         if not self._api_key:
             raise RuntimeError("ANTHROPIC_API_KEY not set. Put it in .env or export it.")
@@ -95,8 +107,9 @@ class AnthropicBackend(Backend):
             "messages": api_messages,
             "tools": api_tools or None,
             "max_tokens": max_tokens,
-            "temperature": self.temperature,
         }
+        if self.name not in self._MODELS_WITHOUT_TEMPERATURE:
+            kwargs["temperature"] = self.temperature
         if system is not None:
             kwargs["system"] = system
         resp = self._client.messages.create(**kwargs)  # type: ignore[no-untyped-call]

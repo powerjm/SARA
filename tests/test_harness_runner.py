@@ -110,10 +110,11 @@ def test_run_one_writes_valid_run_directory(fixture_corpus: Any, tmp_path: Path)
     assert reloaded.run_id == record.run_id
     assert reloaded.outcome == Outcome.FAILURE
 
-    # trace.jsonl: one JSON object per node transition (5 nodes).
+    # trace.jsonl: one JSON object per node transition. A one-shot give-up
+    # (max_nudges=0) ends at finalize without submitting (ADR 0014).
     trace_lines = (run_dir / persistence.TRACE_NAME).read_text(encoding="utf-8").splitlines()
     nodes = [json.loads(line)["node"] for line in trace_lines]
-    assert nodes == ["ingest", "enumerate", "reason", "propose", "validate"]
+    assert nodes == ["ingest", "enumerate", "reason", "finalize"]
 
 
 def test_run_one_giveup_has_no_payload(fixture_corpus: Any, tmp_path: Path) -> None:

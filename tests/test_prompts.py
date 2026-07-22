@@ -61,6 +61,34 @@ def test_strategy_is_well_formed(name: str) -> None:
     assert "submit_payload" in strategy.system_prompt + strategy.tool_use_guidance + task
 
 
+@pytest.mark.parametrize("name", sorted(prompts.STRATEGIES))
+def test_every_strategy_states_the_success_criterion(name: str) -> None:
+    """Every strategy must tell the model exactly what success requires — the
+    marker string and the spawn-a-shell goal the validator scores (ADR 0009) —
+    so the strategies differ in reasoning approach, not in goal knowledge. A
+    strategy that omits this makes the task unwinnable (the marker is in neither
+    the prompt nor the binaries) and confounds the cross-strategy comparison.
+    """
+    system = prompts.get(name).system_prompt
+    from validator.runner import SUCCESS_MARKER
+
+    assert SUCCESS_MARKER in system  # the exact marker, e.g. "HELLO SANS"
+    assert "/bin/sh" in system  # the spawn-a-shell objective
+    # The anti-echo constraint must be disclosed too, or knowing the marker is a
+    # trap (echoing it fails).
+    assert "anti-echo" in system.lower() or "not copied from your input" in system.lower()
+
+
+@pytest.mark.parametrize("name", sorted(prompts.STRATEGIES))
+def test_every_strategy_invites_iterative_testing(name: str) -> None:
+    """Every strategy must tell the model it can execute candidates repeatedly
+    (ADR 0014); otherwise it tends to enumerate forever and never test a payload,
+    leaving the iterative-validation loop unused."""
+    system = prompts.get(name).system_prompt.lower()
+    assert "submit_payload" in system
+    assert "as many times" in system or "run your payload" in system
+
+
 def test_get_unknown_strategy_raises() -> None:
     with pytest.raises(KeyError):
         prompts.get("wishful_thinking")

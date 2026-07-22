@@ -158,6 +158,7 @@ def batch(config: Path, dry_run: bool) -> None:
     console.print(
         f"[green]batch done[/] executed={len(result.executed)} "
         f"skipped(existing)={result.skipped_existing} "
+        f"errored={result.errored} "
         f"halted={sorted(result.halted_backends) or 'none'}"
     )
 

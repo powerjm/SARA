@@ -161,6 +161,37 @@ def test_run_batch_executes_full_matrix(fixture_corpus: Any, tmp_path: Path) -> 
     assert len(list(persistence.iter_records(cfg.output_dir))) == 8
 
 
+def test_run_batch_survives_a_run_that_raises(fixture_corpus: Any, tmp_path: Path) -> None:
+    # A run raising (e.g. a backend 400/connection error) must not abort the
+    # batch: it is counted as errored, not persisted, and the batch keeps going.
+    cfg = BatchConfig.from_yaml(_write_config(tmp_path, output_dir=tmp_path / "runs"))
+
+    def boom(*_a: Any, **_k: Any) -> Any:
+        raise RuntimeError("backend exploded")
+
+    result = run_batch(cfg, backend_resolver=_giveup_resolver(), run_one_fn=boom)
+    assert result.errored == 8  # every planned run raised
+    assert result.executed == []
+    # Nothing persisted, so a re-run retries them all (resume-safe).
+    assert completed_counts(cfg.output_dir) == {}
+
+
+def test_run_batch_isolates_a_failing_backend(fixture_corpus: Any, tmp_path: Path) -> None:
+    # One backend erroring (the claude-opus temperature 400 incident) must not
+    # take down the others: its cells error, the healthy backend still completes.
+    cfg = BatchConfig.from_yaml(_write_config(tmp_path, output_dir=tmp_path / "runs"))
+
+    def selective(spec: Any, backend: Any, strategy: str, settings: RunSettings, **kw: Any) -> Any:
+        if kw.get("backend_handle") == "claude-opus":
+            raise RuntimeError("temperature is deprecated for this model")
+        return _batch_run_one(spec, backend, strategy, settings, **kw)
+
+    result = run_batch(cfg, backend_resolver=_giveup_resolver(), run_one_fn=selective)
+    assert result.errored == 4  # 1 binary × 2 strategies × 2 replicates for opus
+    assert len(result.executed) == 4
+    assert {r.backend_handle for r in result.executed} == {"claude-sonnet"}
+
+
 def test_run_batch_resumes_without_redoing(fixture_corpus: Any, tmp_path: Path) -> None:
     cfg = BatchConfig.from_yaml(_write_config(tmp_path, output_dir=tmp_path / "runs"))
     # First pass: run everything.

@@ -206,6 +206,11 @@ class BatchResult:
     skipped_existing: int = 0
     halted_backends: set[str] = field(default_factory=set)
     interrupted: bool = False
+    # Runs that raised (backend/API/validator error) and were skipped so the
+    # batch keeps going; re-running the batch retries them (nothing was persisted
+    # for a skipped run). Kept visible in the summary so a systematic failure is
+    # not silently swallowed.
+    errored: int = 0
 
 
 # A factory mapping a backend *cell name* to the registry name used to resolve it
@@ -251,14 +256,29 @@ def run_batch(
                     break
                 spec = resolve_binary(cell.binary_id)
                 backend = backend_resolver(cell.backend)
-                record = run_one_fn(
-                    spec,
-                    backend,
-                    cell.strategy,
-                    settings,
-                    validator_client=validator_client,
-                    backend_handle=cell.backend,
-                )
+                try:
+                    record = run_one_fn(
+                        spec,
+                        backend,
+                        cell.strategy,
+                        settings,
+                        validator_client=validator_client,
+                        backend_handle=cell.backend,
+                    )
+                except Exception as exc:
+                    # A single run raising (backend/API/validator error) must not
+                    # abort a multi-day batch. Skip it (nothing was persisted, so a
+                    # re-run retries it) and keep going; the error is emitted so a
+                    # systematic failure is visible, not silently swallowed.
+                    # KeyboardInterrupt is a BaseException and still propagates to
+                    # the resume-clean handler below.
+                    result.errored += 1
+                    emit(
+                        f"ERROR {cell.binary_id} / {cell.backend} / {cell.strategy} "
+                        f"[{replicate + 1}/{config.replicates}]: {type(exc).__name__}: {exc} "
+                        "— skipped; re-run to retry"
+                    )
+                    continue
                 result.executed.append(record)
                 spend[cell.backend] = spend.get(cell.backend, 0.0) + record.cost.usd
                 emit(

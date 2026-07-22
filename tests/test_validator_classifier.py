@@ -86,3 +86,12 @@ def test_classify_no_validator_output_is_failure_other() -> None:
     outcome, fm = classify(_state("agent_gave_up"), None)
     assert outcome == Outcome.FAILURE
     assert fm == FailureMode.OTHER
+
+
+def test_classify_truncated_is_failure_other_not_malformed() -> None:
+    # A reply repeatedly cut off at the output cap (ADR 0013) folds into OTHER,
+    # kept distinct from a genuinely malformed (within-budget) tool use.
+    outcome, fm = classify(_state("truncated"), None)
+    assert outcome == Outcome.FAILURE
+    assert fm == FailureMode.OTHER
+    assert fm != FailureMode.TOOL_USE_MALFORMED

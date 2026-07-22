@@ -95,10 +95,23 @@ class AgentState:
     # no tool call (bounded by AgentConfig.max_nudges; ADR 0012).
     nudge_count: int = 0
 
+    # Count of reason turns re-issued because the model's reply hit the output
+    # -token cap and was truncated mid-tool-call (bounded by
+    # AgentConfig.max_truncation_retries; ADR 0013).
+    truncation_retries: int = 0
+
+    # Iterative validation (ADR 0014): the agent may execute candidate payloads
+    # repeatedly, each result fed back so it can revise. ``pending_validation`` is
+    # set by ``propose`` when it decodes a fresh candidate and consumed by
+    # ``validate``; ``validation_attempts`` counts executions for the trace.
+    pending_validation: bool = False
+    validation_attempts: int = 0
+
     # Terminal state markers (set by graph nodes; harness reads them on exit).
     terminated: bool = False
     termination_reason: str | None = None
-    # one of: "success" | "budget" | "refusal" | "tool_use_malformed" | "agent_gave_up"
+    # one of: "success" | "budget" | "refusal" | "tool_use_malformed"
+    #       | "truncated" | "agent_gave_up"
 
 
 __all__ = ["AgentState", "BinaryContext", "Message", "ToolObservation"]

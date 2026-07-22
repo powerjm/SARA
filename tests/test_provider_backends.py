@@ -256,6 +256,42 @@ def test_lmstudio_sends_legacy_max_tokens_and_sampling() -> None:
     assert captured["seed"] == 0
 
 
+def _capturing_anthropic_client() -> tuple[Any, dict[str, Any]]:
+    captured: dict[str, Any] = {}
+    resp = SimpleNamespace(
+        content=[SimpleNamespace(type="text", text="ok")],
+        usage=SimpleNamespace(input_tokens=1, output_tokens=1),
+        model_dump=lambda: {"stop_reason": "end_turn"},
+    )
+
+    def create(**kwargs: Any) -> Any:
+        captured.update(kwargs)
+        return resp
+
+    client = SimpleNamespace(messages=SimpleNamespace(create=create))
+    return client, captured
+
+
+def test_anthropic_sonnet_sends_temperature() -> None:
+    from backends.anthropic_backend import AnthropicBackend
+
+    client, captured = _capturing_anthropic_client()
+    AnthropicBackend(model="claude-sonnet-4-6", client=client).chat(_MESSAGES, _TOOLS, 256)
+    assert captured["temperature"] == 0.2
+    assert captured["max_tokens"] == 256
+
+
+def test_anthropic_opus_omits_deprecated_temperature() -> None:
+    # claude-opus-4-7 400s if temperature is sent ("deprecated for this model"),
+    # so the backend must omit it — mirrors the gpt-5 handling.
+    from backends.anthropic_backend import AnthropicBackend
+
+    client, captured = _capturing_anthropic_client()
+    AnthropicBackend(model="claude-opus-4-7", client=client).chat(_MESSAGES, _TOOLS, 256)
+    assert "temperature" not in captured
+    assert captured["max_tokens"] == 256
+
+
 def test_gemini_sanitize_strips_unsupported_schema_keys() -> None:
     schema = {
         "type": "object",

@@ -76,6 +76,11 @@ class RunSettings:
     # Bounded "you must call a tool" nudges before a no-tool-call turn gives up
     # (ADR 0012); 0 restores the one-shot give-up.
     max_nudges: int = 2
+    # Per-call output cap and bounded retries when a reply is cut off at that cap
+    # mid-tool-call (ADR 0013). 16k avoids the truncation that made verbose
+    # reasoning turns misclassify as tool_use_malformed.
+    max_tokens_per_call: int = 16_384
+    max_truncation_retries: int = 2
     validator_image: str | None = None
     validator_timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS
 
@@ -88,6 +93,8 @@ class RunSettings:
             wall_clock_cap_seconds=_env_float("RUN_WALL_CLOCK_CAP_SECONDS", 1800.0),
             max_iterations=_env_int("RUN_MAX_ITERATIONS", 8),
             max_nudges=_env_int("RUN_MAX_NUDGES", 2),
+            max_tokens_per_call=_env_int("RUN_MAX_TOKENS_PER_CALL", 16_384),
+            max_truncation_retries=_env_int("RUN_MAX_TRUNCATION_RETRIES", 2),
             validator_image=os.environ.get("VALIDATOR_IMAGE"),
             validator_timeout_seconds=_env_int(
                 "VALIDATOR_TIMEOUT_SECONDS", DEFAULT_TIMEOUT_SECONDS
@@ -164,6 +171,11 @@ def run_one(
         wall_clock_cap_seconds=float(settings.wall_clock_cap_seconds),
         max_iterations=settings.max_iterations,
         max_nudges=settings.max_nudges,
+        max_tokens_per_call=settings.max_tokens_per_call,
+        max_truncation_retries=settings.max_truncation_retries,
+        # Iterative validation (ADR 0014) spends up to ~3 supersteps per reason
+        # turn; give the superstep backstop headroom above ~3x max_iterations.
+        recursion_limit=max(128, settings.max_iterations * 12),
     )
 
     trace_file = partial / persistence.TRACE_NAME

@@ -35,7 +35,7 @@ from harness.record import FailureMode, Outcome, PromptingStrategy, RunRecord
 from mcp_servers.ropgadget.parser import Gadget
 from mcp_servers.ropgadget.server import EnumerateResult
 from validator.runner import chain_fingerprint
-from validator.runner_test_helpers import succeeding_client
+from validator.runner_test_helpers import FakeContainer, succeeding_client
 
 # --------------------------------------------------------------------------- #
 # Helpers                                                                     #
@@ -231,9 +231,13 @@ def test_enumerate_loop_then_submit(
 
     assert backend.calls_made == 2
     assert result.outcome == Outcome.SUCCESS
-    # The agent's explicit enumerate call is a tool result; the harness baseline
-    # enumeration is presented as user context (ADR 0011), not an orphan tool msg.
-    assert len([m for m in result.state.messages if m.role == "tool"]) == 1
+    # Tool results now: the model's explicit enumerate call, plus the execution
+    # feedback from validate (ADR 0014). The harness baseline enumeration is still
+    # user context (ADR 0011), not an orphan tool message.
+    tool_msgs = [m for m in result.state.messages if m.role == "tool"]
+    assert len(tool_msgs) == 2
+    assert any("ROP gadgets" in m.content for m in tool_msgs)  # explicit enumerate result
+    assert any("EXECUTION SUCCEEDED" in m.content for m in tool_msgs)  # validate feedback
     assert any(
         m.role == "user" and m.content.startswith("Baseline gadget enumeration:")
         for m in result.state.messages
@@ -279,3 +283,101 @@ def test_token_budget_halts_before_overspending(sample_overflow_path: Path, tmp_
     assert result.failure_mode == FailureMode.BUDGET_EXHAUSTED
     # Two rounds spend 2000 tokens (> 1500), so the third is refused.
     assert backend.calls_made == 2
+
+
+# --------------------------------------------------------------------------- #
+# Iterative validation (ADR 0014): run -> observe -> revise                    #
+# --------------------------------------------------------------------------- #
+
+
+class _SequencedContainers:
+    """``client.containers`` returning a different container per ``run`` call, so
+    a test can script fail-then-succeed executions. The last entry repeats."""
+
+    def __init__(self, containers: list[Any]) -> None:
+        self._containers = list(containers)
+        self.run_calls: list[dict[str, Any]] = []
+
+    def run(self, image: str, **kwargs: Any) -> Any:
+        self.run_calls.append({"image": image, **kwargs})
+        return self._containers.pop(0) if len(self._containers) > 1 else self._containers[0]
+
+
+class _SequencedClient:
+    def __init__(self, containers: list[Any]) -> None:
+        self.containers = _SequencedContainers(containers)
+
+
+def _fail() -> FakeContainer:
+    return FakeContainer(status_code=139, stdout=b"")  # segfault, marker absent
+
+
+def _succeed() -> FakeContainer:
+    return FakeContainer(status_code=0, stdout=b"Hello World\n")  # marker present
+
+
+def test_failed_execution_feeds_back_and_retries_to_success(
+    sample_overflow_path: Path, documented_exploit: Any, tmp_path: Path
+) -> None:
+    """A non-marker execution loops back to reason; the next submit succeeds."""
+    payload = documented_exploit.build_payload()
+    addrs = [f"0x{a:x}" for a in _documented_addresses(documented_exploit)]
+    backend = FakeBackend(
+        script=[_submit_turn(payload.hex(), addrs), _submit_turn(payload.hex(), addrs)]
+    )
+    client = _SequencedClient([_fail(), _succeed()])
+
+    result = run_agent(
+        backend, _binary(sample_overflow_path), _config(tmp_path, validator_client=client)
+    )
+
+    assert backend.calls_made == 2  # first submit failed, model tried again
+    assert result.state.validation_attempts == 2
+    assert result.outcome == Outcome.SUCCESS
+    # The failed execution was reported back to the model as a tool result.
+    assert any(m.role == "tool" and "did NOT succeed" in m.content for m in result.state.messages)
+
+
+def test_all_executions_fail_hits_iteration_ceiling(
+    sample_overflow_path: Path, documented_exploit: Any, tmp_path: Path
+) -> None:
+    """Repeated failing executions loop until the iteration ceiling, not forever."""
+    payload = documented_exploit.build_payload()
+    addrs = [f"0x{a:x}" for a in _documented_addresses(documented_exploit)]
+    backend = FakeBackend(script=[_submit_turn(payload.hex(), addrs) for _ in range(6)])
+    client = _SequencedClient([_fail()])  # always fails
+
+    result = run_agent(
+        backend,
+        _binary(sample_overflow_path),
+        _config(tmp_path, validator_client=client, max_iterations=3),
+    )
+
+    assert result.outcome == Outcome.FAILURE
+    assert result.failure_mode == FailureMode.BUDGET_EXHAUSTED
+    assert backend.calls_made == 3  # bounded by max_iterations, not the 6 scripted
+    assert result.state.validation_attempts == 3
+
+
+def test_malformed_payload_is_now_retryable_not_terminal(
+    sample_overflow_path: Path, documented_exploit: Any, tmp_path: Path
+) -> None:
+    """An undecodable payload_hex is fed back for correction, not a dead end."""
+    payload = documented_exploit.build_payload()
+    addrs = [f"0x{a:x}" for a in _documented_addresses(documented_exploit)]
+    bad = ScriptedTurn(
+        text="submitting",
+        tool_calls=[{"id": "s0", "name": "submit_payload", "input": {"payload_hex": "nothex!!"}}],
+    )
+    backend = FakeBackend(script=[bad, _submit_turn(payload.hex(), addrs)])
+
+    result = run_agent(
+        backend,
+        _binary(sample_overflow_path),
+        _config(tmp_path, validator_client=succeeding_client(b"Hello World\n")),
+    )
+
+    assert backend.calls_made == 2
+    assert result.state.validation_attempts == 1  # only the valid payload ran
+    assert result.outcome == Outcome.SUCCESS
+    assert any(m.role == "tool" and "Could not decode" in m.content for m in result.state.messages)

@@ -1,7 +1,7 @@
 # SARA paper diagrams
 
 This directory contains one clean or layered publication-oriented raster figure
-for each of nine architecture subjects. The discarded contract, journal, and
+for each of ten architecture subjects. The discarded contract, journal, and
 blueprint variants have been removed.
 
 The figures reflect ADRs 0010–0012: text-format action recovery, provider-valid
@@ -15,6 +15,10 @@ label and control-flow accuracy against the current working tree.
 ## Experiment data flow
 
 ![Layered experiment data flow](experiment_data_flow/experiment_data_flow_a_layered.png)
+
+## Experiment configuration
+
+![Clean experiment configuration](experiment_configuration/experiment_configuration_clean.png)
 
 ## Agent loop
 
@@ -61,6 +65,10 @@ Subject-specific content:
 - **Experiment data flow:** binary × backend × strategy, five replicates per
   cell, one `RunRecord` per run, `ANY`-success and median aggregation rules,
   refusal separation, paired statistics, and findings.
+- **Experiment configuration:** the exact `experiments.yaml` matrix—10 binaries,
+  11 backend handles, four strategies, five replicates, 440 cells and 2,200
+  planned runs—plus per-run limits, hosted-backend cost caps, output directory,
+  and overrides.
 - **Agent loop:** `INGEST → ENUMERATE → REASON`, baseline enumeration as user
   context, native or parsed text actions, a maximum-two-nudge `REASON` self-loop,
   submit/give-up through `PROPOSE`, and budget/refusal through `VALIDATE`.
