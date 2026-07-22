@@ -65,7 +65,11 @@ def _submit_turn(payload_hex: str, addresses: list[str]) -> ScriptedTurn:
 
 
 def _giveup_backend() -> FakeBackend:
-    return FakeBackend(script=[ScriptedTurn(text="no viable chain; giving up")])
+    # A model that reasons without acting: the huge token count ends the run on
+    # the real token budget after one call (ADR 0015 — no give-up path).
+    return FakeBackend(
+        script=[ScriptedTurn(text="no viable chain; giving up", completion_tokens=10_000_000)]
+    )
 
 
 # --------------------------------------------------------------------------- #
@@ -110,11 +114,12 @@ def test_run_one_writes_valid_run_directory(fixture_corpus: Any, tmp_path: Path)
     assert reloaded.run_id == record.run_id
     assert reloaded.outcome == Outcome.FAILURE
 
-    # trace.jsonl: one JSON object per node transition. A one-shot give-up
-    # (max_nudges=0) ends at finalize without submitting (ADR 0014).
+    # trace.jsonl: one JSON object per node transition. A model that never acts
+    # reasons once, then the next reason entry trips the token budget and routes
+    # to finalize (ADR 0015): ingest, enumerate, reason, reason, finalize.
     trace_lines = (run_dir / persistence.TRACE_NAME).read_text(encoding="utf-8").splitlines()
     nodes = [json.loads(line)["node"] for line in trace_lines]
-    assert nodes == ["ingest", "enumerate", "reason", "finalize"]
+    assert nodes == ["ingest", "enumerate", "reason", "reason", "finalize"]
 
 
 def test_run_one_giveup_has_no_payload(fixture_corpus: Any, tmp_path: Path) -> None:
@@ -156,7 +161,8 @@ def test_resume_and_cost_cap_key_on_backend_handle(fixture_corpus: Any, tmp_path
     # backend.name is the model; the cell handle differs (as for every real
     # premium/local backend).
     backend = FakeBackend(
-        script=[ScriptedTurn(text="giving up", cost_usd=0.5)], name="claude-sonnet-4-6"
+        script=[ScriptedTurn(text="giving up", cost_usd=0.5, completion_tokens=10_000_000)],
+        name="claude-sonnet-4-6",
     )
     record = run_one(
         spec, backend, "zero_shot", settings, tools=_tools(), backend_handle="claude-sonnet"

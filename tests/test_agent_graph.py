@@ -24,7 +24,6 @@ from fakes.backend import FakeBackend, ScriptedTurn
 
 from agent import prompts
 from agent.graph import (
-    AgentConfig,
     classify_outcome,
     node_enumerate,
     node_ingest,
@@ -35,7 +34,6 @@ from agent.graph import (
     route_after_validate,
 )
 from agent.state import AgentState, BinaryContext, Message
-from agent.tools import ToolLayer
 from harness.record import FailureMode, Outcome
 
 STRATEGY = prompts.get("zero_shot")
@@ -111,22 +109,15 @@ def test_route_after_validate_success_finalizes_else_reason() -> None:
     assert route_after_validate(s) == "finalize"
 
 
-def test_route_no_tool_call_nudges_then_gives_up() -> None:
-    # A no-tool-call turn loops back for bounded nudges (ADR 0012), then gives up
-    # to finalize once the nudge budget is spent (ADR 0014).
+def test_route_no_tool_call_keeps_reasoning_never_gives_up() -> None:
+    # ADR 0015 (superseding ADR 0012): a no-tool-call turn is not a give-up. The
+    # agent keeps reasoning, bounded only by the real token/wall-clock budget
+    # (enforced in node_reason), never forced to act or abandoned.
     s = _state()
-    s.messages.append(Message(role="assistant", content="final answer"))
-    assert route_after_reason(s) == "reason"  # nudge_count 0 < default max_nudges
-    s.nudge_count = 2  # default max_nudges
-    assert route_after_reason(s) == "finalize"
-
-
-def test_route_no_tool_call_gives_up_when_nudges_disabled() -> None:
-    s = _state()
-    s.messages.append(Message(role="assistant", content="final answer"))
-    assert route_after_reason(
-        s, AgentConfig(strategy=STRATEGY, tools=ToolLayer(), max_nudges=0)
-    ) == ("finalize")
+    s.messages.append(Message(role="assistant", content="just thinking"))
+    assert route_after_reason(s) == "reason"
+    s.nudge_count = 99  # the old nudge budget no longer gates anything
+    assert route_after_reason(s) == "reason"
 
 
 def test_classify_success_returns_success() -> None:
@@ -208,27 +199,26 @@ def test_reason_plain_prose_yields_no_tool_calls() -> None:
     assert out.messages[-1].tool_calls is None
 
 
-# --- node_reason: retry-nudge injection (ADR 0012) ------------------------- #
+# --- node_reason: continuation after a no-tool-call turn (ADR 0015) -------- #
 
 
-def test_reason_injects_nudge_after_no_tool_call_turn() -> None:
-    # Re-entering reason after an assistant turn with no tool call appends a
-    # "call a tool" nudge and bumps the counter before the next backend call.
+def test_reason_appends_continuation_after_no_tool_call_turn() -> None:
+    # Re-entering reason after a no-tool-call turn appends a (non-coercive)
+    # continuation with the remaining budget — not a forced "call a tool" nudge.
     s = _state()
     s.messages.append(Message(role="assistant", content="just thinking out loud"))
     backend = FakeBackend(script=[ScriptedTurn(text="still thinking")])
     out = node_reason(s, backend)
-    assert out.nudge_count == 1
-    nudges = [m for m in out.messages if m.role == "user" and "did not call a tool" in m.content]
-    assert len(nudges) == 1
+    conts = [m for m in out.messages if m.role == "user" and m.content.startswith("Continue.")]
+    assert len(conts) == 1
+    assert "tokens left" in conts[0].content  # tells the agent its remaining budget
 
 
-def test_reason_does_not_nudge_on_first_entry() -> None:
+def test_reason_does_not_continue_on_first_entry() -> None:
     # Entered from enumerate (last message is the user-context baseline), not a
-    # no-tool-call assistant turn -> no nudge.
+    # no-tool-call assistant turn -> no continuation prompt.
     s = _state()
     s.messages.append(Message(role="user", content="Baseline gadget enumeration:\n..."))
     backend = FakeBackend(script=[ScriptedTurn(text="analysis")])
     out = node_reason(s, backend)
-    assert out.nudge_count == 0
-    assert not any("did not call a tool" in m.content for m in out.messages)
+    assert not any(m.content.startswith("Continue.") for m in out.messages)

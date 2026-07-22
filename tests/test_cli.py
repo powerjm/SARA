@@ -31,7 +31,12 @@ from harness.record import ValidatorOutput
 
 def _giveup_cassette(tmp_path: Path) -> Path:
     path = tmp_path / "giveup.jsonl"
-    path.write_text('{"text": "no viable chain; giving up"}\n', encoding="utf-8")
+    # Huge token count so the run ends on the real token budget after one call
+    # (ADR 0015: a no-tool-call turn no longer gives up).
+    path.write_text(
+        '{"text": "no viable chain; giving up", "completion_tokens": 10000000}\n',
+        encoding="utf-8",
+    )
     return path
 
 

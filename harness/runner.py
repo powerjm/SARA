@@ -72,9 +72,11 @@ class RunSettings:
     output_dir: Path = Path("./runs")
     token_cap: int = 200_000
     wall_clock_cap_seconds: float = 1800.0
-    max_iterations: int = 8
-    # Bounded "you must call a tool" nudges before a no-tool-call turn gives up
-    # (ADR 0012); 0 restores the one-shot give-up.
+    # Runaway backstop only (ADR 0015): the run is bounded by token_cap /
+    # wall-clock, not by a turn count. Set high so it never binds in a normal run.
+    max_iterations: int = 100
+    # Deprecated (ADR 0015 superseded ADR 0012); ignored by the harness. Kept only
+    # so RUN_MAX_NUDGES / old configs do not error.
     max_nudges: int = 2
     # Per-call output cap and bounded retries when a reply is cut off at that cap
     # mid-tool-call (ADR 0013). 16k avoids the truncation that made verbose
@@ -91,7 +93,7 @@ class RunSettings:
             output_dir=Path(os.environ.get("RUN_OUTPUT_DIR", "./runs")),
             token_cap=_env_int("RUN_TOKEN_CAP", 200_000),
             wall_clock_cap_seconds=_env_float("RUN_WALL_CLOCK_CAP_SECONDS", 1800.0),
-            max_iterations=_env_int("RUN_MAX_ITERATIONS", 8),
+            max_iterations=_env_int("RUN_MAX_ITERATIONS", 100),
             max_nudges=_env_int("RUN_MAX_NUDGES", 2),
             max_tokens_per_call=_env_int("RUN_MAX_TOKENS_PER_CALL", 16_384),
             max_truncation_retries=_env_int("RUN_MAX_TRUNCATION_RETRIES", 2),

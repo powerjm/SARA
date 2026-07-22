@@ -54,8 +54,12 @@ def _giveup_resolver(cost_usd: float = 0.0) -> Any:
     """A backend resolver returning a fresh give-up FakeBackend named for the cell."""
 
     def resolve(name: str) -> FakeBackend:
+        # Huge token count so each run ends on the real token budget after one
+        # call (ADR 0015: no give-up), keeping one backend call per cell.
         return FakeBackend(
-            script=[ScriptedTurn(text="giving up", cost_usd=cost_usd)],
+            script=[
+                ScriptedTurn(text="giving up", cost_usd=cost_usd, completion_tokens=10_000_000)
+            ],
             name=name,
         )
 

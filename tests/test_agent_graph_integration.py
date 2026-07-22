@@ -105,16 +105,19 @@ def _submit_turn(payload_hex: str, addresses: list[str]) -> ScriptedTurn:
 
 
 def test_build_graph_compiles_and_invokes_with_only_a_backend() -> None:
-    backend = FakeBackend(script=[ScriptedTurn(text="No viable chain; giving up.")])
-    # max_nudges=0 for a one-shot give-up (the nudge path is covered separately).
-    config = AgentConfig(strategy=prompts.get("zero_shot"), tools=ToolLayer(), max_nudges=0)
+    # A model that reasons without acting is bounded by the real token budget
+    # (ADR 0015), not a give-up: the huge token count trips it after one call.
+    backend = FakeBackend(
+        script=[ScriptedTurn(text="No viable chain; giving up.", completion_tokens=10_000_000)]
+    )
+    config = AgentConfig(strategy=prompts.get("zero_shot"), tools=ToolLayer())
     app = build_graph(backend, config).compile()
     # A nonexistent binary makes the baseline enumeration fail-soft (no ROPgadget
     # needed); the run still completes and terminates.
     state = AgentState(binary=BinaryContext("b", Path("/nonexistent/binary"), "x86_64", ["nx"]))
     result = app.invoke(state, {"recursion_limit": 32})
     assert result["terminated"] is True
-    assert result["termination_reason"] == "agent_gave_up"
+    assert result["termination_reason"] == "budget"
     assert backend.calls_made == 1
 
 
