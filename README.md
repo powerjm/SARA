@@ -70,8 +70,8 @@ python -m harness.cli run --binary cgc-cadet-00001 --backend claude-sonnet
 
 The apparatus runs identically in both — same code, same Docker validator, same `RunRecord` output. Only the host and `.env` differ.
 
-- **Local** (default): everything on one Ubuntu 26.04 host. Cloud backends use API keys in `.env`; open-weight and unrestricted models run through a local [LM Studio](https://lmstudio.ai) endpoint. Best for development and small matrices.
-- **Cloud**: the same stack on a reproducible VM built from [`infra/packer/`](infra/) and provisioned with [`infra/terraform/`](infra/). Best for the full matrix at scale and the hardware baseline the thesis cites. A GPU instance is needed only to run local models in the cloud.
+- **Local** (default, and the environment used for the runs for record): the harness, the validator sandbox, and the API backends all run on one Ubuntu 26.04 host, with cloud-backend keys in `.env`. The open-weight and unrestricted models run in [LM Studio](https://lmstudio.ai) — in the reference setup, on a **separate machine on the LAN** (an RTX 4090 workstation) with "Serve on Local Network" enabled; point `LMSTUDIO_BASE_URL` in `.env` at that host. LM Studio on the same host (`127.0.0.1`) works too.
+- **Cloud** (optional, not used for the runs for record): the same stack on a reproducible VM built from [`infra/packer/`](infra/) and provisioned with [`infra/terraform/`](infra/). This is real but untested IaC (no cloud account is wired up); a GPU instance is needed only to run local models in the cloud. See [`infra/README.md`](infra/README.md).
 
 See [`docs/REPRODUCTION.md`](docs/REPRODUCTION.md) for the full run procedure and [`docs/SARA_DEVELOPMENT_HISTORY.md`](docs/SARA_DEVELOPMENT_HISTORY.md) for how the apparatus was built and what each environment requires.
 
@@ -97,7 +97,7 @@ sara/
   harness/                CLI run harness + run-record schema
   analysis/               Statistical module (Cochran's Q, McNemar's, etc.)
   docs/                   Infrastructure plan, ADRs, reproduction guide
-  infra/                  Terraform/Packer for the cloud VM image
+  infra/                  Terraform/Packer for the optional cloud VM image
   tests/                  pytest suite
   scripts/                Dev helper scripts
   Dockerfile.sandbox      Frozen toolchain for the validator sandbox

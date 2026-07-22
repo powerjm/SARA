@@ -186,6 +186,21 @@ run_env="${SARA_RUN_ENV:-unspecified}"
 # Best-effort cloud hint from DMI product name.
 cloud_hint="$(cat /sys/class/dmi/id/product_name 2>/dev/null || echo unknown)"
 
+# Open-weight / unrestricted models run in LM Studio, which in the reference setup
+# is a *separate* LAN host — so its hardware is a distinct baseline the harness-host
+# summary above does not capture. Record the endpoint, an operator-supplied host
+# description (SARA_LMSTUDIO_HOST, verbatim), and a best-effort list of the models
+# it currently serves (queried live; may be unreachable at snapshot time).
+lmstudio_url="${LMSTUDIO_BASE_URL:-http://127.0.0.1:1234/v1}"
+lmstudio_host_desc="${SARA_LMSTUDIO_HOST:-unspecified}"
+if command -v curl >/dev/null 2>&1; then
+  lmstudio_models="$(curl -fsS --max-time 5 "${lmstudio_url%/}/models" 2>/dev/null \
+    | "$PY" -c 'import json,sys; d=json.load(sys.stdin); print(", ".join(m.get("id","?") for m in d.get("data", [])) or "none loaded")' 2>/dev/null \
+    || echo "unreachable at snapshot time")"
+else
+  lmstudio_models="curl not present"
+fi
+
 cat > "$SNAPDIR/environment.txt" <<EOF
 SARA replication snapshot — environment summary
 ================================================
@@ -206,20 +221,30 @@ python            : $py_ver
 docker            : $docker_ver
 validator image   : $VALIDATOR_IMAGE
 
+-- LM Studio host (open-weight / unrestricted model baseline) --
+LM Studio endpoint : $lmstudio_url
+LM Studio host     : $lmstudio_host_desc   (SARA_LMSTUDIO_HOST, verbatim)
+LM Studio models   : $lmstudio_models
+
 corpus binaries   : $([[ "$INCLUDE_BINARIES" -eq 1 ]] && echo included || echo "checksums only (--no-binaries)")
 run records        : $RUN_COUNT
 EOF
 
 # 8. machine-readable index -------------------------------------------------- #
-"$PY" - "$SNAPDIR" "$COMMIT_FULL" "$run_env" "$RUN_COUNT" "$VALIDATOR_IMAGE" <<'PYEOF' > "$SNAPDIR/SNAPSHOT.json"
+"$PY" - "$SNAPDIR" "$COMMIT_FULL" "$run_env" "$RUN_COUNT" "$VALIDATOR_IMAGE" "$lmstudio_url" "$lmstudio_host_desc" "$lmstudio_models" <<'PYEOF' > "$SNAPDIR/SNAPSHOT.json"
 import json, sys
-snapdir, commit, run_env, run_count, image = sys.argv[1:6]
+snapdir, commit, run_env, run_count, image, lm_url, lm_host, lm_models = sys.argv[1:9]
 print(json.dumps({
     "schema": "sara-snapshot/1",
     "commit": commit,
     "run_environment": run_env,
     "run_records": int(run_count),
     "validator_image": image,
+    "lm_studio": {
+        "endpoint": lm_url,
+        "host": lm_host,
+        "models_served": lm_models,
+    },
     "contents": [
         "source-*.tar.gz", "pip-freeze.txt", "validator-image.txt",
         "manifest.yaml", "corpus-binaries/", "corpus-binaries.sha256",

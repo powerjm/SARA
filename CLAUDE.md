@@ -29,7 +29,7 @@ sara verify --binary cgc-cadet-00001        # reproduce documented exploit (corp
 sara replay --run-id <uuid>                 # re-run validator on a stored payload
 ```
 
-Requires Python **3.14+** (targets Ubuntu 26.04 LTS). `pytest` runs with `filterwarnings = ["error"]` and `asyncio_mode = "auto"`. mypy is `strict` but advisory on CI (stubs still firming up); ruff is enforced. The `binary-tools` extra (pwntools, r2pipe) needs native libs and is installed only on the lab host — never in CI.
+Requires Python **3.14+** (targets Ubuntu 26.04 LTS). `pytest` runs with `filterwarnings = ["error"]` and `asyncio_mode = "auto"`. mypy is `strict` but advisory on CI (stubs still firming up); ruff is enforced. The `binary-tools` extra (ROPgadget, ropper, r2pipe) needs native libs and is installed only on the lab host — never in CI.
 
 ## Architecture
 
@@ -70,9 +70,9 @@ Each tool (ropgadget, ghidra, radare2, ropper, pwntools, gdb) is its own MCP std
 
 **Hard rule: each step ships complete.** No `TODO` markers, no stubbed bodies, no placeholder returns left behind — real code with real tests, finished before the next step starts. Don't leave scaffolding "to fill in later."
 
-**The eight steps:** 0 — environment (done). 1 — test data (fixture binary + synthetic dataset). 2 — ROPgadget MCP server. 3 — validator sandbox. 4 — agent loop on a `FakeBackend`. 5 — `sara run` + `sara batch`. 6 — analysis notebooks. 7 — every backend + every tool. 8 — run for record (hardened, reproducible, local or cloud). Baseline is **68 tests, all passing** — keep them green.
+**The eight steps:** 0 — environment (done). 1 — test data (fixture binary + synthetic dataset). 2 — ROPgadget MCP server. 3 — validator sandbox. 4 — agent loop on a `FakeBackend`. 5 — `sara run` + `sara batch`. 6 — analysis notebooks. 7 — every backend + every tool. 8 — run for record (hardened, reproducible, local or cloud). The suite is **350 tests, all passing** — keep them green.
 
-**Two run environments (Step 8 makes the chosen one production-ready):** the stack runs identically **local** (one Ubuntu 26.04 host; local models via LM Studio) or **cloud** (the pinned VM from `infra/packer/` + `infra/terraform/`). Only `.env` differs.
+**Two run environments (Step 8 makes the chosen one production-ready):** the stack runs identically **local** (the default and the environment used for the runs for record: one Ubuntu 26.04 host for the harness/validator/API backends, with open-weight/unrestricted models served by LM Studio — in the reference setup a **separate LAN machine**, an RTX 4090 box, reached via `LMSTUDIO_BASE_URL`) or **cloud** (optional, untested IaC: the pinned VM from `infra/packer/` + `infra/terraform/`). Only `.env` differs.
 
 **Working agreement (every step; don't relax without an ADR):** `make test` + `make lint` + `make format` before any commit; new code without tests in `tests/test_<module>.py` blocks merge; tests use fakes/cassettes, never real API keys; schema changes bump `schema_version`; one ADR per non-obvious architectural call. New ADRs land with their step: 0003 chain-fingerprint (Step 3), 0004 ghidra-bridge and 0005 backend-categories (Step 7).
 

@@ -234,15 +234,22 @@ not the placeholder entries.**
 The apparatus runs **identically** local or cloud — same code, same Docker
 validator, same `RunRecord` output. Only the host and `.env` differ.
 
-- **Local** (default): one Ubuntu 26.04 host. API backends via keys in `.env`;
-  open-weight / unrestricted models via a local LM Studio endpoint.
-- **Cloud**: the same stack on a reproducible VM from [`infra/packer/`](../infra/packer)
-  (the pinned image) + [`infra/terraform/`](../infra/terraform) (the instance). A
-  GPU instance is needed **only** to run local models in the cloud; API-only
+- **Local** (default, and the environment used for the runs for record): the
+  harness, the validator sandbox, and the API backends run on one Ubuntu 26.04
+  host (keys in `.env`). The open-weight / unrestricted models run in an LM Studio
+  endpoint, which need not be the same host — in the reference setup it is a
+  **separate machine on the LAN** (an RTX 4090 workstation, "Serve on Local
+  Network" enabled), reached by pointing `LMSTUDIO_BASE_URL` at it. `127.0.0.1`
+  works when LM Studio is co-located.
+- **Cloud** (optional, not used for the runs for record): the same stack on a
+  reproducible VM from [`infra/packer/`](../infra/packer) (the pinned image) +
+  [`infra/terraform/`](../infra/terraform) (the instance) — real but untested IaC.
+  A GPU instance is needed **only** to run local models in the cloud; API-only
   backends run on a CPU instance.
 
-`.env` (`RUN_OUTPUT_DIR`, `VALIDATOR_IMAGE`, backend keys/endpoints) is the only
-thing that differs between a laptop and a cloud VM.
+`.env` (`RUN_OUTPUT_DIR`, `VALIDATOR_IMAGE`, backend keys/endpoints incl.
+`LMSTUDIO_BASE_URL`) is the only thing that differs between the lab host, the LAN
+LM Studio host, and a cloud VM.
 
 ## Invariants (keep these true)
 

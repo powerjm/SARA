@@ -21,8 +21,8 @@ These applied to every step throughout development; they were not relaxed withou
 
 The apparatus runs **identically** in both environments — same code, same Docker validator, same `RunRecord` output. The only difference is where the host lives. Pick per your needs; the thesis runs for record can come from either, as long as the environment is recorded in the replication snapshot.
 
-- **Local.** Everything on one Ubuntu 26.04 lab host. Cloud backends (Anthropic / OpenAI / Google) run through their APIs via keys in `.env`; open-weight and unrestricted models run through a local **LM Studio** endpoint. Best for development and small matrices. This is the default.
-- **Cloud.** The same stack on a reproducible VM provisioned from `infra/packer/` (the pinned image) and `infra/terraform/` (the instance). Best for the full matrix at scale and for the hardware baseline the thesis cites. A GPU instance is required only if you run local models in the cloud; otherwise any backend that is API-based works on a CPU instance.
+- **Local.** The harness, the validator sandbox, and the API backends (Anthropic / OpenAI / Google, via keys in `.env`) run on one Ubuntu 26.04 lab host. Open-weight and unrestricted models run through an **LM Studio** endpoint — either co-located, or (the setup adopted for the runs for record) a separate machine on the LAN, an RTX 4090 workstation, selected via `LMSTUDIO_BASE_URL`. This is the default and the environment used for the runs for record.
+- **Cloud.** *(Optional, untested IaC — not used for the runs for record.)* The same stack on a reproducible VM provisioned from `infra/packer/` (the pinned image) and `infra/terraform/` (the instance) — an alternative for the full matrix at scale. A GPU instance is required only if you run local models in the cloud; otherwise any backend that is API-based works on a CPU instance.
 
 Configuration is environment-agnostic: `.env` (`RUN_OUTPUT_DIR`, `VALIDATOR_IMAGE`, backend keys/endpoints) is the only thing that differs between a laptop and a cloud VM.
 
@@ -32,7 +32,7 @@ Configuration is environment-agnostic: `.env` (`RUN_OUTPUT_DIR`, `VALIDATOR_IMAG
 
 **Step 8 (run for record) is the current phase** — hardening the chosen environment, CI quality gates, real `infra/`, and the replication snapshot. This is testing and reproducibility work, not new subsystems.
 
-The suite stands at **326 tests** (all passing on a host with the binary tools + Docker; tool-integration tests and the end-to-end smoke test skip rather than fail wherever their tool is absent, so the number of skips rises on a bare host). The ADR 0009 code reframing added tests for the outcome-migration read-shim, the anti-echo guard, and the cross-model chain-uniqueness metric.
+The suite stands at **350 tests** (all passing on a host with the binary tools + Docker; tool-integration tests and the end-to-end smoke test skip rather than fail wherever their tool is absent, so the number of skips rises on a bare host). The ADR 0009 code reframing added tests for the outcome-migration read-shim, the anti-echo guard, and the cross-model chain-uniqueness metric.
 
 ---
 

@@ -1,5 +1,8 @@
 # terraform/
 
+> Part of the **optional** cloud path (not used for the runs for record — see
+> [`../README.md`](../README.md)).
+
 Provisions the experiment VM in AWS from the AMI that `../packer/` builds.
 
 ## Files

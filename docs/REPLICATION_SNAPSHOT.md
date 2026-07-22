@@ -31,7 +31,13 @@ It honors the same `SARA_CORPUS_MANIFEST` / `SARA_CORPUS_BINARIES_DIR` overrides
 the harness uses, so the snapshot reflects exactly the corpus the runs resolved
 against. Set `SARA_RUN_ENV=local` or `SARA_RUN_ENV=cloud` so the environment
 summary records which of the [two run environments](SARA_DEVELOPMENT_HISTORY.md#two-ways-to-run)
-produced the data.
+produced the data. Because the open-weight / unrestricted models run in LM Studio
+on a **separate LAN host** in the reference setup — a distinct hardware baseline
+the harness-host summary does not capture — the snapshot also records
+`LMSTUDIO_BASE_URL` and best-effort lists the models that endpoint currently
+serves; set `SARA_LMSTUDIO_HOST` to a short verbatim description of that box (GPU,
+VRAM, LM Studio version, model quantization) so the local-model baseline is on the
+record too.
 
 Output: `dist/sara-snapshot-<commit>.tar.zst` (+ a `.sha256`). Contents:
 
@@ -46,7 +52,7 @@ Output: `dist/sara-snapshot-<commit>.tar.zst` (+ a `.sha256`). Contents:
 | `runs/` | every finalized run directory (`record.json` / `trace.jsonl` / `payload.bin`) |
 | `payloads.sha256` | checksums of every stored payload |
 | `notebooks-html/` | executed analysis notebooks rendered to HTML |
-| `environment.txt` | host / OS / CPU / RAM / Docker summary + local-vs-cloud |
+| `environment.txt` | host / OS / CPU / RAM / Docker summary + local-vs-cloud + the LM Studio host (endpoint, description, models served) |
 | `SNAPSHOT.json` | machine-readable index |
 
 > **Licensing.** Corpus binaries retain their original distributors' licenses
@@ -97,7 +103,9 @@ recorded commit match the thesis citation:
 
 ```bash
 git tag -a v1.0-runs-for-record -m "thesis runs for record"
-SARA_RUN_ENV=cloud scripts/build_replication_snapshot.sh --ref v1.0-runs-for-record
+SARA_RUN_ENV=local \
+  SARA_LMSTUDIO_HOST="RTX 4090 24GB, <CPU>, LM Studio <ver>, <model>@<quant>" \
+  scripts/build_replication_snapshot.sh --ref v1.0-runs-for-record
 scripts/verify_snapshot.sh dist/sara-snapshot-*.tar.zst   # prove it before archiving
 ```
 
