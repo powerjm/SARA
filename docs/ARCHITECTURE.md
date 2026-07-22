@@ -270,6 +270,8 @@ LM Studio host, and a cloud VM.
 
 ## Where to read next
 
+- [`DIAGRAMS.md`](DIAGRAMS.md) — the repo and test architecture as Mermaid
+  diagrams (four layers, data flow, agent state machine, test coverage map).
 - [`SARA_DEVELOPMENT_HISTORY.md`](SARA_DEVELOPMENT_HISTORY.md) — how it was built,
   step by step, with each step's acceptance criteria.
 - [`INFRASTRUCTURE_PLAN.md`](INFRASTRUCTURE_PLAN.md) — the architectural rationale.
