@@ -90,14 +90,16 @@ class AnthropicBackend(Backend):
         api_messages, system = _to_anthropic_messages(messages)
         api_tools = [_to_anthropic_tool(t) for t in tools]
 
-        resp = self._client.messages.create(  # type: ignore[no-untyped-call]
-            model=self.name,
-            system=system,
-            messages=api_messages,
-            tools=api_tools or None,
-            max_tokens=max_tokens,
-            temperature=self.temperature,
-        )
+        kwargs: dict[str, Any] = {
+            "model": self.name,
+            "messages": api_messages,
+            "tools": api_tools or None,
+            "max_tokens": max_tokens,
+            "temperature": self.temperature,
+        }
+        if system is not None:
+            kwargs["system"] = system
+        resp = self._client.messages.create(**kwargs)  # type: ignore[no-untyped-call]
 
         text_parts: list[str] = []
         tool_calls: list[dict[str, Any]] = []
@@ -133,15 +135,59 @@ class AnthropicBackend(Backend):
 def _to_anthropic_messages(
     messages: list[Message],
 ) -> tuple[list[dict[str, Any]], str | None]:
-    """Split out system message (Anthropic API takes it as a top-level field)."""
+    """Translate the provider-agnostic log to Anthropic's Messages format.
+
+    Anthropic differs from the OpenAI wire format the internal ``Message`` mirrors
+    in three ways this handles:
+
+    * **System** is a top-level field, not a message.
+    * **Tool calls / results are content blocks**, not roles: an assistant tool
+      call is a ``tool_use`` block; a ``tool`` message becomes a ``user`` turn
+      carrying a ``tool_result`` block keyed by ``tool_use_id``.
+    * **Roles must alternate** (no two consecutive user or assistant turns), so
+      adjacent same-role turns — e.g. the user task followed by the user-context
+      baseline enumeration (ADR 0011) — are merged into one turn with multiple
+      content blocks.
+    """
     system: str | None = None
-    out: list[dict[str, Any]] = []
+    turns: list[dict[str, Any]] = []
     for m in messages:
         if m.role == "system":
             system = m.content if system is None else system + "\n\n" + m.content
             continue
-        out.append({"role": m.role, "content": m.content})
-    return out, system
+
+        role: str
+        blocks: list[dict[str, Any]]
+        if m.role == "tool":
+            role = "user"
+            blocks = [
+                {"type": "tool_result", "tool_use_id": m.tool_call_id or "", "content": m.content}
+            ]
+        elif m.role == "assistant":
+            role = "assistant"
+            blocks = []
+            if m.content:
+                blocks.append({"type": "text", "text": m.content})
+            for call in m.tool_calls or []:
+                blocks.append(
+                    {
+                        "type": "tool_use",
+                        "id": str(call.get("id") or ""),
+                        "name": str(call.get("name") or ""),
+                        "input": call.get("input") or call.get("arguments") or {},
+                    }
+                )
+        else:  # user
+            role = "user"
+            blocks = [{"type": "text", "text": m.content}] if m.content else []
+
+        if not blocks:
+            continue
+        if turns and turns[-1]["role"] == role:
+            turns[-1]["content"].extend(blocks)
+        else:
+            turns.append({"role": role, "content": blocks})
+    return turns, system
 
 
 def _to_anthropic_tool(t: ToolSpec) -> dict[str, Any]:

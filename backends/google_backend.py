@@ -40,7 +40,7 @@ from harness.record import BackendCategory, CostRecord, TokenUsage
 # Prices live in backends/pricing.yaml (single source of truth, refreshed via
 # scripts/refresh_pricing.py). ``PRICING`` is a back-compat view over that file
 # scoped to this provider's models; do not hard-code rates here.
-PRICING: dict[str, Pricing] = pricing.subset(["gemini-2.5-pro", "gemini-2.5-flash"])
+PRICING: dict[str, Pricing] = pricing.subset(["gemini-pro-latest", "gemini-2.5-flash"])
 
 # Gemini finish reasons that mean the model declined / was content-filtered.
 _REFUSAL_FINISH_REASONS = frozenset(
@@ -70,7 +70,7 @@ class GoogleBackend(Backend):
 
     def __init__(
         self,
-        model: str = "gemini-2.5-pro",
+        model: str = "gemini-pro-latest",
         *,
         temperature: float = 0.2,
         seed: int | None = 0,
@@ -158,26 +158,64 @@ def _to_gemini_contents(messages: list[Message]) -> list[dict[str, Any]]:
     """Map provider-agnostic messages onto Gemini ``contents``.
 
     Gemini has no separate system role and uses ``model`` for assistant turns;
-    system text is folded into a leading user turn, and tool results are rendered
-    as user text (the loop reasons over the text, not a structured result).
+    system text is folded into the leading user turn, and tool results (including
+    the user-context baseline of ADR 0011) are rendered as user text — the loop
+    reasons over the text, not a structured function response. Consecutive
+    same-role parts are merged so the request never sends two adjacent turns of
+    the same role.
     """
     contents: list[dict[str, Any]] = []
+
+    def append(role: str, text: str) -> None:
+        if not text:
+            return
+        if contents and contents[-1]["role"] == role:
+            contents[-1]["parts"].append({"text": text})
+        else:
+            contents.append({"role": role, "parts": [{"text": text}]})
+
     system_text: list[str] = []
     for message in messages:
         if message.role == "system":
             system_text.append(message.content)
             continue
         if message.role == "tool":
-            contents.append(
-                {"role": "user", "parts": [{"text": f"Tool result:\n{message.content}"}]}
-            )
+            append("user", f"Tool result:\n{message.content}")
             continue
-        role = "model" if message.role == "assistant" else "user"
-        contents.append({"role": role, "parts": [{"text": message.content}]})
+        append("model" if message.role == "assistant" else "user", message.content)
 
     if system_text:
-        contents.insert(0, {"role": "user", "parts": [{"text": "\n\n".join(system_text)}]})
+        joined = "\n\n".join(system_text)
+        if contents and contents[0]["role"] == "user":
+            contents[0]["parts"].insert(0, {"text": joined})
+        else:
+            contents.insert(0, {"role": "user", "parts": [{"text": joined}]})
     return contents
+
+
+# Gemini's function-declaration Schema accepts only a subset of JSON Schema; keys
+# like ``additionalProperties`` / ``default`` / ``minimum`` raise "Unknown field
+# for Schema". Keep the structural keys it understands and drop the rest.
+_GEMINI_SCHEMA_KEYS = frozenset(
+    {"type", "description", "enum", "items", "properties", "required", "nullable", "format"}
+)
+
+
+def _sanitize_schema(schema: Any) -> Any:
+    """Recursively strip JSON-Schema keys Gemini's Schema proto rejects."""
+    if not isinstance(schema, dict):
+        return schema
+    out: dict[str, Any] = {}
+    for key, value in schema.items():
+        if key not in _GEMINI_SCHEMA_KEYS:
+            continue
+        if key == "properties" and isinstance(value, dict):
+            out[key] = {name: _sanitize_schema(sub) for name, sub in value.items()}
+        elif key == "items":
+            out[key] = _sanitize_schema(value)
+        else:
+            out[key] = value
+    return out
 
 
 def _to_gemini_tool(tool: ToolSpec) -> dict[str, Any]:
@@ -186,7 +224,7 @@ def _to_gemini_tool(tool: ToolSpec) -> dict[str, Any]:
             {
                 "name": tool.name,
                 "description": tool.description,
-                "parameters": tool.input_schema,
+                "parameters": _sanitize_schema(tool.input_schema),
             }
         ]
     }

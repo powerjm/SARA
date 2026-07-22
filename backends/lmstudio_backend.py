@@ -35,6 +35,13 @@ from harness.record import BackendCategory
 class LMStudioBackend(OpenAIBackend):
     """OpenAI-compatible backend talking to a local LM Studio endpoint."""
 
+    # LM Studio's server accepts the legacy ``max_tokens`` field, not the
+    # ``max_completion_tokens`` the real OpenAI API now requires (see the base
+    # class); override back to keep local calls working. Local models honor the
+    # determinism knobs, so re-enable temperature/seed the base backend omits.
+    _max_output_param: str = "max_tokens"
+    _send_sampling_params: bool = True
+
     def __init__(
         self,
         model: str,

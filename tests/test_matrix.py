@@ -12,6 +12,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -62,9 +63,16 @@ def _giveup_resolver(cost_usd: float = 0.0) -> Any:
 
 
 def _batch_run_one(spec: Any, backend: Any, strategy: str, settings: RunSettings, **kw: Any) -> Any:
-    # Inject the canned enumerator so no ROPgadget CLI is needed.
+    # Inject the canned enumerator so no ROPgadget CLI is needed. The give-up
+    # fakes script a single no-tool-call turn, so disable nudges (ADR 0012) to
+    # keep the one-shot give-up these batch-mechanics tests assume.
     return run_one(
-        spec, backend, strategy, settings, tools=ToolLayer(enumerate_fn=_canned_enumerator)
+        spec,
+        backend,
+        strategy,
+        replace(settings, max_nudges=0),
+        tools=ToolLayer(enumerate_fn=_canned_enumerator),
+        backend_handle=kw.get("backend_handle"),
     )
 
 

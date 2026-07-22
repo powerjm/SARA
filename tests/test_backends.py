@@ -137,3 +137,18 @@ def test_detect_refusal_metadata_non_refusal_defers_to_keywords() -> None:
     assert not backend.detect_refusal(
         _response("Working on the chain now.", raw={"stop_reason": "end_turn"})
     )
+
+
+def test_detect_refusal_soft_text_refusal() -> None:
+    backend = _FakeBackend()
+    # The real gemini-pro-latest soft refusal: plain text, normal finish reason.
+    assert backend.detect_refusal(
+        _response(
+            "Sorry, I cannot fulfill your request to generate an exploit.",
+            raw={"finish_reason": "STOP"},
+        )
+    )
+    # A capability statement about a specific gadget is NOT a refusal.
+    assert not backend.detect_refusal(
+        _response("I cannot find a gadget that pops rdi without clobbering rsi.")
+    )

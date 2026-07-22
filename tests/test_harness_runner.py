@@ -22,6 +22,7 @@ from fakes.backend import FakeBackend, ScriptedTurn
 
 from agent.tools import ToolLayer
 from harness import corpus, persistence
+from harness.matrix import completed_counts, spend_by_backend
 from harness.record import FailureMode, Outcome
 from harness.runner import RunSettings, replay_run, run_one, verify_binary
 from mcp_servers.ropgadget.parser import Gadget
@@ -95,7 +96,7 @@ def test_run_settings_overrides_win(tmp_path: Path) -> None:
 
 def test_run_one_writes_valid_run_directory(fixture_corpus: Any, tmp_path: Path) -> None:
     spec = corpus.resolve_binary("sample-overflow")
-    settings = RunSettings.from_env(output_dir=tmp_path / "runs")
+    settings = RunSettings.from_env(output_dir=tmp_path / "runs", max_nudges=0)
 
     record = run_one(spec, _giveup_backend(), "zero_shot", settings, tools=_tools())
 
@@ -117,9 +118,58 @@ def test_run_one_writes_valid_run_directory(fixture_corpus: Any, tmp_path: Path)
 
 def test_run_one_giveup_has_no_payload(fixture_corpus: Any, tmp_path: Path) -> None:
     spec = corpus.resolve_binary("sample-overflow")
-    settings = RunSettings.from_env(output_dir=tmp_path / "runs")
+    settings = RunSettings.from_env(output_dir=tmp_path / "runs", max_nudges=0)
     record = run_one(spec, _giveup_backend(), "zero_shot", settings, tools=_tools())
     assert record.payload_path is None
+
+
+def test_run_one_writes_full_conversation(fixture_corpus: Any, tmp_path: Path) -> None:
+    spec = corpus.resolve_binary("sample-overflow")
+    settings = RunSettings.from_env(output_dir=tmp_path / "runs", max_nudges=0)
+    record = run_one(spec, _giveup_backend(), "zero_shot", settings, tools=_tools())
+
+    run_dir = persistence.final_dir(settings.output_dir, str(record.run_id))
+    conversation = run_dir / persistence.CONVERSATION_NAME
+    assert conversation.is_file()
+    assert record.conversation_path == conversation
+
+    messages = [json.loads(line) for line in conversation.read_text().splitlines()]
+    roles = [m["role"] for m in messages]
+    # Captures the seeded system prompt, the assistant turn, and the baseline
+    # enumeration presented as user context (ADR 0011).
+    assert "system" in roles
+    assert "assistant" in roles
+    assert any(
+        m["role"] == "user" and m["content"].startswith("Baseline gadget enumeration")
+        for m in messages
+    )
+
+
+def test_resume_and_cost_cap_key_on_backend_handle(fixture_corpus: Any, tmp_path: Path) -> None:
+    # Regression: a record stores backend.name = the MODEL string, but batch resume
+    # and the per-backend cost cap must key on the cell's registry HANDLE
+    # (backend_handle) — else an interrupted premium/local batch re-runs completed
+    # cells and under-counts spend on resume.
+    spec = corpus.resolve_binary("sample-overflow")
+    settings = RunSettings.from_env(output_dir=tmp_path / "runs", max_nudges=0)
+    # backend.name is the model; the cell handle differs (as for every real
+    # premium/local backend).
+    backend = FakeBackend(
+        script=[ScriptedTurn(text="giving up", cost_usd=0.5)], name="claude-sonnet-4-6"
+    )
+    record = run_one(
+        spec, backend, "zero_shot", settings, tools=_tools(), backend_handle="claude-sonnet"
+    )
+    assert record.backend_handle == "claude-sonnet"
+    assert record.backend.name == "claude-sonnet-4-6"
+
+    counts = completed_counts(settings.output_dir)
+    spend = spend_by_backend(settings.output_dir)
+    # Keyed by the handle, not the model string.
+    assert counts.get(("sample-overflow", "claude-sonnet", "zero_shot")) == 1
+    assert ("sample-overflow", "claude-sonnet-4-6", "zero_shot") not in counts
+    assert spend.get("claude-sonnet") == 0.5
+    assert "claude-sonnet-4-6" not in spend
 
 
 # --------------------------------------------------------------------------- #

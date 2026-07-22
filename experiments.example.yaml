@@ -22,9 +22,18 @@ replicates: 5
 # Per-run hard caps plus the per-backend cost partition.
 limits:
   # Per individual run. The harness aborts the run when either trips
-  # (-> Outcome.FAILURE / FailureMode.BUDGET_EXHAUSTED).
+  # (-> Outcome.FAILURE / FailureMode.BUDGET_EXHAUSTED). Local LM Studio models
+  # are slow and free, so these can be set generously; premium models are
+  # separately bounded by usd_per_backend below (a large cap here does not let
+  # them overspend — they hit their dollar cap first).
   tokens: 200000
   wall_clock_seconds: 1800
+
+  # Reason rounds and "you must call a tool" nudges per run (ADR 0012); default
+  # 8 / 2. Raise these (and the caps above) to give slower open models more
+  # attempts to build a working chain. Applies to all backends.
+  max_iterations: 8
+  max_nudges: 2
 
   # Cost cap is partitioned PER BACKEND (Step-5 decision): each backend gets its
   # own USD budget so a pricey premium model can't starve the cheaper ones. Once
@@ -32,28 +41,49 @@ limits:
   # cap, its remaining cells are halted while the others continue. Omit a backend
   # (or set 0) for no cap.
   usd_per_backend:
-    claude-sonnet: 25.0
-    claude-opus: 50.0
+    # Only the priced PREMIUM (hosted) backends need a cap; the local LM Studio
+    # models record usd=0.0 and are uncapped. The values below cover the
+    # `sara batch --dry-run` estimate (10 binaries x 4 strategies x 5 replicates
+    # = 200 runs per backend) with headroom — tune before a real run.
+    claude-sonnet: 50.0
+    claude-opus: 100.0
+    gpt-5: 50.0
+    gemini-pro-latest: 50.0
 
 # Output directory; gitignored.
 output_dir: "./runs"
 
-# Backends to test. Each name must be present in backends.registry.
+# Backends to test. Each name must be a registered handle in backends.registry
+# (see backends/README.md -> "Quick reference -- --backend handles"). The full
+# run-for-record set spans three categories (ADR 0005): PREMIUM hosted frontier
+# models, OPEN_WEIGHT local models (alignment intact), and UNRESTRICTED local
+# models (alignment removed or absent). Local models are served by LM Studio and
+# record usd=0.0; only the PREMIUM backends are priced (and capped above).
 backends:
+  # --- PREMIUM (hosted API; priced) ---
   - claude-sonnet
   - claude-opus
-  # Phase 3 backends:
-  # - gpt-5
-  # - gemini-2
-  # - llama-3.3-70b
-  # - mixtral-8x22b-instruct
-  # - dolphin-mixtral-uncensored
+  - gpt-5
+  - gemini-pro-latest
+  # --- OPEN_WEIGHT (local LM Studio; alignment intact) ---
+  - qwen2.5-coder-32b
+  - qwen3-coder-30b
+  - gpt-oss-20b
+  - devstral-small
+  # --- UNRESTRICTED (local LM Studio; alignment removed or absent) ---
+  - whiterabbitneo-v3-7b
+  - qwen3-30b-abliterated
+  - dolphin-3.0-mistral-24b
+  # NOTE: qwen2.5-coder-7b is the transport/tool-calling SMOKE-TEST slot, not a
+  # run-for-record cell, so it is deliberately omitted. llama-3.3-70b and
+  # dolphin-mixtral-8x7b were dropped from the registry (over the 24 GB profile).
 
 # Prompting strategies to test. Names must match keys in agent.prompts.STRATEGIES.
 strategies:
   - zero_shot
   - chain_of_thought
   - react
+  - majorca
 
 # Binary IDs to test against. Must be an ACTIVE (uncommented) entry in
 # corpus/manifest.yaml — i.e. one of the 10 binaries with a verified reference

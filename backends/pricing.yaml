@@ -24,7 +24,7 @@
 # `scripts/refresh_pricing.py` (review the diff, bump `pricing_version`), so the
 # change is deliberate and auditable. `--check` warns when this file is stale.
 
-pricing_version: "2026-07-21"
+pricing_version: "2026-07-22"
 
 models:
   claude-sonnet-4-6:
@@ -47,13 +47,14 @@ models:
     completion_per_mtok: 2.0
     as_of: "2026-07-21"
     source: "https://openai.com/api/pricing/"
-  # Gemini 2.5 Pro lists a higher tier for prompts above 200k tokens
-  # ($2.50/$15); we pin the <=200k tier here. Revisit if runs routinely exceed
-  # a 200k-token prompt.
-  gemini-2.5-pro:
-    prompt_per_mtok: 1.25
-    completion_per_mtok: 10.0
-    as_of: "2026-07-21"
+  # gemini-pro-latest is Google's stable alias for the newest GA Gemini Pro
+  # (currently the Gemini 3.x Pro tier). Pinned at the <=200k input tier; the
+  # >200k tier is higher ($4.00/$18.00). Replaced gemini-2.5-pro, which is gated
+  # for new API keys ("no longer available to new users"; ADR 0011).
+  gemini-pro-latest:
+    prompt_per_mtok: 2.0
+    completion_per_mtok: 12.0
+    as_of: "2026-07-22"
     source: "https://ai.google.dev/gemini-api/docs/pricing"
   gemini-2.5-flash:
     prompt_per_mtok: 0.30

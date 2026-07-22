@@ -122,10 +122,26 @@ def test_valid_failure_record_roundtrips() -> None:
     assert restored.failure_mode == FailureMode.HALLUCINATED_GADGET
 
 
-def test_new_records_default_to_schema_v3() -> None:
+def test_new_records_default_to_schema_v4() -> None:
     kwargs = _base_kwargs()
     kwargs["outcome"] = Outcome.SUCCESS
-    assert RunRecord(**kwargs).schema_version == "3"
+    assert RunRecord(**kwargs).schema_version == "4"
+
+
+def test_conversation_path_optional_and_pre_v4_loads() -> None:
+    from pathlib import Path
+
+    kwargs = _base_kwargs()
+    kwargs["outcome"] = Outcome.SUCCESS
+    # Defaults to None; settable to a path.
+    assert RunRecord(**kwargs).conversation_path is None
+    rec = RunRecord(**kwargs, conversation_path=Path("runs/x/conversation.jsonl"))
+    assert rec.conversation_path == Path("runs/x/conversation.jsonl")
+    # A pre-v4 record (no conversation_path) still loads.
+    template = RunRecord(**kwargs).model_dump(mode="json")
+    template.pop("conversation_path", None)
+    restored = RunRecord.model_validate({**template, "schema_version": "3"})
+    assert restored.conversation_path is None
 
 
 def test_legacy_success_outcomes_migrate_to_success() -> None:

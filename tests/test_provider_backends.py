@@ -22,8 +22,9 @@ from types import SimpleNamespace
 from typing import Any
 
 from backends import pricing
+from backends.anthropic_backend import _to_anthropic_messages
 from backends.base import Message, ToolSpec
-from backends.google_backend import GoogleBackend
+from backends.google_backend import GoogleBackend, _sanitize_schema, _to_gemini_contents
 from backends.lmstudio_backend import LMStudioBackend
 from backends.openai_backend import OpenAIBackend
 from harness.record import BackendCategory
@@ -98,7 +99,7 @@ def test_openai_refusal_via_finish_reason() -> None:
 
 def test_lmstudio_zero_cost_and_category() -> None:
     backend = LMStudioBackend(
-        "llama-3.3-70b-instruct",
+        "qwen/qwen2.5-coder-32b",
         BackendCategory.OPEN_WEIGHT,
         client=_openai_client(content="local reply"),
     )
@@ -111,7 +112,7 @@ def test_lmstudio_zero_cost_and_category() -> None:
 
 def test_lmstudio_unrestricted_category() -> None:
     backend = LMStudioBackend(
-        "dolphin-2.7-mixtral-8x7b",
+        "cognitivecomputations_dolphin3.0-mistral-24b",
         BackendCategory.UNRESTRICTED,
         client=_openai_client(content="x"),
     )
@@ -138,11 +139,11 @@ def _gemini_client(
 
 def test_google_text_response_and_cost() -> None:
     part = SimpleNamespace(text="gemini hello")
-    backend = GoogleBackend(model="gemini-2.5-pro", client=_gemini_client(parts=[part]))
+    backend = GoogleBackend(model="gemini-pro-latest", client=_gemini_client(parts=[part]))
     resp = backend.chat(_MESSAGES, _TOOLS, 256)
     assert resp.text == "gemini hello"
     assert resp.tokens.prompt == 100
-    assert resp.cost.usd == (100 * 1.25 + 20 * 10.0) / 1_000_000
+    assert resp.cost.usd == (100 * 2.0 + 20 * 12.0) / 1_000_000
     assert resp.cost.pricing is not None
     assert resp.cost.pricing.pricing_version == pricing.PRICING_VERSION
 
@@ -151,7 +152,7 @@ def test_google_parses_function_call() -> None:
     part = SimpleNamespace(
         function_call=SimpleNamespace(name="enumerate_gadgets", args={"binary_path": "x"})
     )
-    backend = GoogleBackend(model="gemini-2.5-pro", client=_gemini_client(parts=[part]))
+    backend = GoogleBackend(model="gemini-pro-latest", client=_gemini_client(parts=[part]))
     resp = backend.chat(_MESSAGES, _TOOLS, 256)
     assert resp.tool_calls == [
         {"id": "enumerate_gadgets", "name": "enumerate_gadgets", "input": {"binary_path": "x"}}
@@ -161,7 +162,7 @@ def test_google_parses_function_call() -> None:
 def test_google_refusal_via_safety_finish_reason() -> None:
     part = SimpleNamespace(text="")
     backend = GoogleBackend(
-        model="gemini-2.5-pro", client=_gemini_client(parts=[part], finish="SAFETY")
+        model="gemini-pro-latest", client=_gemini_client(parts=[part], finish="SAFETY")
     )
     resp = backend.chat(_MESSAGES, _TOOLS, 256)
     assert backend.detect_refusal(resp)
@@ -170,7 +171,119 @@ def test_google_refusal_via_safety_finish_reason() -> None:
 def test_google_non_refusal_finish_reason() -> None:
     part = SimpleNamespace(text="working on it")
     backend = GoogleBackend(
-        model="gemini-2.5-pro", client=_gemini_client(parts=[part], finish="STOP")
+        model="gemini-pro-latest", client=_gemini_client(parts=[part], finish="STOP")
     )
     resp = backend.chat(_MESSAGES, _TOOLS, 256)
     assert not backend.detect_refusal(resp)
+
+
+# --------------------------------------------------------------------------- #
+# Message / schema translation (ADR 0011: valid provider wire formats)        #
+# --------------------------------------------------------------------------- #
+
+
+def test_anthropic_translates_tool_use_result_and_merges_users() -> None:
+    messages = [
+        Message(role="system", content="sys"),
+        Message(role="user", content="task"),
+        # Consecutive user turn (the ADR-0011 baseline) must merge, not repeat.
+        Message(role="user", content="Baseline gadget enumeration:\ng"),
+        Message(
+            role="assistant",
+            content="calling",
+            tool_calls=[{"id": "c1", "name": "enumerate_gadgets", "input": {"binary_path": "x"}}],
+        ),
+        Message(role="tool", content="gadgets", tool_call_id="c1"),
+    ]
+    api, system = _to_anthropic_messages(messages)
+    assert system == "sys"
+    # Two user text blocks merged into one leading user turn.
+    assert api[0]["role"] == "user"
+    assert [b["type"] for b in api[0]["content"]] == ["text", "text"]
+    # Assistant tool call -> tool_use block.
+    tool_use = next(b for b in api[1]["content"] if b["type"] == "tool_use")
+    assert tool_use["id"] == "c1"
+    assert tool_use["name"] == "enumerate_gadgets"
+    assert tool_use["input"] == {"binary_path": "x"}
+    # Tool message -> user turn with a tool_result keyed by the same id.
+    assert api[2]["role"] == "user"
+    assert api[2]["content"][0] == {
+        "type": "tool_result",
+        "tool_use_id": "c1",
+        "content": "gadgets",
+    }
+
+
+def test_anthropic_no_system_returns_none() -> None:
+    api, system = _to_anthropic_messages([Message(role="user", content="hi")])
+    assert system is None
+    assert api == [{"role": "user", "content": [{"type": "text", "text": "hi"}]}]
+
+
+def _capturing_openai_client() -> tuple[Any, dict[str, Any]]:
+    captured: dict[str, Any] = {}
+    message = SimpleNamespace(content="ok", tool_calls=None)
+    resp = SimpleNamespace(
+        choices=[SimpleNamespace(message=message, finish_reason="stop")],
+        usage=SimpleNamespace(prompt_tokens=1, completion_tokens=1),
+    )
+
+    def create(**kwargs: Any) -> Any:
+        captured.update(kwargs)
+        return resp
+
+    client = SimpleNamespace(chat=SimpleNamespace(completions=SimpleNamespace(create=create)))
+    return client, captured
+
+
+def test_openai_sends_max_completion_tokens_and_omits_sampling() -> None:
+    # gpt-5 needs max_completion_tokens and rejects custom temperature/seed.
+    client, captured = _capturing_openai_client()
+    OpenAIBackend(model="gpt-5", client=client).chat(_MESSAGES, _TOOLS, 256)
+    assert captured["max_completion_tokens"] == 256
+    assert "max_tokens" not in captured
+    assert "temperature" not in captured
+    assert "seed" not in captured
+
+
+def test_lmstudio_sends_legacy_max_tokens_and_sampling() -> None:
+    client, captured = _capturing_openai_client()
+    LMStudioBackend("m", BackendCategory.OPEN_WEIGHT, client=client).chat(_MESSAGES, _TOOLS, 256)
+    assert captured["max_tokens"] == 256
+    assert "max_completion_tokens" not in captured
+    # Local models honor the determinism knobs.
+    assert captured["temperature"] == 0.2
+    assert captured["seed"] == 0
+
+
+def test_gemini_sanitize_strips_unsupported_schema_keys() -> None:
+    schema = {
+        "type": "object",
+        "required": ["p"],
+        "additionalProperties": False,
+        "properties": {
+            "p": {"type": "string", "description": "d"},
+            "n": {"type": "integer", "default": 6, "minimum": 1, "maximum": 20},
+        },
+    }
+    out = _sanitize_schema(schema)
+    assert "additionalProperties" not in out
+    assert out["type"] == "object"
+    assert out["required"] == ["p"]
+    assert out["properties"]["p"] == {"type": "string", "description": "d"}
+    # default / minimum / maximum are dropped (Gemini's Schema rejects them).
+    assert out["properties"]["n"] == {"type": "integer"}
+
+
+def test_gemini_contents_fold_system_and_merge_users() -> None:
+    messages = [
+        Message(role="system", content="sys"),
+        Message(role="user", content="task"),
+        Message(role="user", content="Baseline gadget enumeration:\ng"),
+        Message(role="assistant", content="ok"),
+    ]
+    contents = _to_gemini_contents(messages)
+    assert len(contents) == 2  # merged user turn + model turn
+    assert contents[0]["role"] == "user"
+    assert [p["text"] for p in contents[0]["parts"]][0] == "sys"
+    assert contents[1]["role"] == "model"

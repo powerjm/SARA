@@ -35,6 +35,8 @@ pwntools, GDB) join this layer in Step 7 without changing its shape.
 
 from __future__ import annotations
 
+import json
+import re
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -242,6 +244,205 @@ def normalize_tool_call(raw: dict[str, Any]) -> ToolCall:
     )
 
 
+# --------------------------------------------------------------------------- #
+# Text-format action parsing (ADR 0010)                                       #
+# --------------------------------------------------------------------------- #
+#
+# The reasoning strategies instruct the model to write its action as text —
+# react: ``Action: enumerate_gadgets({...})``; chain_of_thought: ``ACTION:
+# submit_payload({...})``. The graph dispatches only *native* structured tool
+# calls, so without this a literal-text action is ignored and the run gives up
+# despite the model correctly intending a call. ``parse_text_actions`` bridges
+# the two: when a reason turn carries no native tool call, the harness parses
+# these lines into native-shaped call dicts. Native tool calls always win — this
+# is a fallback, wired in ``agent.graph.node_reason``.
+
+# ``\baction`` (word boundary) so "reaction:" / "transaction:" don't match; a
+# known tool name must follow and be immediately invoked ("name("), which a
+# prose mention of the tool is not. Case-insensitive to accept ACTION:/Action:.
+_TEXT_ACTION_RE = re.compile(
+    r"\baction[ \t]*:[ \t]*([A-Za-z_]\w*)[ \t]*(?=\()",
+    re.IGNORECASE,
+)
+
+
+def parse_text_actions(text: str | None) -> list[dict[str, Any]]:
+    """Extract text-format tool calls as native-shaped call dicts.
+
+    Open models that don't emit native tool calls express them in a few text
+    shapes; this recognizes the two seen in the wild:
+
+    * an ``Action:`` / ``ACTION:`` line — ``Action: enumerate_gadgets({...})``
+      (react / chain_of_thought), and
+    * a JSON object — ``{"name": "enumerate_gadgets", "arguments": {...}}`` (often
+      inside a ```` ```json ```` fence), which some instruct/uncensored models
+      emit instead of a native call.
+
+    Returns one dict per recognized call, in document order, each shaped like a
+    native tool call (``{"id", "name", "arguments"}``) so the rest of the graph —
+    ``route_after_reason``, ``node_enumerate``, ``_find_submit_call`` — treats it
+    identically to a provider-emitted call. Only the two known tools are
+    recognized; an unparseable argument blob yields empty ``arguments`` (the tool
+    layer then surfaces the error to the agent). Returns ``[]`` when nothing
+    matches.
+    """
+    if not text:
+        return []
+    known = {ENUMERATE_GADGETS, SUBMIT_PAYLOAD}
+    calls: list[dict[str, Any]] = []
+
+    # Form 1: `Action: name(args)`.
+    for match in _TEXT_ACTION_RE.finditer(text):
+        name = match.group(1)
+        if name not in known:
+            continue
+        # The lookahead leaves match.end() on the "(" without consuming it.
+        inner = _extract_paren_group(text, match.end())
+        if inner is None:
+            continue
+        calls.append(
+            {
+                "id": f"text-action-{len(calls)}",
+                "name": name,
+                "arguments": _decode_action_args(inner),
+            }
+        )
+
+    # Form 2: a JSON object `{"name": <known tool>, "arguments"|"input"|"parameters": {...}}`.
+    for obj in _iter_json_objects(text):
+        name = obj.get("name")
+        if name not in known:
+            continue
+        args = obj.get("arguments")
+        if args is None:
+            args = obj.get("input")
+        if args is None:
+            args = obj.get("parameters")
+        calls.append(
+            {
+                "id": f"text-action-{len(calls)}",
+                "name": name,
+                "arguments": args if isinstance(args, dict) else {},
+            }
+        )
+
+    return calls
+
+
+def _extract_paren_group(text: str, open_index: int) -> str | None:
+    """Return the substring inside the parens opening at ``open_index``.
+
+    Nesting- and quote-aware (single/double quotes with backslash escapes), so a
+    ``(`` or ``)`` inside a string literal or a nested call does not close the
+    group early. Returns ``None`` if the group is never balanced.
+    """
+    if open_index >= len(text) or text[open_index] != "(":
+        return None
+    depth = 0
+    in_string = False
+    quote = ""
+    escaped = False
+    for j in range(open_index, len(text)):
+        ch = text[j]
+        if in_string:
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == quote:
+                in_string = False
+            continue
+        if ch in "\"'":
+            in_string = True
+            quote = ch
+        elif ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+            if depth == 0:
+                return text[open_index + 1 : j]
+    return None
+
+
+def _decode_action_args(inner: str) -> dict[str, Any]:
+    """Decode a text action's argument blob into a dict.
+
+    The observed shape is a JSON object (``{"binary_path": "..."}``); trailing
+    prose after the object is tolerated via ``raw_decode``. An empty blob or one
+    that is not a JSON object yields ``{}`` — a benign miss the tool layer reports
+    back to the agent, not a crash.
+    """
+    blob = inner.strip()
+    if not blob:
+        return {}
+    try:
+        value, _ = json.JSONDecoder().raw_decode(blob)
+    except json.JSONDecodeError:
+        return {}
+    return value if isinstance(value, dict) else {}
+
+
+def _extract_brace_group(text: str, open_index: int) -> str | None:
+    """Return the balanced ``{...}`` substring (incl. braces) opening at ``open_index``.
+
+    Quote- and nesting-aware, so a brace inside a string literal does not close
+    the object early. Returns ``None`` if never balanced.
+    """
+    if open_index >= len(text) or text[open_index] != "{":
+        return None
+    depth = 0
+    in_string = False
+    quote = ""
+    escaped = False
+    for j in range(open_index, len(text)):
+        ch = text[j]
+        if in_string:
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == quote:
+                in_string = False
+            continue
+        if ch in "\"'":
+            in_string = True
+            quote = ch
+        elif ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                return text[open_index : j + 1]
+    return None
+
+
+def _iter_json_objects(text: str) -> list[dict[str, Any]]:
+    """Every top-level JSON object embedded in ``text`` (fenced or bare), in order.
+
+    Scans for ``{``, extracts the balanced group, and keeps it if it parses as a
+    JSON object — so a ```` ```json {...} ```` fence or an inline object is found
+    without the fence markers mattering. Nested objects are skipped (the scan
+    resumes past a matched object), so an object's own fields are not re-yielded.
+    """
+    objects: list[dict[str, Any]] = []
+    i = 0
+    n = len(text)
+    while i < n:
+        if text[i] == "{":
+            group = _extract_brace_group(text, i)
+            if group is not None:
+                try:
+                    parsed = json.loads(group)
+                except json.JSONDecodeError:
+                    parsed = None
+                if isinstance(parsed, dict):
+                    objects.append(parsed)
+                    i += len(group)
+                    continue
+        i += 1
+    return objects
+
+
 __all__ = [
     "ENUMERATE_GADGETS",
     "SUBMIT_PAYLOAD",
@@ -253,4 +454,5 @@ __all__ = [
     "ToolLayer",
     "normalize_tool_call",
     "parse_chain_addresses",
+    "parse_text_actions",
 ]

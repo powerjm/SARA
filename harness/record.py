@@ -200,20 +200,31 @@ class RunRecord(BaseModel):
 
     Persistence: a run produces exactly one RunRecord file at
     `runs/<run_id>/record.json`, plus an associated trace JSONL at
-    `runs/<run_id>/trace.jsonl` and a payload at `runs/<run_id>/payload.bin`.
+    `runs/<run_id>/trace.jsonl`, the full conversation JSONL at
+    `runs/<run_id>/conversation.jsonl`, and a payload at
+    `runs/<run_id>/payload.bin`.
     """
 
     # v2 added the optional ``cost.pricing`` snapshot; v3 (ADR 0009) collapsed the
-    # two success outcomes into a single ``SUCCESS`` and reshaped ``ValidatorOutput``.
+    # two success outcomes into a single ``SUCCESS`` and reshaped ``ValidatorOutput``;
+    # v4 added the optional ``conversation_path`` and ``backend_handle`` fields.
     # All versions are accepted on read (see docs/SCHEMA_MIGRATIONS.md): a v1 record
     # has ``cost.pricing is None``; a pre-v3 record's ``known_rediscovery`` /
-    # ``new_discovery`` outcome is migrated to ``SUCCESS`` by ``_migrate_outcome``.
-    # New records are written as v3.
-    schema_version: Literal["1", "2", "3"] = "3"
+    # ``new_discovery`` outcome is migrated to ``SUCCESS`` by ``_migrate_outcome``;
+    # a pre-v4 record has ``conversation_path is None`` and ``backend_handle is
+    # None`` (resume/cost-cap fall back to ``backend.name``). New records are v4.
+    schema_version: Literal["1", "2", "3", "4"] = "4"
 
     run_id: UUID = Field(default_factory=uuid4)
     binary_id: str  # foreign key into corpus/manifest.yaml
     backend: BackendInfo
+    # The registry ``--backend`` handle that resolved to ``backend`` — the cell's
+    # backend identity (e.g. "claude-sonnet", whose model is "claude-sonnet-4-6").
+    # The experiment cell is (binary_id, backend_handle, prompting_strategy);
+    # batch resume and per-backend cost caps key on it, so it must equal what
+    # ``experiments.yaml`` lists. Optional so pre-v4 records still load (they fall
+    # back to ``backend.name``); new runs always set it (schema v4).
+    backend_handle: str | None = None
     prompting_strategy: PromptingStrategy
 
     started_at: datetime
@@ -228,6 +239,9 @@ class RunRecord(BaseModel):
     cost: CostRecord
 
     trace_path: Path
+    # Full agent↔LLM↔MCP conversation (one message per line). Optional so pre-v4
+    # records still load; new runs always write it (schema v4).
+    conversation_path: Path | None = None
     payload_path: Path | None = None
     validator: ValidatorOutput | None = None
 

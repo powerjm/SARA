@@ -106,7 +106,9 @@ def _submit_turn(payload_hex: str, addresses: list[str]) -> ScriptedTurn:
 
 def test_build_graph_compiles_and_invokes_with_only_a_backend() -> None:
     backend = FakeBackend(script=[ScriptedTurn(text="No viable chain; giving up.")])
-    app = build_graph(backend).compile()  # default config, real (unused) tool layer
+    # max_nudges=0 for a one-shot give-up (the nudge path is covered separately).
+    config = AgentConfig(strategy=prompts.get("zero_shot"), tools=ToolLayer(), max_nudges=0)
+    app = build_graph(backend, config).compile()
     # A nonexistent binary makes the baseline enumeration fail-soft (no ROPgadget
     # needed); the run still completes and terminates.
     state = AgentState(binary=BinaryContext("b", Path("/nonexistent/binary"), "x86_64", ["nx"]))
@@ -229,8 +231,13 @@ def test_enumerate_loop_then_submit(
 
     assert backend.calls_made == 2
     assert result.outcome == Outcome.SUCCESS
-    # baseline enumerate + the agent's explicit enumerate call.
-    assert len([m for m in result.state.messages if m.role == "tool"]) == 2
+    # The agent's explicit enumerate call is a tool result; the harness baseline
+    # enumeration is presented as user context (ADR 0011), not an orphan tool msg.
+    assert len([m for m in result.state.messages if m.role == "tool"]) == 1
+    assert any(
+        m.role == "user" and m.content.startswith("Baseline gadget enumeration:")
+        for m in result.state.messages
+    )
 
 
 def test_refusal_via_metadata_yields_safeguard_refusal(

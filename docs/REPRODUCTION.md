@@ -93,7 +93,9 @@ python -m harness.cli run \
     --strategy zero_shot
 ```
 
-A successful run writes `runs/<uuid>/{record.json, trace.jsonl, payload.bin}`.
+A successful run writes
+`runs/<uuid>/{record.json, trace.jsonl, conversation.jsonl, payload.bin}`
+(`conversation.jsonl` is the full agent↔LLM↔MCP transcript for later analysis).
 
 ## 7. Full experiment matrix
 

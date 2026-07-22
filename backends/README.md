@@ -67,17 +67,15 @@ constructor. Determinism knobs: `temperature=0.2`, `seed=0` by default.
 | `claude-sonnet` | claude-sonnet-4-6 (Anthropic API) | PREMIUM | n/a (hosted) |
 | `claude-opus` | claude-opus-4-7 (Anthropic API) | PREMIUM | n/a (hosted) |
 | `gpt-5` | gpt-5 (OpenAI API) | PREMIUM | n/a (hosted) |
-| `gemini-2.5-pro` | gemini-2.5-pro (Google API) | PREMIUM | n/a (hosted) |
-| `llama-3.3-70b` | llama-3.3-70b-instruct | OPEN_WEIGHT | ✗ ~42 GB (cloud/large-host) |
-| `qwen2.5-coder-32b` | qwen2.5-coder-32b-instruct | OPEN_WEIGHT | ✓ tight (~20 GB) |
+| `gemini-pro-latest` | gemini-pro-latest (Google API) | PREMIUM | n/a (hosted) |
+| `qwen2.5-coder-32b` | qwen/qwen2.5-coder-32b | OPEN_WEIGHT | ✓ tight (~20 GB) |
 | `qwen2.5-coder-7b` | qwen2.5-coder-7b-instruct | OPEN_WEIGHT | ✓ (smoke-test only) |
-| `qwen3-coder-30b` | qwen3-coder-30b-a3b-instruct | OPEN_WEIGHT | ✓ (~19 GB, MoE) |
+| `qwen3-coder-30b` | qwen/qwen3-coder-30b | OPEN_WEIGHT | ✓ (~19 GB, MoE) |
 | `gpt-oss-20b` | gpt-oss-20b | OPEN_WEIGHT | ✓ (~13 GB, MoE) |
 | `devstral-small` | devstral-small-2507 | OPEN_WEIGHT | ✓ (~14 GB) |
-| `dolphin-mixtral-8x7b` | dolphin-2.7-mixtral-8x7b | UNRESTRICTED | ✗ ~26 GB (over profile) |
-| `whiterabbitneo-v3-7b` | whiterabbitneo-v3-7b | UNRESTRICTED | ✓ (~5 GB) |
-| `qwen3-30b-abliterated` | qwen3-30b-a3b-abliterated | UNRESTRICTED | ✓ (~19 GB, MoE) |
-| `dolphin-3.0-mistral-24b` | dolphin3.0-mistral-24b | UNRESTRICTED | ✓ (~14 GB) |
+| `whiterabbitneo-v3-7b` | whiterabbitneo_whiterabbitneo-v3-7b | UNRESTRICTED | ✓ (~5 GB) |
+| `qwen3-30b-abliterated` | huihui-ai_qwen3-30b-a3b-abliterated-clone-i1 | UNRESTRICTED | ✓ (~19 GB, MoE) |
+| `dolphin-3.0-mistral-24b` | cognitivecomputations_dolphin3.0-mistral-24b | UNRESTRICTED | ✓ (~14 GB) |
 
 VRAM figures are the **Q4_K_M weight file** size (except gpt-oss, which ships
 native MXFP4); add KV-cache/context on top. See [Fitting 24 GB](#fitting-24-gb).
@@ -104,27 +102,31 @@ into every `RunRecord`.
 - **Vendor / API:** OpenAI Chat Completions.
 - **Price (USD / Mtok):** 1.25 prompt / 10.00 completion.
 - **Role:** premium cross-vendor comparison (OpenAI).
+- **⚠ Non-deterministic (API limitation):** as a reasoning model gpt-5 rejects a
+  custom `temperature` (only the default `1` is allowed) and does not accept
+  `seed`, so the backend omits both (see `OpenAIBackend._send_sampling_params`).
+  Unlike every other backend, gpt-5 runs **cannot** honor the temperature/seed
+  determinism knobs — note this in the thesis's reproducibility discussion.
+  gpt-5 also requires `max_completion_tokens` in place of `max_tokens` (ADR 0011).
 
-### gemini-2.5-pro — Gemini 2.5 Pro
+### gemini-pro-latest — Gemini Pro (latest)
 - **Vendor / API:** Google Gemini API.
-- **Price (USD / Mtok):** 1.25 prompt / 10.00 completion (≤200k-token tier; the
-  >200k tier is 2.50 / 15.00 and is *not* the pinned rate — revisit if prompts
-  routinely exceed 200k).
+- **Model:** `gemini-pro-latest`, Google's stable alias for the newest GA Gemini
+  Pro (currently the Gemini 3.x Pro tier). **Replaced `gemini-2.5-pro`**, which is
+  gated for new API keys — a live call returns `404 "no longer available to new
+  users"` (ADR 0011).
+- **Price (USD / Mtok):** 2.00 prompt / 12.00 completion (≤200k-token tier; the
+  >200k tier is 4.00 / 18.00 and is *not* the pinned rate — revisit if prompts
+  routinely exceed 200k). Because the alias tracks the latest Pro, **re-verify the
+  rate before a run for record** if Google rolls the alias to a new model.
 - **Role:** premium cross-vendor comparison (Google).
+- **Refusals:** aligned Google models refuse this task class as plain text
+  ("Sorry, I cannot fulfill your request …") with a normal finish reason, so the
+  keyword fallback in `Backend.detect_refusal` was extended to catch them.
 
 ---
 
 ## OPEN_WEIGHT — alignment intact, local
-
-### llama-3.3-70b — Llama 3.3 70B Instruct
-- **Developer:** Meta. **Arch:** dense, 70B. **Context:** 128K.
-- **License:** Llama 3.3 Community License.
-- **Weights / GGUF:** `meta-llama/Llama-3.3-70B-Instruct` · GGUF
-  `bartowski/Llama-3.3-70B-Instruct-GGUF`.
-- **24 GB fit:** ✗ **does not fit** — Q4_K_M ≈ 42 GB; usable only with heavy CPU
-  offload (minutes/token). Kept as a **cloud / large-host** open-weight entry, not
-  a 4090 run-for-record model.
-- **Tool calling:** yes (native).
 
 ### qwen2.5-coder-32b — Qwen2.5-Coder-32B-Instruct
 - **Developer:** Alibaba (Qwen). **Arch:** dense, 32B. **Context:** 32K native /
@@ -197,18 +199,6 @@ into every `RunRecord`.
 > tuning), which is noted so the run-for-record analysis doesn't read it as a pure
 > alignment contrast.
 
-### dolphin-mixtral-8x7b — Dolphin 2.7 Mixtral 8x7B
-- **Developer:** Cognitive Computations (base: Mistral Mixtral-8x7B). **Arch:**
-  MoE, 46.7B total / ~12.9B active. **Context:** 32K.
-- **License:** Apache-2.0 (inherits Mixtral).
-- **Weights / GGUF:** `cognitivecomputations/dolphin-2.7-mixtral-8x7b` · GGUF
-  `TheBloke/dolphin-2.7-mixtral-8x7b-GGUF`.
-- **24 GB fit:** ✗ **over profile** — Q4_K_M ≈ 26 GB; needs Q3_K_M (~20 GB) or
-  partial CPU offload on a 24 GB card. Superseded by `dolphin-3.0-mistral-24b`
-  below for the 4090 profile; kept for continuity with earlier runs.
-- **Notes:** uncensored general-purpose fine-tune (the original registered
-  unrestricted entry).
-
 ### whiterabbitneo-v3-7b — WhiteRabbitNeo V3 7B  *(new)*
 - **Developer:** WhiteRabbitNeo / Kindo. **Arch:** dense, 7B. **Context:** 32K.
 - **License:** **WhiteRabbitNeo Extension to Apache-2.0** — carries **usage
@@ -253,8 +243,9 @@ into every `RunRecord`.
   `dphn/Dolphin3.0-Mistral-24B`) · GGUF
   `bartowski/cognitivecomputations_Dolphin3.0-Mistral-24B-GGUF`.
 - **24 GB fit:** ✓ comfortably — Q4_K_M ≈ 14 GB.
-- **Role:** modern uncensored **general-purpose** fine-tune and the 24 GB-friendly
-  successor to `dolphin-mixtral-8x7b`; supports function calling. Shares the
+- **Role:** modern uncensored **general-purpose** fine-tune (the 24 GB-friendly
+  successor to the older Dolphin 2.7 Mixtral 8x7B, dropped as over-profile);
+  supports function calling. Shares the
   Mistral-Small-24B base with `devstral-small`, giving a partial matched pairing.
   A reasoning variant (`Dolphin3.0-R1-Mistral-24B`) also exists if a
   chain-of-thought unrestricted cell is wanted later.
@@ -276,8 +267,6 @@ context sit on top, so leave headroom.
 | whiterabbitneo-v3-7b | Q6_K/Q8_0 | 6–8 GB | ✓ (roomy) |
 | qwen2.5-coder-7b (smoke) | Q4_K_M | ~5 GB | ✓ (roomy) |
 | qwen2.5-coder-32b | Q4_K_M | ~20 GB | ✓ tight |
-| dolphin-mixtral-8x7b | Q4_K_M | ~26 GB | ✗ (use Q3 / offload) |
-| llama-3.3-70b | Q4_K_M | ~42 GB | ✗ (cloud/large-host) |
 
 **LM Studio settings that buy context room on 24 GB:** enable **Flash Attention**
 and set **KV-cache quantization to Q8** — on a 24 GB budget that's roughly the

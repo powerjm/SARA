@@ -87,7 +87,7 @@ def run(binary: str, backend: str, strategy: str, output_dir: Path | None) -> No
     except (corpus.CorpusError, KeyError) as exc:
         raise click.ClickException(str(exc)) from exc
 
-    record = run_one(spec, backend_obj, strategy, settings)
+    record = run_one(spec, backend_obj, strategy, settings, backend_handle=backend)
     run_dir = persistence.final_dir(settings.output_dir, str(record.run_id))
     console.print(
         f"[green]done[/] outcome=[bold]{record.outcome.value}[/]"

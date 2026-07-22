@@ -75,6 +75,11 @@ class BatchConfig:
     wall_clock_cap_seconds: int
     # Per-backend USD cap. Absent/0 means "no cap for this backend".
     usd_per_backend: dict[str, float] = field(default_factory=dict)
+    # Reason-round + nudge budgets (ADR 0012). Exposed here so a batch can give
+    # slow local models more attempts without an env var; premium models stay
+    # bounded by ``usd_per_backend`` regardless.
+    max_iterations: int = 8
+    max_nudges: int = 2
 
     @classmethod
     def from_yaml(cls, path: Path) -> BatchConfig:
@@ -91,6 +96,8 @@ class BatchConfig:
             token_cap=int(limits.get("tokens", 200_000)),
             wall_clock_cap_seconds=int(limits.get("wall_clock_seconds", 1800)),
             usd_per_backend={str(k): float(v) for k, v in usd.items()},
+            max_iterations=int(limits.get("max_iterations", 8)),
+            max_nudges=int(limits.get("max_nudges", 2)),
         )
 
     def settings(self) -> RunSettings:
@@ -98,6 +105,8 @@ class BatchConfig:
             output_dir=self.output_dir,
             token_cap=self.token_cap,
             wall_clock_cap_seconds=self.wall_clock_cap_seconds,
+            max_iterations=self.max_iterations,
+            max_nudges=self.max_nudges,
         )
 
     def cap_for(self, backend: str) -> float:
@@ -153,20 +162,34 @@ def estimate_cost(config: BatchConfig) -> dict[str, float]:
 # --------------------------------------------------------------------------- #
 
 
+def _cell_backend(record: RunRecord) -> str:
+    """The cell's backend identity for resume / cost-cap keying.
+
+    The plan keys cells by the registry ``--backend`` handle, so records must be
+    grouped by the same handle — not by ``backend.name``, which is the *model*
+    string the handle resolved to (e.g. handle ``claude-sonnet`` -> model
+    ``claude-sonnet-4-6``). New records carry ``backend_handle``; pre-v4 records
+    predate it and fall back to ``backend.name`` (correct only where handle ==
+    model, which is how those older runs were keyed anyway).
+    """
+    return record.backend_handle or record.backend.name
+
+
 def completed_counts(output_dir: Path) -> dict[tuple[str, str, str], int]:
     """Count finalized runs per cell already on disk (for resume)."""
     counts: dict[tuple[str, str, str], int] = {}
     for record in persistence.iter_records(output_dir):
-        key = (record.binary_id, record.backend.name, record.prompting_strategy.value)
+        key = (record.binary_id, _cell_backend(record), record.prompting_strategy.value)
         counts[key] = counts.get(key, 0) + 1
     return counts
 
 
 def spend_by_backend(output_dir: Path) -> dict[str, float]:
-    """Sum recorded USD cost per backend already on disk."""
+    """Sum recorded USD cost per backend (by cell handle) already on disk."""
     spend: dict[str, float] = {}
     for record in persistence.iter_records(output_dir):
-        spend[record.backend.name] = spend.get(record.backend.name, 0.0) + record.cost.usd
+        handle = _cell_backend(record)
+        spend[handle] = spend.get(handle, 0.0) + record.cost.usd
     return spend
 
 
@@ -234,6 +257,7 @@ def run_batch(
                     cell.strategy,
                     settings,
                     validator_client=validator_client,
+                    backend_handle=cell.backend,
                 )
                 result.executed.append(record)
                 spend[cell.backend] = spend.get(cell.backend, 0.0) + record.cost.usd

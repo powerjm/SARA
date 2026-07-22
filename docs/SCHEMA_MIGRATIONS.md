@@ -79,3 +79,46 @@ a v3 record as an outcome — recompute it at analysis time from
 
 **No back-fill.** Existing v1/v2 records are left as-is (they remain valid and
 migrate on read).
+
+## v3 → v4 — full-conversation artifact + backend handle (2026-07-22)
+
+**What changed.** Two optional `RunRecord` fields:
+
+1. `conversation_path` points at a new per-run artifact,
+   `runs/<run_id>/conversation.jsonl` — the full agent↔LLM↔MCP conversation, one
+   JSON object per message (`role`, `content`, `tool_calls`, `tool_call_id`). It
+   captures every system / user / assistant turn, tool call, and tool result the
+   agent saw, so a run's reasoning is recoverable post-hoc for analysis. The
+   lightweight per-node `trace.jsonl` is unchanged.
+2. `backend_handle` records the registry `--backend` handle the cell was run from
+   (e.g. `"claude-sonnet"`), distinct from `backend.name`, which is the *model*
+   string it resolved to (`"claude-sonnet-4-6"`). The experiment cell is
+   `(binary_id, backend_handle, prompting_strategy)`.
+
+**Why.** (1) The trace records only a per-node index, and `AgentState` is kept
+small, so the actual conversation was never persisted; the runs for record want
+the full transcript. (2) Batch **resume** (`completed_counts`) and the per-backend
+**cost cap** (`spend_by_backend`) group records by cell, but the plan keys cells
+by the registry *handle* while records only stored the *model* name. For every
+backend where the two differ (claude-sonnet/opus and all LM Studio models), an
+interrupted batch would re-run completed cells and under-count prior spend on
+resume — so the cost cap could be exceeded. Recording the handle fixes the keying.
+
+**Compatibility.**
+
+- `schema_version` is `Literal["1", "2", "3", "4"]`, default `"4"`. New records
+  are written as `"4"`; v1–v3 records still validate.
+- Both fields are optional (`None` default); a pre-v4 record (no
+  `conversation_path` / `backend_handle` key) deserialises unchanged with those
+  attributes `None`.
+- No change to any existing field; aggregation/statistics are unaffected.
+
+**Reader guidance.** Treat `conversation_path is None` as "no transcript recorded"
+(a pre-v4 run). Tool-result content in the transcript is what the agent received —
+already bounded by `ToolLayer.max_observation_chars` — not the untruncated raw
+tool output. When `backend_handle is None` (pre-v4), resume/cost-cap fall back to
+`backend.name` — correct only for the runs where handle == model, which is how
+those older runs were keyed anyway.
+
+**No back-fill.** Existing v1–v3 records are left as-is (they remain valid). Their
+runs have no `conversation.jsonl`; only the `trace.jsonl` is available.

@@ -91,6 +91,10 @@ class AgentState:
     # nodes can enforce the wall-clock budget. ``None`` until ingest runs.
     started_monotonic: float | None = None
 
+    # Count of "you must call a tool" nudges issued after a reason turn produced
+    # no tool call (bounded by AgentConfig.max_nudges; ADR 0012).
+    nudge_count: int = 0
+
     # Terminal state markers (set by graph nodes; harness reads them on exit).
     terminated: bool = False
     termination_reason: str | None = None
