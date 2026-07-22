@@ -1,4 +1,8 @@
-"""Zero-shot prompting strategy: minimal scaffolding, no exemplars."""
+"""Zero-shot prompting strategy: minimal scaffolding, no exemplars.
+
+The zero-/one-/few-shot prompting taxonomy was introduced by Brown et al.
+(2020), "Language Models are Few-Shot Learners" (https://arxiv.org/pdf/2005.14165).
+"""
 
 SYSTEM = """\
 You are a binary exploitation analyst. You have access to tools that can

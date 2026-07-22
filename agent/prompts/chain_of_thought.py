@@ -1,4 +1,8 @@
-"""Chain-of-thought prompting strategy: explicit reasoning before action."""
+"""Chain-of-thought prompting strategy: explicit reasoning before action.
+
+Introduced by Wei et al. (2022), "Chain-of-Thought Prompting Elicits Reasoning
+in Large Language Models" (https://arxiv.org/pdf/2201.11903).
+"""
 
 SYSTEM = """\
 You are a binary exploitation analyst. Before each tool call, write a brief
