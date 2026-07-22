@@ -290,7 +290,7 @@ def wilcoxon_signed_rank(
     Uses scipy's `exact` mode for small n, where the normal approximation
     is unreliable. Reports matched-pairs rank-biserial r as the effect size.
     """
-    from scipy.stats import wilcoxon  # type: ignore[import-not-found]
+    from scipy.stats import rankdata, wilcoxon  # type: ignore[import-not-found]
 
     if len(values_a) != len(values_b):
         raise ValueError("paired vectors must have equal length")
@@ -309,9 +309,13 @@ def wilcoxon_signed_rank(
 
     method = "exact" if len(nonzero) <= 25 else "approx"
     res = wilcoxon(values_a, values_b, method=method, zero_method="wilcox")
-    # rank-biserial r from signed ranks: (W+ - W-) / (W+ + W-)
-    ranks_pos = sum(abs(d) for d in nonzero if d > 0)
-    ranks_neg = sum(abs(d) for d in nonzero if d < 0)
+    # Matched-pairs rank-biserial r = (W+ - W-) / (W+ + W-), where W+ and W- are
+    # the sums of the RANKS of the absolute differences (Kerby 2014, simple
+    # difference formula) — not the raw magnitudes. Ties in |d| take average
+    # ranks, matching scipy's signed-rank statistic.
+    abs_ranks = rankdata([abs(d) for d in nonzero])
+    ranks_pos = sum(rank for rank, d in zip(abs_ranks, nonzero, strict=True) if d > 0)
+    ranks_neg = sum(rank for rank, d in zip(abs_ranks, nonzero, strict=True) if d < 0)
     total = ranks_pos + ranks_neg
     r = (ranks_pos - ranks_neg) / total if total else 0.0
 

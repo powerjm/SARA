@@ -145,6 +145,25 @@ def test_wilcoxon_signed_rank_one_sided_effect() -> None:
     assert res.rank_biserial_r > 0
 
 
+def test_wilcoxon_rank_biserial_uses_ranks_not_magnitudes() -> None:
+    # diffs = [-1, 2, 100]; ranks of |d| = [1, 2, 3]. W+ = 2 + 3 = 5, W- = 1,
+    # so r = (5 - 1) / 6 = 2/3. A magnitude-based formula would give ~0.98 —
+    # this pins the correct rank-biserial value (regression guard).
+    a = [-1.0, 2.0, 100.0]
+    b = [0.0, 0.0, 0.0]
+    res = wilcoxon_signed_rank(a, b)
+    assert res.rank_biserial_r == pytest.approx(2 / 3)
+
+
+def test_wilcoxon_rank_biserial_handles_ties_with_average_ranks() -> None:
+    # |d| has a tie at 5 (ranks 2.5, 2.5) and a 1 (rank 1). The two 5s are
+    # positive, the 1 is negative: W+ = 2.5 + 2.5 = 5, W- = 1, r = 4/6.
+    a = [5.0, 5.0, -1.0]
+    b = [0.0, 0.0, 0.0]
+    res = wilcoxon_signed_rank(a, b)
+    assert res.rank_biserial_r == pytest.approx(4 / 6)
+
+
 # --------------------------------------------------------------------------- #
 # Wilson CI                                                                    #
 # --------------------------------------------------------------------------- #
