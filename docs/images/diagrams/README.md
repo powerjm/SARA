@@ -4,9 +4,11 @@ This directory contains one clean or layered publication-oriented raster figure
 for each of ten architecture subjects. The discarded contract, journal, and
 blueprint variants have been removed.
 
-The figures reflect ADRs 0010–0012: text-format action recovery, provider-valid
-backend wire formats, and the bounded retry nudge. All figures were checked for
-label and control-flow accuracy against the current working tree.
+The figures reflect the current behavior through ADR 0015: text-format action
+recovery, provider-valid backend wire formats, truncation recovery, iterative
+payload validation, and budget-aware continuation. ADR 0015 supersedes the
+bounded retry-nudge behavior from ADR 0012. All figures were checked for label
+and control-flow accuracy against the current working tree.
 
 ## System architecture
 
@@ -59,32 +61,39 @@ gradients, or 3D effects.
 
 Subject-specific content:
 
-- **System architecture:** four layers, the `RunRecord` contract, validator as
-  sole execution path, action parsing, retry nudges, and provider-valid wire
-  translation.
+- **System architecture:** four layers, `RunRecord`, validator as the sole
+  execution path, action parsing, budget-aware continuation, iterative
+  validation feedback, provider-valid wire translation, and truncation
+  detection.
 - **Experiment data flow:** binary × backend × strategy, five replicates per
   cell, one `RunRecord` per run, `ANY`-success and median aggregation rules,
   refusal separation, paired statistics, and findings.
 - **Experiment configuration:** the exact `experiments.yaml` matrix—10 binaries,
   11 backend handles, four strategies, five replicates, 440 cells and 2,200
-  planned runs—plus per-run limits, hosted-backend cost caps, output directory,
-  and overrides.
+  planned runs—plus the 1,000,000-token and 600-second limits, 100-turn runaway
+  backstop, deprecated/ignored `max_nudges`, hosted-backend cost caps, output
+  directory, and overrides.
 - **Agent loop:** `INGEST → ENUMERATE → REASON`, baseline enumeration as user
-  context, native or parsed text actions, a maximum-two-nudge `REASON` self-loop,
-  submit/give-up through `PROPOSE`, and budget/refusal through `VALIDATE`.
+  context, native or parsed text actions, unconditional budget-aware reasoning
+  continuation, `PROPOSE → VALIDATE`, failed-validation feedback to `REASON`,
+  successful validation through `FINALIZE`, and bounded truncation recovery.
 - **Zero-shot:** task, constraints, and tool descriptions without exemplars or a
-  reasoning scaffold; native/parsed JSON calls; bounded no-tool nudges.
+  reasoning scaffold; native/parsed JSON calls; shared success criteria;
+  iterative submission feedback; and budget-aware continuation.
 - **Chain-of-thought:** `THOUGHT → ACTION`; native calls or `Action:` text parsed
-  by `parse_text_actions`; normalized tool result and assessment loop.
+  by `parse_text_actions`; normalized tool result and assessment loop; shared
+  success criteria; and submit/validate/observe/revise behavior.
 - **ReAct:** `THOUGHT → ACTION → OBSERVATION`, with native/text action
-  normalization and harness-supplied observations.
+  normalization, harness-supplied observations, shared success criteria, and
+  iterative validation feedback.
 - **MAJORCA:** its four original stages and DAG construction, wrapped—not
-  modified—by native/parsed JSON dispatch and bounded nudge behavior.
+  modified—by native/parsed JSON dispatch, budget-aware continuation, shared
+  success criteria, and iterative validation feedback.
 - **Corpus provenance:** high-leakage CGC/cb-multios (4), medium-leakage
   re-authored ISP RAS rop-benchmark targets (5), and low-leakage BroncoCTF
   Proper Pwning (1), followed by build/pin, verification, validation, and the
   universal `HELLO SANS` marker.
 - **LLM backends:** stable `Backend` ABC, lazy registry, premium/open-weight/
   unrestricted categories, provider-specific wire translation, LM Studio as the
-  shared local transport, versioned pricing, and normalized `ChatResponse` plus
-  `CostRecord` output.
+  shared local transport, refusal and truncation detection, versioned pricing,
+  and normalized `ChatResponse` plus `CostRecord` output.
