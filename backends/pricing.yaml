@@ -24,28 +24,28 @@
 # `scripts/refresh_pricing.py` (review the diff, bump `pricing_version`), so the
 # change is deliberate and auditable. `--check` warns when this file is stale.
 
-pricing_version: "2026-06-25"
+pricing_version: "2026-07-21"
 
 models:
   claude-sonnet-4-6:
     prompt_per_mtok: 3.0
     completion_per_mtok: 15.0
-    as_of: "2026-06-25"
+    as_of: "2026-07-21"
     source: "https://platform.claude.com/docs/en/about-claude/pricing"
   claude-opus-4-7:
     prompt_per_mtok: 5.0
     completion_per_mtok: 25.0
-    as_of: "2026-06-25"
+    as_of: "2026-07-21"
     source: "https://platform.claude.com/docs/en/about-claude/pricing"
   gpt-5:
     prompt_per_mtok: 1.25
     completion_per_mtok: 10.0
-    as_of: "2026-06-25"
+    as_of: "2026-07-21"
     source: "https://openai.com/api/pricing/"
   gpt-5-mini:
     prompt_per_mtok: 0.25
     completion_per_mtok: 2.0
-    as_of: "2026-06-25"
+    as_of: "2026-07-21"
     source: "https://openai.com/api/pricing/"
   # Gemini 2.5 Pro lists a higher tier for prompts above 200k tokens
   # ($2.50/$15); we pin the <=200k tier here. Revisit if runs routinely exceed
@@ -53,10 +53,10 @@ models:
   gemini-2.5-pro:
     prompt_per_mtok: 1.25
     completion_per_mtok: 10.0
-    as_of: "2026-06-25"
+    as_of: "2026-07-21"
     source: "https://ai.google.dev/gemini-api/docs/pricing"
   gemini-2.5-flash:
     prompt_per_mtok: 0.30
     completion_per_mtok: 2.5
-    as_of: "2026-06-25"
+    as_of: "2026-07-21"
     source: "https://ai.google.dev/gemini-api/docs/pricing"
