@@ -107,6 +107,28 @@ sara/
 
 ---
 
+## Development
+
+This is a single-author thesis instrument, not an open project taking outside contributions — but the same discipline keeps the published results reproducible. After `make bootstrap`, sanity-check the toolchain with `./scripts/doctor.sh`.
+
+Hosted CI is disabled for the public release (see [`docs/adr/0006-disable-ci-workflows-for-public-release.md`](docs/adr/0006-disable-ci-workflows-for-public-release.md)), so the local gate is the only gate. `pre-commit` runs it automatically; to run it by hand before a commit:
+
+```bash
+make format   # auto-format with ruff
+make lint      # ruff check
+make test      # pytest + coverage
+```
+
+Three files sit on the data layer and warrant extra care on any change:
+
+- `harness/record.py` — the run-record schema. Changes are versioning events; bump `schema_version` and add a migration note in [`docs/SCHEMA_MIGRATIONS.md`](docs/SCHEMA_MIGRATIONS.md).
+- `analysis/aggregate.py` — the collapsing rule. Changing it changes what every notebook reports.
+- `validator/classifier.py` — the single source of truth for a run's outcome. Add a unit test for any new branch.
+
+Architectural decisions live in numbered, append-only ADRs under [`docs/adr/`](docs/adr/); supersede a past ADR with a new one rather than editing it. Style is enforced by ruff and mypy (strict): type-annotate everything that crosses a module boundary, use `StrEnum` rather than string literals for outcomes / failure modes / strategies, and keep tests in `tests/test_<module>.py`.
+
+---
+
 ## Ethical scope
 
 This repository builds tooling that constructs Return-Oriented Programming (ROP) exploit chains. Two non-negotiable guardrails govern its use:

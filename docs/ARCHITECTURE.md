@@ -79,7 +79,7 @@ failure must name one).
 
 Changing a field here is a **versioning event**: bump `schema_version` and add a
 migration note in [`SCHEMA_MIGRATIONS.md`](SCHEMA_MIGRATIONS.md). This is a
-high-review-cost file (see `CONTRIBUTING.md`). The current version is **3**;
+high-review-cost file (see the "Development" section of `README.md`). The current version is **3**;
 readers also accept v1/v2 (the migration log covers the v1 → v2 pricing-snapshot
 change and the v2 → v3 single-`SUCCESS` outcome, ADR 0009). `Outcome` has three
 members — `SUCCESS` (a spawned shell printed the marker), `FAILURE`, and

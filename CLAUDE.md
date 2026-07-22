@@ -84,5 +84,5 @@ Each tool (ropgadget, ghidra, radare2, ropper, pwntools, gdb) is its own MCP std
 - **Use `StrEnum`, not string literals**, for outcome / failure-mode / strategy.
 - Tests live in `tests/test_<module>.py`. Run `make format && make lint && make test` before a PR (CI runs the same).
 - Avoid one-letter variables except canonical math (`k`, `n`, `i`, `j`).
-- **High-review-cost files** (per `CONTRIBUTING.md`): `harness/record.py` (schema — versioning event), `analysis/aggregate.py` (collapsing rule — changes every report), `validator/classifier.py` (outcome truth). Treat changes here with extra care.
+- **High-review-cost files** (per the "Development" section of `README.md`): `harness/record.py` (schema — versioning event), `analysis/aggregate.py` (collapsing rule — changes every report), `validator/classifier.py` (outcome truth). Treat changes here with extra care.
 - Architectural decisions get a numbered, append-only ADR in `docs/adr/` — supersede, never edit. Read `docs/INFRASTRUCTURE_PLAN.md` before non-trivial changes (the "why is it this way?" rationale lives there).
