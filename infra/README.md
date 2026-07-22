@@ -1,10 +1,16 @@
 # infra/
 
-Infrastructure-as-code for the cloud VM image that hosts the official
-experimental runs. Local development happens on the workstation; the cloud option
-gives every backend the same recorded hardware baseline (the *record* runs can
-come from either environment as long as the one used is captured in the
-replication snapshot).
+> **Optional — not used for the runs for record.** The runs for record are
+> produced on the local lab host, with the open-weight/unrestricted models served
+> by LM Studio on a separate machine on the LAN (see the top-level `README.md`,
+> "Running locally vs in the cloud"). This cloud IaC is kept as a reviewable,
+> reproducible alternative; it is real but has **not** been `packer build` /
+> `terraform apply`-tested (no cloud account is wired up).
+
+Infrastructure-as-code for an optional cloud VM image that can host the
+experimental runs instead of the lab host. The cloud option gives every backend
+the same recorded hardware baseline; whichever environment produces a *record*
+run, the one used is captured in the replication snapshot.
 
 ## Layout
 

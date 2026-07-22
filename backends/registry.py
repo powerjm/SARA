@@ -164,6 +164,9 @@ def _register_defaults() -> None:
     # price, so no pricing is registered (cost is recorded as usd=0.0).
     from backends.lmstudio_backend import LMStudioBackend
 
+    # NOTE: 70B does NOT fit the 24 GB RTX 4090 local profile (~42 GB at Q4_K_M);
+    # it is a cloud / large-host open-weight entry, not a 4090 run-for-record
+    # model. See backends/README.md for the per-model VRAM footprints.
     register(
         "llama-3.3-70b",
         BackendCategory.OPEN_WEIGHT,
@@ -183,10 +186,56 @@ def _register_defaults() -> None:
         BackendCategory.OPEN_WEIGHT,
         lambda: LMStudioBackend("qwen2.5-coder-7b-instruct", BackendCategory.OPEN_WEIGHT),
     )
+
+    # 24 GB-profile open-weight candidates (RTX 4090 / LM Studio, official
+    # instruct releases -> alignment intact -> OPEN_WEIGHT). All three fit
+    # entirely in 24 GB VRAM at Q4 with room for a working context and expose
+    # native tool calling (required by the LangGraph agent loop). Full model
+    # cards -- base, params, context, licence, GGUF repo, quant/VRAM -- are in
+    # backends/README.md.
     register(
-        "dolphin-mixtral-8x7b",
+        "qwen3-coder-30b",  # Qwen3-Coder-30B-A3B-Instruct (MoE, ~3.3B active)
+        BackendCategory.OPEN_WEIGHT,
+        lambda: LMStudioBackend("qwen3-coder-30b-a3b-instruct", BackendCategory.OPEN_WEIGHT),
+    )
+    register(
+        "gpt-oss-20b",  # OpenAI gpt-oss-20b (MoE, ~3.6B active; harmony format)
+        BackendCategory.OPEN_WEIGHT,
+        lambda: LMStudioBackend("gpt-oss-20b", BackendCategory.OPEN_WEIGHT),
+    )
+    register(
+        "devstral-small",  # Mistral Devstral-Small-2507 (dense 24B; agentic-coding tuned)
+        BackendCategory.OPEN_WEIGHT,
+        lambda: LMStudioBackend("devstral-small-2507", BackendCategory.OPEN_WEIGHT),
+    )
+
+    register(
+        "dolphin-mixtral-8x7b",  # NOTE: ~26 GB at Q4 -> over the 24 GB profile
         BackendCategory.UNRESTRICTED,
         lambda: LMStudioBackend("dolphin-2.7-mixtral-8x7b", BackendCategory.UNRESTRICTED),
+    )
+
+    # 24 GB-profile unrestricted candidates (alignment removed or absent ->
+    # UNRESTRICTED per ADR 0005; the axis is safety-alignment status, not licence
+    # or host). See backends/README.md for cards and the alignment-contrast
+    # rationale: qwen3-30b-abliterated is the clean "same architecture, alignment
+    # off" twin of qwen3-coder-30b; WhiteRabbitNeo is a security-domain uncensored
+    # model whose extra domain fine-tune confounds the pure alignment contrast
+    # (documented, and kept deliberately as the "does a domain model win?" cell).
+    register(
+        "whiterabbitneo-v3-7b",  # WhiteRabbitNeo V3 7B (DevSecOps security fine-tune)
+        BackendCategory.UNRESTRICTED,
+        lambda: LMStudioBackend("whiterabbitneo-v3-7b", BackendCategory.UNRESTRICTED),
+    )
+    register(
+        "qwen3-30b-abliterated",  # Qwen3-30B-A3B abliterated (refusal-ablated MoE)
+        BackendCategory.UNRESTRICTED,
+        lambda: LMStudioBackend("qwen3-30b-a3b-abliterated", BackendCategory.UNRESTRICTED),
+    )
+    register(
+        "dolphin-3.0-mistral-24b",  # Dolphin 3.0 Mistral-24B (uncensored general fine-tune)
+        BackendCategory.UNRESTRICTED,
+        lambda: LMStudioBackend("dolphin3.0-mistral-24b", BackendCategory.UNRESTRICTED),
     )
 
 

@@ -145,6 +145,66 @@ def test_metric_matrix_rejects_unknown_metric() -> None:
         build_metric_matrix([], metric="vibes", backends=["A"])
 
 
+def test_outcome_matrix_excludes_all_refused_cell_and_drops_binary() -> None:
+    # B refused on every run for b1 -> b1 has no scorable B cell -> b1 is dropped
+    # rather than counting B as a 0 (a refusal is "wouldn't", not "couldn't").
+    runs = [
+        _record("b1", "A", Outcome.SUCCESS),
+        _record("b1", "B", Outcome.SAFEGUARD_REFUSAL),
+        _record("b2", "A", Outcome.FAILURE, failure_mode=FailureMode.OTHER),
+        _record("b2", "B", Outcome.SUCCESS),
+    ]
+    summaries = aggregate_runs(runs)
+    binary_ids, matrix = build_outcome_matrix(summaries, backends=["A", "B"])
+    assert binary_ids == ["b2"]
+    assert matrix == [[0, 1]]
+
+
+def test_outcome_matrix_partially_refused_cell_still_scores_as_failure() -> None:
+    # b1/B has one refusal AND one genuine mechanical failure -> refused_all is
+    # False -> the cell is a real "couldn't", scored 0 and retained.
+    runs = [
+        _record("b1", "A", Outcome.SUCCESS),
+        _record("b1", "B", Outcome.SAFEGUARD_REFUSAL),
+        _record("b1", "B", Outcome.FAILURE, failure_mode=FailureMode.OTHER),
+    ]
+    summaries = aggregate_runs(runs)
+    binary_ids, matrix = build_outcome_matrix(summaries, backends=["A", "B"])
+    assert binary_ids == ["b1"]
+    assert matrix == [[1, 0]]
+
+
+def test_outcome_matrix_drops_binary_with_missing_backend() -> None:
+    # B was never run on b2 -> b2 dropped so the matrix stays fully paired.
+    runs = [
+        _record("b1", "A", Outcome.SUCCESS),
+        _record("b1", "B", Outcome.SUCCESS),
+        _record("b2", "A", Outcome.SUCCESS),
+    ]
+    summaries = aggregate_runs(runs)
+    binary_ids, matrix = build_outcome_matrix(summaries, backends=["A", "B"])
+    assert binary_ids == ["b1"]
+    assert matrix == [[1, 1]]
+
+
+def test_metric_matrix_drops_binary_with_missing_cell() -> None:
+    # C never run on b2 -> b2 dropped (previously became a NaN row that poisoned
+    # the whole Friedman/Wilcoxon omnibus).
+    runs = [
+        _record("b1", "A", Outcome.FAILURE, wall=10, failure_mode=FailureMode.OTHER),
+        _record("b1", "B", Outcome.FAILURE, wall=20, failure_mode=FailureMode.OTHER),
+        _record("b1", "C", Outcome.FAILURE, wall=30, failure_mode=FailureMode.OTHER),
+        _record("b2", "A", Outcome.FAILURE, wall=40, failure_mode=FailureMode.OTHER),
+        _record("b2", "B", Outcome.FAILURE, wall=50, failure_mode=FailureMode.OTHER),
+    ]
+    summaries = aggregate_runs(runs)
+    binary_ids, matrix = build_metric_matrix(
+        summaries, metric="wall_clock", backends=["A", "B", "C"]
+    )
+    assert binary_ids == ["b1"]
+    assert matrix == [[10.0, 20.0, 30.0]]
+
+
 # --------------------------------------------------------------------------- #
 # Chain uniqueness (ADR 0009)                                                  #
 # --------------------------------------------------------------------------- #

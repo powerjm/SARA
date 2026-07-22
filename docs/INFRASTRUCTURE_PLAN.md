@@ -34,26 +34,34 @@ Companion to `Powers_AgentInfrastructurePlan.docx`. This file is the in-repo, li
 
 Each layer presents a narrow interface to the one above. Swapping the backend does not touch the tool layer; swapping a tool does not touch the agent loop; swapping the orchestrator (e.g., from LangGraph to a hand-roll) does not touch the validator.
 
-## Phased build sequence
+## Build sequence — the eight steps
 
-| Phase | What lands | Why this order |
-|------:|-----------|----------------|
-| 0 | Repo, lab env, pinned tooling | Nothing else builds without this. |
-| 1 | Single-tool spike: ROPgadget MCP + Anthropic backend + LangGraph skeleton + validator stub | Smallest end-to-end pipeline that proves the four layers compose. |
-| 2 | Full tool suite as MCP servers | Highest-risk integrations; surface format issues early. |
-| 3 | Backend swap layer (OpenAI, Google, LM Studio) | Now that one backend works, generalize. |
-| 4 | Corpus pipeline + verification | Need the tool layer working before fingerprinting documented chains. |
-| 5 | Full run harness, batch CLI, persistent run records | Once Phases 1–4 are stable, productionise. |
-| 6 | Statistical analysis notebooks | Driven by real records; can stub on synthetic data earlier. |
-| 7 | Hardening, replication snapshot | Pin everything, write the reproduction guide. |
+Development followed one linear plan: eight ordered **Steps**, each building one
+subsystem at a time and shipped **complete** (real code, real tests, no leftover
+stubs) before the next began. The full step-by-step record — What / Why /
+Done-when and what actually landed — is in
+[`SARA_DEVELOPMENT_HISTORY.md`](SARA_DEVELOPMENT_HISTORY.md); Steps 0–7 are done
+and Step 8 (run for record) is in progress.
+
+| Step | What lands | Why this order |
+|-----:|-----------|----------------|
+| 0 | Repo, lab env, pinned tooling | Nothing else builds or runs until the toolchain is proven on the target platform. |
+| 1 | Test data: the `sample_overflow` fixture binary + the deterministic synthetic dataset | Every integration test and the whole analysis pipeline need real artifacts to run against. |
+| 2 | ROPgadget MCP server (the worked-example tool) | Until one tool is real, the agent can't enumerate gadgets and no other tool has a template to copy. |
+| 3 | Validator sandbox (the single execution path) | No run yields a real outcome until the one component allowed to execute payloads works. |
+| 4 | Agent loop, end-to-end on a `FakeBackend` | The spine of the apparatus; a fake backend makes the whole loop testable without spending money. |
+| 5 | `sara run` + `sara batch`: harness, batch CLI, persistent run records | Once the loop runs, productionise it into the commands that produce the dataset. |
+| 6 | Statistical analysis notebooks | Driven by records; can run on the synthetic dataset until real runs exist. |
+| 7 | Every backend + every tool (OpenAI, Google, LM Studio; radare2, Ropper, pwntools, GDB, Ghidra) | The cross-backend, multi-tool framing can't be tested with one backend and one tool. |
+| 8 | Run for record: hardening, CI/quality gates, real infra, replication snapshot | Pin everything and make the chosen environment reproducible for the runs the thesis cites. |
 
 ## Key design decisions
 
 - **LangGraph over plain LangChain.** Explicit state machine; states are named and can be referenced from failure-mode coding. See `docs/adr/0001-use-langgraph.md`.
 - **MCP servers per tool, not one wrapper.** Each tool's schema is independently reviewable. A bug in one server can't poison the others.
-- **Cost in the backend, not the harness.** Each provider has its own pricing table and tokenizer; centralising cost would require the harness to know every provider's quirks. Backends emit a `CostRecord` directly.
-- **Validator is the only execution path.** The agent's tools include GDB *inspect*, but never *run*. All execution goes through `validator.runner` with the hardened sandbox.
-- **N≥1 runs per cell, collapsed by anyOf-success.** Documented in `analysis/aggregate.py`. A cell counts as success if any of its runs succeeded; medians are used for time / cost / iterations.
+- **Cost in the backend; prices in one file.** Each backend does its own token accounting and cost math and emits a normalised `CostRecord`, so the harness never learns any provider's quirks. The *rates* are **not** hard-coded per backend: they live in one versioned `backends/pricing.yaml`, and each run embeds the snapshot it used so a recorded cost stays auditable — rates are refreshed deliberately, never fetched at run time. See [`adr/0007-pricing-source-and-provenance.md`](adr/0007-pricing-source-and-provenance.md).
+- **Validator is the only execution path.** The agent's tools include GDB *inspect*, but never *run*. All execution goes through `validator.runner` with the hardened sandbox. See [`adr/0002-validator-boundary.md`](adr/0002-validator-boundary.md).
+- **N runs per cell, collapsed by anyOf-success.** The aggregation rule works for any N≥1, but the runs for record use **N = 5** replicates (Step-5 decision — tighter Wilson intervals and more stable medians for the paired tests). Documented in `analysis/aggregate.py`: a cell counts as success if any of its runs succeeded; medians are used for time / cost / iterations.
 
 ## Where the experiment's independent and dependent variables live
 

@@ -1,5 +1,8 @@
 # packer/
 
+> Part of the **optional** cloud path (not used for the runs for record — see
+> [`../README.md`](../README.md)).
+
 Builds the cloud VM image (AMI) used by `../terraform/` to provision the
 experiment VM.
 

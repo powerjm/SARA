@@ -79,6 +79,33 @@ else
 fi
 
 echo
+echo "LM Studio (open-weight / unrestricted backends):"
+# Endpoint from .env (grepped, not sourced — matching the Credentials check),
+# else the backend's own default. In the reference setup this points at a
+# separate LAN host; the probe just confirms it answers.
+lmstudio_url="$(grep -E '^LMSTUDIO_BASE_URL=..+' .env 2>/dev/null | tail -n1 | cut -d= -f2- | tr -d '[:space:]')"
+lmstudio_url="${lmstudio_url:-http://127.0.0.1:1234/v1}"
+if command -v curl >/dev/null 2>&1; then
+    models_json="$(curl -fsS --max-time 5 "${lmstudio_url%/}/models" 2>/dev/null)"
+    if [[ -n "$models_json" ]]; then
+        py=""
+        if [[ -x .venv/bin/python ]]; then py=".venv/bin/python"
+        elif command -v python3.14 >/dev/null 2>&1; then py="python3.14"
+        elif command -v python3 >/dev/null 2>&1; then py="python3"
+        fi
+        summary=""
+        if [[ -n "$py" ]]; then
+            summary="$(printf '%s' "$models_json" | "$py" -c 'import json,sys; d=json.load(sys.stdin); ids=[m.get("id","?") for m in d.get("data", [])]; print((str(len(ids))+" model(s): "+", ".join(ids)) if ids else "none loaded")' 2>/dev/null)"
+        fi
+        ok "reachable at $lmstudio_url${summary:+ — $summary}"
+    else
+        warn "not reachable at $lmstudio_url — start LM Studio (enable Serve on Local Network for a LAN host) or fix LMSTUDIO_BASE_URL; only needed for the open-weight/unrestricted backends"
+    fi
+else
+    warn "curl not on PATH — cannot probe LM Studio at $lmstudio_url"
+fi
+
+echo
 echo "Corpus:"
 if [[ -f corpus/manifest.yaml ]]; then
     n=$(grep -cE '^  - id:' corpus/manifest.yaml || echo 0)

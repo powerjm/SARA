@@ -79,7 +79,7 @@ failure must name one).
 
 Changing a field here is a **versioning event**: bump `schema_version` and add a
 migration note in [`SCHEMA_MIGRATIONS.md`](SCHEMA_MIGRATIONS.md). This is a
-high-review-cost file (see `CONTRIBUTING.md`). The current version is **3**;
+high-review-cost file (see the "Development" section of `README.md`). The current version is **3**;
 readers also accept v1/v2 (the migration log covers the v1 → v2 pricing-snapshot
 change and the v2 → v3 single-`SUCCESS` outcome, ADR 0009). `Outcome` has three
 members — `SUCCESS` (a spawned shell printed the marker), `FAILURE`, and
@@ -234,15 +234,22 @@ not the placeholder entries.**
 The apparatus runs **identically** local or cloud — same code, same Docker
 validator, same `RunRecord` output. Only the host and `.env` differ.
 
-- **Local** (default): one Ubuntu 26.04 host. API backends via keys in `.env`;
-  open-weight / unrestricted models via a local LM Studio endpoint.
-- **Cloud**: the same stack on a reproducible VM from [`infra/packer/`](../infra/packer)
-  (the pinned image) + [`infra/terraform/`](../infra/terraform) (the instance). A
-  GPU instance is needed **only** to run local models in the cloud; API-only
+- **Local** (default, and the environment used for the runs for record): the
+  harness, the validator sandbox, and the API backends run on one Ubuntu 26.04
+  host (keys in `.env`). The open-weight / unrestricted models run in an LM Studio
+  endpoint, which need not be the same host — in the reference setup it is a
+  **separate machine on the LAN** (an RTX 4090 workstation, "Serve on Local
+  Network" enabled), reached by pointing `LMSTUDIO_BASE_URL` at it. `127.0.0.1`
+  works when LM Studio is co-located.
+- **Cloud** (optional, not used for the runs for record): the same stack on a
+  reproducible VM from [`infra/packer/`](../infra/packer) (the pinned image) +
+  [`infra/terraform/`](../infra/terraform) (the instance) — real but untested IaC.
+  A GPU instance is needed **only** to run local models in the cloud; API-only
   backends run on a CPU instance.
 
-`.env` (`RUN_OUTPUT_DIR`, `VALIDATOR_IMAGE`, backend keys/endpoints) is the only
-thing that differs between a laptop and a cloud VM.
+`.env` (`RUN_OUTPUT_DIR`, `VALIDATOR_IMAGE`, backend keys/endpoints incl.
+`LMSTUDIO_BASE_URL`) is the only thing that differs between the lab host, the LAN
+LM Studio host, and a cloud VM.
 
 ## Invariants (keep these true)
 
@@ -263,6 +270,8 @@ thing that differs between a laptop and a cloud VM.
 
 ## Where to read next
 
+- [`DIAGRAMS.md`](DIAGRAMS.md) — the repo and test architecture as Mermaid
+  diagrams (four layers, data flow, agent state machine, test coverage map).
 - [`SARA_DEVELOPMENT_HISTORY.md`](SARA_DEVELOPMENT_HISTORY.md) — how it was built,
   step by step, with each step's acceptance criteria.
 - [`INFRASTRUCTURE_PLAN.md`](INFRASTRUCTURE_PLAN.md) — the architectural rationale.

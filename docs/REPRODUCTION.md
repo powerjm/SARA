@@ -4,11 +4,19 @@ This guide records exactly what an outside reader needs to re-run the experiment
 
 ## 1. Environment
 
-- Linux host (Ubuntu 26.04 LTS tested and used for runs for record).
+- Linux host (Ubuntu 26.04 LTS tested and used for runs for record) — runs the
+  harness, the validator sandbox, and the API backends. This host is the hardware
+  baseline for the API-backend runs.
 - Python 3.14.
 - Docker 24+ (validated on 29.1.3; add your user to the `docker` group).
 - ~20 GB free disk.
-- (Cloud) the VM image built from `infra/packer/` is the official hardware baseline.
+- For the open-weight / unrestricted models: an LM Studio host. In the reference
+  setup this is a **separate machine on the LAN** (an RTX 4090 workstation) — it
+  is the hardware baseline for the local-model runs, so record its GPU/VRAM and
+  the loaded model's quantization (the replication snapshot captures this; see
+  `docs/REPLICATION_SNAPSHOT.md`).
+- (Optional) the VM image built from `infra/packer/` is an alternative hardware
+  baseline for a cloud run; it is not used for the runs for record.
 
 ### System packages
 
@@ -52,7 +60,12 @@ cp .env.example .env
 $EDITOR .env      # fill in API keys
 ```
 
-For local backends, start LM Studio and load the model named in `backends.registry`.
+For the open-weight / unrestricted backends, start LM Studio on its host and load
+the model named in `backends.registry`. If LM Studio runs on another machine on
+your LAN (the reference setup), enable **Serve on Local Network** in LM Studio (it
+binds `0.0.0.0`), open its port (default 1234) in that host's firewall, and set
+`LMSTUDIO_BASE_URL` in `.env` to that host, e.g. `http://192.168.1.50:1234/v1`.
+Co-located LM Studio uses the default `http://127.0.0.1:1234/v1`.
 
 ## 4. Corpus
 

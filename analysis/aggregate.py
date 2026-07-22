@@ -107,6 +107,22 @@ def build_outcome_matrix(
     """
     Build the (n_binaries x k_backends) 0/1 matrix expected by `cochrans_q`.
 
+    Missing-data policy (keeps the outcome tests measuring "couldn't", not
+    "wouldn't", on a fully paired matrix):
+
+      * A cell that refused on **every** run (``refused_all``) is treated as
+        MISSING, not as a 0. A policy refusal is a qualitatively different event
+        from a mechanical failure, so it must not be counted as a "couldn't".
+        (A cell with a mix of refusals and genuine attempts is *not* all-refused,
+        so it still scores as a 0 — there was a real attempt that failed.)
+      * A binary is DROPPED entirely if any requested backend has no scorable
+        cell for it (never run, or all-refused). Cochran's Q and the McNemar
+        columns derived from this matrix are then all computed on the same
+        complete-case set of binaries.
+
+    The returned ``binary_ids`` is the surviving (complete-case) set, so callers
+    that report ``n = len(binary_ids)`` see the reduced count.
+
     Returns (binary_ids, matrix).
     """
     if strategy is not None:
@@ -114,13 +130,16 @@ def build_outcome_matrix(
 
     by_binary: dict[str, dict[str, int]] = defaultdict(dict)
     for s in summaries:
+        if s.refused_all:
+            # "Wouldn't", not "couldn't": leave the cell missing so it is
+            # excluded rather than lumped in with mechanical failures.
+            continue
         by_binary[s.binary_id][s.backend_name] = s.success
 
-    binary_ids = sorted(by_binary)
-    matrix: list[list[int]] = []
-    for b in binary_ids:
-        row = [by_binary[b].get(backend, 0) for backend in backends]
-        matrix.append(row)
+    binary_ids = sorted(
+        b for b, row in by_binary.items() if all(backend in row for backend in backends)
+    )
+    matrix = [[by_binary[b][backend] for backend in backends] for b in binary_ids]
     return binary_ids, matrix
 
 
@@ -156,6 +175,12 @@ def build_metric_matrix(
     Same shape as `build_outcome_matrix` but for a continuous metric.
 
     `metric` must be one of: "wall_clock", "cost", "iterations".
+
+    Like `build_outcome_matrix`, a binary is DROPPED if any requested backend has
+    no cell for it, so Friedman / Wilcoxon receive a complete paired matrix. (An
+    absent cell was previously filled with NaN, which silently poisoned the whole
+    omnibus with a NaN statistic.) The returned ``binary_ids`` is the surviving
+    complete-case set.
     """
     field_map = {
         "wall_clock": "median_wall_clock_s",
@@ -173,11 +198,10 @@ def build_metric_matrix(
     for s in summaries:
         by_binary[s.binary_id][s.backend_name] = getattr(s, field)
 
-    binary_ids = sorted(by_binary)
-    matrix: list[list[float]] = []
-    for b in binary_ids:
-        row = [float(by_binary[b].get(backend, float("nan"))) for backend in backends]
-        matrix.append(row)
+    binary_ids = sorted(
+        b for b, row in by_binary.items() if all(backend in row for backend in backends)
+    )
+    matrix = [[float(by_binary[b][backend]) for backend in backends] for b in binary_ids]
     return binary_ids, matrix
 
 

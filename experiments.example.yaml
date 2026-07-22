@@ -55,15 +55,27 @@ strategies:
   - chain_of_thought
   - react
 
-# Binary IDs to test against. Must exist in corpus/manifest.yaml.
+# Binary IDs to test against. Must be an ACTIVE (uncommented) entry in
+# corpus/manifest.yaml — i.e. one of the 10 binaries with a verified reference
+# shell PoC. The commented-out placeholder/no-PoC entries in the manifest are
+# excluded from the corpus and must not be listed here.
 binaries:
-  - sample-overflow
-  # - cgc-cromu-00001
-  # - picoctf-rop-1
-  # ...
+  # High-leakage arm — DARPA CGC (cb-multios port), each with a verified PoC.
+  - cgc-cadet-00001
+  - cgc-cromu-00004
+  - cgc-eagle-00005
+  - cgc-nrfin-00056
+  # Low-leakage arm — recent CTF target (BroncoCTF 2026).
+  - broncoctf2026-proper-pwning
+  # Medium-leakage arm — re-authored ISP RAS synthetic curriculum.
+  - ropbench-synth-ex005
+  - ropbench-synth-ex002
+  - ropbench-synth-ex020
+  - ropbench-synth-ex010
+  - ropbench-synth-ex101
 
 # Override per-cell config if needed (e.g., a specific binary needs a longer cap).
 overrides: {}
-  # cgc-cromu-00001:
+  # ropbench-synth-ex101:
   #   limits:
   #     wall_clock_seconds: 3600
