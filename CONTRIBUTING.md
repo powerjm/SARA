@@ -1,8 +1,8 @@
 # Contributing
 
-This repo is the experimental apparatus for a SANS.edu thesis. Contributions
-are welcome but the bar is calibrated for *reproducibility of published
-results*, not feature velocity.
+This repo is the experimental apparatus for a SANS.edu thesis. Forks
+are welcome as long you comply with the LICENSE, the Ethical Scope set
+forth in README.md, and properly cite this work.
 
 ## Setup
 
