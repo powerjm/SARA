@@ -1,3 +1,13 @@
+# SARA — Sans Agentic Rop Analysis
+# Copyright (c) 2026 Jeff Powers. MIT License — see LICENSE.
+# SPDX-License-Identifier: MIT
+#
+# Research instrument for a SANS.edu thesis on LLM agents that build ROP
+# exploit chains. The ethical scope in README.md is non-negotiable and binds
+# all copies, forks, and derived works: educational/CTF targets only,
+# proof-of-concept payloads only. Use against systems you do not own or are
+# not authorized to test is prohibited.
+
 """
 Build corpus binaries from source (the cb-multios path).
 
@@ -250,6 +260,14 @@ def main(argv: list[str]) -> int:
         if only and entry["id"] != only:
             continue
         matched = True
+        build_meta = entry.get("build")
+        recipe = build_meta.get("recipe") if isinstance(build_meta, dict) else None
+        if recipe and from_path is None:
+            # Entry is built by its own external recipe script (e.g. the synthetic
+            # ROP set's build.sh), not by this script's cb-multios resolver. That
+            # script compiles the ELF and re-invokes us per-id with --from to pin.
+            print(f"  SKIP {entry['id']}: built by {recipe} (run it; it pins via --from)")
+            continue
         if not str(entry.get("source_url", "")).startswith("git+") and from_path is None:
             print(f"  SKIP {entry['id']}: not a build-from-source (git+) entry; use fetch.py")
             continue

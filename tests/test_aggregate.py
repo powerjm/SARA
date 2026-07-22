@@ -1,3 +1,13 @@
+# SARA — Sans Agentic Rop Analysis
+# Copyright (c) 2026 Jeff Powers. MIT License — see LICENSE.
+# SPDX-License-Identifier: MIT
+#
+# Research instrument for a SANS.edu thesis on LLM agents that build ROP
+# exploit chains. The ethical scope in README.md is non-negotiable and binds
+# all copies, forks, and derived works: educational/CTF targets only,
+# proof-of-concept payloads only. Use against systems you do not own or are
+# not authorized to test is prohibited.
+
 """Tests for analysis.aggregate.
 
 Validates the anyOf-success and median-collapse rules at the cell level,
@@ -16,7 +26,9 @@ from analysis.aggregate import (
     aggregate_runs,
     build_metric_matrix,
     build_outcome_matrix,
+    collect_success_chains,
 )
+from analysis.stats import chain_uniqueness
 from harness.record import (
     BackendCategory,
     BackendInfo,
@@ -26,6 +38,7 @@ from harness.record import (
     PromptingStrategy,
     RunRecord,
     TokenUsage,
+    ValidatorOutput,
 )
 
 
@@ -63,7 +76,7 @@ def _record(
 def test_anyof_success_collapses_to_success_cell() -> None:
     runs = [
         _record("b1", "claude", Outcome.FAILURE, failure_mode=FailureMode.OTHER),
-        _record("b1", "claude", Outcome.KNOWN_REDISCOVERY),
+        _record("b1", "claude", Outcome.SUCCESS),
         _record("b1", "claude", Outcome.FAILURE, failure_mode=FailureMode.OTHER),
     ]
     summaries = aggregate_runs(runs)
@@ -103,10 +116,10 @@ def test_median_collapse_for_wallclock() -> None:
 
 def test_outcome_matrix_shape() -> None:
     runs = [
-        _record("b1", "A", Outcome.KNOWN_REDISCOVERY),
+        _record("b1", "A", Outcome.SUCCESS),
         _record("b1", "B", Outcome.FAILURE, failure_mode=FailureMode.OTHER),
         _record("b2", "A", Outcome.FAILURE, failure_mode=FailureMode.OTHER),
-        _record("b2", "B", Outcome.NEW_DISCOVERY),
+        _record("b2", "B", Outcome.SUCCESS),
     ]
     summaries = aggregate_runs(runs)
     binary_ids, matrix = build_outcome_matrix(summaries, backends=["A", "B"])
@@ -130,3 +143,52 @@ def test_metric_matrix_shape() -> None:
 def test_metric_matrix_rejects_unknown_metric() -> None:
     with pytest.raises(ValueError, match="unknown metric"):
         build_metric_matrix([], metric="vibes", backends=["A"])
+
+
+# --------------------------------------------------------------------------- #
+# Chain uniqueness (ADR 0009)                                                  #
+# --------------------------------------------------------------------------- #
+
+
+def _success_with_chain(binary: str, backend_name: str, fingerprint: str | None) -> RunRecord:
+    validator = ValidatorOutput(
+        succeeded=True,
+        return_code=0,
+        stdout_marker_found=True,
+        marker_in_payload=False,
+        chain_fingerprint=fingerprint,
+    )
+    r = _record(binary, backend_name, Outcome.SUCCESS)
+    return r.model_copy(update={"validator": validator})
+
+
+def test_collect_success_chains_only_gathers_fingerprinted_successes() -> None:
+    runs = [
+        _success_with_chain("b1", "A", "aa"),
+        _success_with_chain("b1", "B", "bb"),
+        _success_with_chain("b1", "C", None),  # success without a committed chain
+        _record("b1", "D", Outcome.FAILURE, failure_mode=FailureMode.OTHER),
+        _success_with_chain("b2", "A", "cc"),
+    ]
+    chains = collect_success_chains(runs)
+    assert chains["b1"] == [("A", "aa"), ("B", "bb")]  # C (no fingerprint) and D dropped
+    assert chains["b2"] == [("A", "cc")]
+
+
+def test_chain_uniqueness_counts_distinct_and_unique_chains() -> None:
+    # A and B rediscovered the same chain; C found its own.
+    chains = [("A", "shared"), ("B", "shared"), ("C", "solo")]
+    result = chain_uniqueness("b1", chains)
+    assert result.n_success_runs == 3
+    assert result.n_distinct_chains == 2
+    assert result.n_unique_chains == 1  # only "solo" was found by exactly one backend
+    assert result.unique_discoverers == ("C",)
+    assert result.distinct_ratio == pytest.approx(2 / 3)
+
+
+def test_chain_uniqueness_empty_is_all_zero() -> None:
+    result = chain_uniqueness("b1", [])
+    assert result.n_success_runs == 0
+    assert result.n_distinct_chains == 0
+    assert result.unique_discoverers == ()
+    assert result.distinct_ratio == 0.0

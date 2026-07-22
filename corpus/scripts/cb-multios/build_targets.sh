@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# SARA — Sans Agentic Rop Analysis
+# Copyright (c) 2026 Jeff Powers. MIT License — see LICENSE.
+# SPDX-License-Identifier: MIT
+#
+# Research instrument for a SANS.edu thesis on LLM agents that build ROP
+# exploit chains. The ethical scope in README.md is non-negotiable and binds
+# all copies, forks, and derived works: educational/CTF targets only,
+# proof-of-concept payloads only. Use against systems you do not own or are
+# not authorized to test is prohibited.
+
 #
 # Build the sara CGC corpus binaries as clean static-address ROP targets.
 #
@@ -46,7 +56,8 @@ echo "### configure exit: ${cfg} ###"
 [ "${cfg}" -eq 0 ] || exit "${cfg}"
 
 # The cb-multios challenge dirs backing each manifest entry (build.challenge).
-TARGETS=(Palindrome PCM_Message_decoder basic_messaging router_simulator Particle_Simulator)
+TARGETS=(Palindrome PCM_Message_decoder basic_messaging router_simulator Particle_Simulator \
+         Hug_Game CGC_Hangman_Game FailAV EternalPass)
 rc=0
 for t in "${TARGETS[@]}"; do
   echo "### build target: ${t} ###"

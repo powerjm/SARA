@@ -1,3 +1,13 @@
+# SARA — Sans Agentic Rop Analysis
+# Copyright (c) 2026 Jeff Powers. MIT License — see LICENSE.
+# SPDX-License-Identifier: MIT
+#
+# Research instrument for a SANS.edu thesis on LLM agents that build ROP
+# exploit chains. The ethical scope in README.md is non-negotiable and binds
+# all copies, forks, and derived works: educational/CTF targets only,
+# proof-of-concept payloads only. Use against systems you do not own or are
+# not authorized to test is prohibited.
+
 """Tests for analysis.load_runs (the notebook plumbing)."""
 
 from __future__ import annotations
@@ -38,7 +48,10 @@ def test_no_fallback_returns_empty(tmp_path: Path) -> None:
 def test_axes_helpers() -> None:
     records = load_runs.load_all(Path("/nonexistent-runs"), seed=0)
     assert len(load_runs.backend_names(records)) == 3
-    assert set(load_runs.strategies(records)) == {"zero_shot", "chain_of_thought", "react"}
+    # The synthetic loader draws from every registered strategy (DEFAULT_STRATEGIES
+    # == tuple(PromptingStrategy)); assert against that so adding a strategy here
+    # is not a silent drift.
+    assert set(load_runs.strategies(records)) == {s.value for s in synthetic.DEFAULT_STRATEGIES}
     cats = load_runs.category_of(records)
     assert set(cats.values()) == {"premium", "open_weight", "unrestricted"}
 

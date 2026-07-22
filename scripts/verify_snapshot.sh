@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# SARA — Sans Agentic Rop Analysis
+# Copyright (c) 2026 Jeff Powers. MIT License — see LICENSE.
+# SPDX-License-Identifier: MIT
+#
+# Research instrument for a SANS.edu thesis on LLM agents that build ROP
+# exploit chains. The ethical scope in README.md is non-negotiable and binds
+# all copies, forks, and derived works: educational/CTF targets only,
+# proof-of-concept payloads only. Use against systems you do not own or are
+# not authorized to test is prohibited.
+
 # Re-validate a replication snapshot: re-execute every stored payload in the
 # real validator sandbox and confirm each run's recorded outcome reproduces.
 #
@@ -107,7 +117,6 @@ for run_dir in runs:
         spec.binary_path,
         payload,
         success_marker=spec.success_marker,
-        documented_chain_fingerprint=spec.documented_chain_fingerprint,
     )
     same_success = out.succeeded == record.validator.succeeded
     same_marker = out.stdout_marker_found == record.validator.stdout_marker_found

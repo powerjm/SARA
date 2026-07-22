@@ -1,3 +1,13 @@
+# SARA — Sans Agentic Rop Analysis
+# Copyright (c) 2026 Jeff Powers. MIT License — see LICENSE.
+# SPDX-License-Identifier: MIT
+#
+# Research instrument for a SANS.edu thesis on LLM agents that build ROP
+# exploit chains. The ethical scope in README.md is non-negotiable and binds
+# all copies, forks, and derived works: educational/CTF targets only,
+# proof-of-concept payloads only. Use against systems you do not own or are
+# not authorized to test is prohibited.
+
 """Tests for corpus/scripts/build.py (the cb-multios build-and-pin helper).
 
 Exercises the pure, side-effect-free helpers directly, plus the orchestration
@@ -174,3 +184,52 @@ def test_build_one_mismatch_without_update_fails(
     entry = {"id": "cgc-x", "sha256": _SHA_B}  # wrong pin, update not set
     assert build.build_one(entry, cb_root=None, from_path=elf, update=False) is False
     assert not (tmp_path / "binaries" / "cgc-x").exists()
+
+
+# --- main(): entries with a `build.recipe` are skipped (built by their own script) #
+
+
+def _recipe_manifest(tmp_path: Path) -> Path:
+    """A manifest whose only entry is built by an external recipe (the synthetic
+    ROP set's build.sh), not by this script's cb-multios resolver."""
+    return _write(
+        tmp_path / "manifest.yaml",
+        (
+            "binaries:\n"
+            "  - id: ropbench-synth-ex005\n"
+            '    source_url: "git+https://github.com/ispras/rop-benchmark@abc"\n'
+            "    build:\n"
+            "      recipe: corpus/scripts/synthetic/build.sh\n"
+            f'    sha256: "{_ZERO}"\n'
+        ).encode(),
+    )
+
+
+def test_main_skips_recipe_entry_in_all(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    # A bare `--all` (no --from) must not treat a recipe entry as a cb-multios
+    # build: it is cleanly skipped (rc 0), and nothing is installed.
+    monkeypatch.setattr(build, "MANIFEST", _recipe_manifest(tmp_path))
+    monkeypatch.setattr(build, "BINARIES_DIR", tmp_path / "binaries")
+    rc = build.main([])
+    assert rc == 0
+    out = capsys.readouterr().out
+    assert "SKIP" in out and "build.sh" in out
+    assert not (tmp_path / "binaries" / "ropbench-synth-ex005").exists()
+
+
+def test_main_from_still_installs_recipe_entry(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The recipe's own script re-invokes us with --from to pin+install; that path
+    # must bypass the skip and install the ELF.
+    manifest = _recipe_manifest(tmp_path)
+    monkeypatch.setattr(build, "MANIFEST", manifest)
+    monkeypatch.setattr(build, "BINARIES_DIR", tmp_path / "binaries")
+    elf = _write(tmp_path / "built_elf", _ELF)
+    rc = build.main(["--id", "ropbench-synth-ex005", "--from", str(elf), "--update"])
+    assert rc == 0
+    installed = tmp_path / "binaries" / "ropbench-synth-ex005"
+    assert installed.is_file() and installed.read_bytes() == _ELF
+    assert f'sha256: "{build.sha256_of(elf)}"' in manifest.read_text(encoding="utf-8")

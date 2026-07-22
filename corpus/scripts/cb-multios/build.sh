@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# SARA — Sans Agentic Rop Analysis
+# Copyright (c) 2026 Jeff Powers. MIT License — see LICENSE.
+# SPDX-License-Identifier: MIT
+#
+# Research instrument for a SANS.edu thesis on LLM agents that build ROP
+# exploit chains. The ethical scope in README.md is non-negotiable and binds
+# all copies, forks, and derived works: educational/CTF targets only,
+# proof-of-concept payloads only. Use against systems you do not own or are
+# not authorized to test is prohibited.
+
 #
 # One-shot, host-side reproducible build of the CGC (cb-multios) corpus binaries.
 #
@@ -7,7 +17,7 @@
 #
 #   1. ensure a cb-multios checkout at the commit pinned in corpus/manifest.yaml
 #   2. build the toolchain image (this dir's Dockerfile)
-#   3. build the 5 challenge targets in-container as static non-PIE / NX targets
+#   3. build the 9 challenge targets in-container as static non-PIE / NX targets
 #      (this dir's build_targets.sh)
 #   4. hash, pin (--update), and install the ELFs into corpus/binaries/
 #

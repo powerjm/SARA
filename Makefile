@@ -1,4 +1,14 @@
-.PHONY: help bootstrap install dev test lint typecheck format notebooks clean sandbox-build sandbox-clean
+# SARA — Sans Agentic Rop Analysis
+# Copyright (c) 2026 Jeff Powers. MIT License — see LICENSE.
+# SPDX-License-Identifier: MIT
+#
+# Research instrument for a SANS.edu thesis on LLM agents that build ROP
+# exploit chains. The ethical scope in README.md is non-negotiable and binds
+# all copies, forks, and derived works: educational/CTF targets only,
+# proof-of-concept payloads only. Use against systems you do not own or are
+# not authorized to test is prohibited.
+
+.PHONY: help bootstrap install dev test lint typecheck format notebooks clean sandbox-build sandbox-clean hackbox-build hackbox hackbox-clean
 
 PYTHON   ?= python3.14
 VENV     ?= .venv
@@ -14,6 +24,8 @@ help:
 	@echo "  typecheck     Run mypy."
 	@echo "  format        Auto-format with ruff."
 	@echo "  sandbox-build Build the validator sandbox image."
+	@echo "  hackbox-build Build the exploit-dev workbench image."
+	@echo "  hackbox       Drop into the exploit-dev workbench (repo mounted rw)."
 	@echo "  clean         Remove caches and build artifacts."
 
 bootstrap: $(VENV)/.bootstrapped
@@ -53,6 +65,20 @@ sandbox-build:
 
 sandbox-clean:
 	-docker rmi sara-sandbox:latest
+
+# Exploit-development workbench (NOT the scoring path — see Dockerfile.hackbox).
+# Pass the host uid/gid so files written to the bind-mounted repo stay owned by
+# the invoking user rather than root.
+hackbox-build:
+	docker build -f Dockerfile.hackbox -t sara-hackbox:latest \
+		--build-arg HOST_UID=$(shell id -u) \
+		--build-arg HOST_GID=$(shell id -g) .
+
+hackbox: hackbox-build
+	scripts/hackbox.sh
+
+hackbox-clean:
+	-docker rmi sara-hackbox:latest
 
 clean:
 	rm -rf $(VENV) .pytest_cache .mypy_cache .ruff_cache htmlcov .coverage build dist *.egg-info

@@ -1,3 +1,13 @@
+# SARA — Sans Agentic Rop Analysis
+# Copyright (c) 2026 Jeff Powers. MIT License — see LICENSE.
+# SPDX-License-Identifier: MIT
+#
+# Research instrument for a SANS.edu thesis on LLM agents that build ROP
+# exploit chains. The ethical scope in README.md is non-negotiable and binds
+# all copies, forks, and derived works: educational/CTF targets only,
+# proof-of-concept payloads only. Use against systems you do not own or are
+# not authorized to test is prohibited.
+
 """
 End-to-end integration tests for the agent loop on a FakeBackend.
 
@@ -6,7 +16,7 @@ validate — with no API key, no network, no ROPgadget on PATH, and no Docker
 daemon: the backend is scripted, the gadget enumerator is a canned callable, and
 the validator runs against an injected fake Docker client. The headline case
 (done-when) is a scripted submission of the documented chain for `sample_overflow`
-yielding a RunRecord whose outcome is KNOWN_REDISCOVERY.
+yielding a RunRecord whose outcome is SUCCESS (ADR 0009).
 """
 
 from __future__ import annotations
@@ -61,12 +71,11 @@ def _binary(sample_overflow_path: Path) -> BinaryContext:
     )
 
 
-def _config(tmp_path: Path, *, fingerprint: str | None = None, **overrides: Any) -> AgentConfig:
+def _config(tmp_path: Path, **overrides: Any) -> AgentConfig:
     base: dict[str, Any] = {
         "strategy": prompts.get("zero_shot"),
         "tools": ToolLayer(enumerate_fn=_fake_enumerator),
         "success_marker": "Hello World",
-        "documented_chain_fingerprint": fingerprint,
         "validator_client": succeeding_client(b"Hello World\n"),
         "runs_dir": tmp_path / "runs",
     }
@@ -108,11 +117,11 @@ def test_build_graph_compiles_and_invokes_with_only_a_backend() -> None:
 
 
 # --------------------------------------------------------------------------- #
-# Done-when #4: scripted documented chain -> KNOWN_REDISCOVERY                 #
+# Done-when #4: scripted documented chain -> SUCCESS (ADR 0009)                #
 # --------------------------------------------------------------------------- #
 
 
-def test_documented_chain_yields_known_rediscovery_record(
+def test_documented_chain_yields_success_record(
     sample_overflow_path: Path, documented_exploit: Any, tmp_path: Path
 ) -> None:
     payload = documented_exploit.build_payload()
@@ -124,15 +133,16 @@ def test_documented_chain_yields_known_rediscovery_record(
         name="fake",
         version="fake-1",
     )
-    config = _config(tmp_path, fingerprint=fingerprint)
+    config = _config(tmp_path)
 
     result = run_agent(backend, _binary(sample_overflow_path), config)
 
-    assert result.outcome == Outcome.KNOWN_REDISCOVERY
+    assert result.outcome == Outcome.SUCCESS
     assert result.failure_mode is None
     assert result.validator_output is not None
     assert result.validator_output.succeeded
-    assert result.validator_output.matched_documented_chain
+    # The candidate chain's fingerprint is recorded for uniqueness analysis.
+    assert result.validator_output.chain_fingerprint == fingerprint
     assert result.state.candidate_chain == addresses
 
     record = build_run_record(
@@ -143,7 +153,7 @@ def test_documented_chain_yields_known_rediscovery_record(
         trace_path=tmp_path / "trace.jsonl",
     )
     assert isinstance(record, RunRecord)
-    assert record.outcome == Outcome.KNOWN_REDISCOVERY
+    assert record.outcome == Outcome.SUCCESS
     assert record.failure_mode is None
     assert record.prompting_strategy == PromptingStrategy.ZERO_SHOT
     assert record.iterations == 1
@@ -163,7 +173,7 @@ def test_propose_writes_payload_bin(
     payload = documented_exploit.build_payload()
     addresses = _documented_addresses(documented_exploit)
     backend = FakeBackend(script=[_submit_turn(payload.hex(), [f"0x{a:x}" for a in addresses])])
-    config = _config(tmp_path, fingerprint=chain_fingerprint(addresses))
+    config = _config(tmp_path)
 
     result = run_agent(backend, _binary(sample_overflow_path), config)
 
@@ -173,20 +183,23 @@ def test_propose_writes_payload_bin(
     assert result.state.candidate_payload_path == written
 
 
-def test_unmatched_chain_is_new_discovery(
+def test_novel_chain_still_succeeds(
     sample_overflow_path: Path, documented_exploit: Any, tmp_path: Path
 ) -> None:
     payload = documented_exploit.build_payload()
-    # A different (reordered) chain fingerprint -> succeeds but does not match.
+    # A different (reordered) chain: still a SUCCESS, with a distinct fingerprint
+    # the analysis can count as a separate working chain (ADR 0009).
     backend = FakeBackend(script=[_submit_turn(payload.hex(), ["0x401166", "0x4011ad"])])
-    config = _config(tmp_path, fingerprint=chain_fingerprint([0x4011AD, 0x4011AE, 0x401166]))
+    config = _config(tmp_path)
 
     result = run_agent(backend, _binary(sample_overflow_path), config)
 
     assert result.validator_output is not None
     assert result.validator_output.succeeded
-    assert not result.validator_output.matched_documented_chain
-    assert result.outcome == Outcome.NEW_DISCOVERY
+    assert result.validator_output.chain_fingerprint != chain_fingerprint(
+        [0x4011AD, 0x4011AE, 0x401166]
+    )
+    assert result.outcome == Outcome.SUCCESS
 
 
 # --------------------------------------------------------------------------- #
@@ -210,12 +223,12 @@ def test_enumerate_loop_then_submit(
             _submit_turn(payload.hex(), [f"0x{a:x}" for a in addresses]),
         ]
     )
-    config = _config(tmp_path, fingerprint=chain_fingerprint(addresses))
+    config = _config(tmp_path)
 
     result = run_agent(backend, _binary(sample_overflow_path), config)
 
     assert backend.calls_made == 2
-    assert result.outcome == Outcome.KNOWN_REDISCOVERY
+    assert result.outcome == Outcome.SUCCESS
     # baseline enumerate + the agent's explicit enumerate call.
     assert len([m for m in result.state.messages if m.role == "tool"]) == 2
 

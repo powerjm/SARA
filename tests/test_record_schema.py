@@ -1,3 +1,13 @@
+# SARA — Sans Agentic Rop Analysis
+# Copyright (c) 2026 Jeff Powers. MIT License — see LICENSE.
+# SPDX-License-Identifier: MIT
+#
+# Research instrument for a SANS.edu thesis on LLM agents that build ROP
+# exploit chains. The ethical scope in README.md is non-negotiable and binds
+# all copies, forks, and derived works: educational/CTF targets only,
+# proof-of-concept payloads only. Use against systems you do not own or are
+# not authorized to test is prohibited.
+
 """Tests for the RunRecord schema.
 
 The schema is the central data structure of the experiment. If these tests
@@ -57,7 +67,7 @@ def test_failure_outcome_requires_failure_mode() -> None:
 
 def test_success_outcome_forbids_failure_mode() -> None:
     kwargs = _base_kwargs()
-    kwargs["outcome"] = Outcome.KNOWN_REDISCOVERY
+    kwargs["outcome"] = Outcome.SUCCESS
     kwargs["failure_mode"] = FailureMode.OTHER
     with pytest.raises(ValueError, match="Success outcomes"):
         RunRecord(**kwargs)
@@ -90,12 +100,12 @@ def test_safeguard_refusal_with_refusal_mode_is_valid() -> None:
 
 def test_valid_success_record_roundtrips() -> None:
     kwargs = _base_kwargs()
-    kwargs["outcome"] = Outcome.KNOWN_REDISCOVERY
+    kwargs["outcome"] = Outcome.SUCCESS
     record = RunRecord(**kwargs)
 
     payload = record.model_dump_json()
     restored = RunRecord.model_validate_json(payload)
-    assert restored.outcome == Outcome.KNOWN_REDISCOVERY
+    assert restored.outcome == Outcome.SUCCESS
     assert restored.tokens.total == 12450 + 3120
     assert restored.cost.usd == 0.42
 
@@ -112,15 +122,28 @@ def test_valid_failure_record_roundtrips() -> None:
     assert restored.failure_mode == FailureMode.HALLUCINATED_GADGET
 
 
-def test_new_records_default_to_schema_v2() -> None:
+def test_new_records_default_to_schema_v3() -> None:
     kwargs = _base_kwargs()
-    kwargs["outcome"] = Outcome.KNOWN_REDISCOVERY
-    assert RunRecord(**kwargs).schema_version == "2"
+    kwargs["outcome"] = Outcome.SUCCESS
+    assert RunRecord(**kwargs).schema_version == "3"
+
+
+def test_legacy_success_outcomes_migrate_to_success() -> None:
+    """Pre-v3 records used known_rediscovery / new_discovery; both must load as
+    SUCCESS so old run directories keep opening (docs/SCHEMA_MIGRATIONS.md)."""
+    kwargs = _base_kwargs()
+    kwargs["outcome"] = Outcome.SUCCESS
+    template = RunRecord(**kwargs).model_dump(mode="json")
+    for legacy in ("known_rediscovery", "new_discovery"):
+        data = {**template, "schema_version": "1", "outcome": legacy}
+        restored = RunRecord.model_validate(data)
+        assert restored.outcome == Outcome.SUCCESS
+        assert restored.failure_mode is None
 
 
 def test_pricing_snapshot_roundtrips() -> None:
     kwargs = _base_kwargs()
-    kwargs["outcome"] = Outcome.KNOWN_REDISCOVERY
+    kwargs["outcome"] = Outcome.SUCCESS
     kwargs["cost"] = CostRecord(
         usd=0.42,
         pricing=PricingSnapshot(
@@ -142,7 +165,7 @@ def test_legacy_v1_record_without_pricing_still_loads() -> None:
     """A schema_version="1" record predates cost.pricing; it must still
     deserialize (back-compat), with cost.pricing defaulting to None."""
     kwargs = _base_kwargs()
-    kwargs["outcome"] = Outcome.KNOWN_REDISCOVERY
+    kwargs["outcome"] = Outcome.SUCCESS
     data = RunRecord(**kwargs).model_dump()
     data["schema_version"] = "1"
     data["cost"] = {"usd": 0.42}  # no "pricing" key, as v1 records had none
@@ -159,15 +182,17 @@ def test_token_usage_total_is_computed() -> None:
 
 def test_validator_output_attaches_to_record() -> None:
     kwargs = _base_kwargs()
-    kwargs["outcome"] = Outcome.KNOWN_REDISCOVERY
+    kwargs["outcome"] = Outcome.SUCCESS
     kwargs["validator"] = ValidatorOutput(
         succeeded=True,
         return_code=0,
         stdout_marker_found=True,
-        matched_documented_chain=True,
-        stdout_excerpt="Hello World\n",
+        marker_in_payload=False,
+        chain_fingerprint="a" * 64,
+        stdout_excerpt="HELLO SANS\n",
         elapsed_seconds=0.4,
     )
     record = RunRecord(**kwargs)
     assert record.validator is not None
-    assert record.validator.matched_documented_chain
+    assert record.validator.chain_fingerprint == "a" * 64
+    assert record.validator.marker_in_payload is False

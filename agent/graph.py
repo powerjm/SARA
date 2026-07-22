@@ -1,3 +1,13 @@
+# SARA — Sans Agentic Rop Analysis
+# Copyright (c) 2026 Jeff Powers. MIT License — see LICENSE.
+# SPDX-License-Identifier: MIT
+#
+# Research instrument for a SANS.edu thesis on LLM agents that build ROP
+# exploit chains. The ethical scope in README.md is non-negotiable and binds
+# all copies, forks, and derived works: educational/CTF targets only,
+# proof-of-concept payloads only. Use against systems you do not own or are
+# not authorized to test is prohibited.
+
 """
 Agent state machine (LangGraph).
 
@@ -56,7 +66,7 @@ from harness.record import (
     ValidatorOutput,
 )
 from validator.classifier import classify
-from validator.runner import DEFAULT_TIMEOUT_SECONDS, execute
+from validator.runner import DEFAULT_TIMEOUT_SECONDS, SUCCESS_MARKER, execute
 
 if TYPE_CHECKING:
     from agent.prompts import Strategy
@@ -80,9 +90,10 @@ class AgentConfig:
     strategy: Strategy
     tools: ToolLayer
 
-    # Validator inputs (success_marker / fingerprint come from the corpus).
-    success_marker: str = ""
-    documented_chain_fingerprint: str | None = None
+    # Validator input. The universal marker (ADR 0009) is the default; a corpus
+    # binary may override it via its BinarySpec. The documented chain is no longer
+    # an outcome oracle, so the validator needs nothing else from the corpus.
+    success_marker: str = SUCCESS_MARKER
     validator_image: str | None = None
     validator_client: Any = None  # injected docker client; None -> docker.from_env()
     validator_timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS
@@ -324,7 +335,6 @@ def node_validate(state: AgentState, config: AgentConfig | None = None) -> Agent
             state.candidate_payload_path,
             success_marker=config.success_marker,
             candidate_chain=state.candidate_chain,
-            documented_chain_fingerprint=config.documented_chain_fingerprint,
             image=config.validator_image,
             timeout_seconds=config.validator_timeout_seconds,
             client=config.validator_client,
@@ -580,11 +590,11 @@ def classify_outcome(state: AgentState) -> tuple[Outcome, FailureMode | None]:
     """Translate a terminal state into an outcome from ``termination_reason`` alone.
 
     A coarse mapping kept for direct unit testing of the terminal-reason logic;
-    the production path uses ``validator.classifier.classify`` (which also
-    consults the validator output to split KNOWN_REDISCOVERY vs NEW_DISCOVERY).
+    the production path uses ``validator.classifier.classify`` (which consults the
+    validator output — a successful run is a spawned shell, ADR 0009).
     """
     if state.termination_reason == "success":
-        return Outcome.KNOWN_REDISCOVERY, None
+        return Outcome.SUCCESS, None
     if state.termination_reason == "refusal":
         return Outcome.SAFEGUARD_REFUSAL, FailureMode.REFUSAL
     if state.termination_reason == "budget":

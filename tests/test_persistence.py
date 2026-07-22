@@ -1,3 +1,13 @@
+# SARA — Sans Agentic Rop Analysis
+# Copyright (c) 2026 Jeff Powers. MIT License — see LICENSE.
+# SPDX-License-Identifier: MIT
+#
+# Research instrument for a SANS.edu thesis on LLM agents that build ROP
+# exploit chains. The ethical scope in README.md is non-negotiable and binds
+# all copies, forks, and derived works: educational/CTF targets only,
+# proof-of-concept payloads only. Use against systems you do not own or are
+# not authorized to test is prohibited.
+
 """Tests for atomic run persistence (harness.persistence)."""
 
 from __future__ import annotations
@@ -75,13 +85,13 @@ def test_write_and_finalize_is_atomic(tmp_path: Path) -> None:
 
 def test_load_record_round_trips(tmp_path: Path) -> None:
     partial = persistence.begin_run(tmp_path, "run-1")
-    persistence.write_record(partial, _record(outcome=Outcome.KNOWN_REDISCOVERY))
+    persistence.write_record(partial, _record(outcome=Outcome.SUCCESS))
     final = persistence.finalize_run(tmp_path, "run-1")
 
     loaded_from_dir = persistence.load_record(final)
     loaded_from_file = persistence.load_record(final / persistence.RECORD_NAME)
-    assert loaded_from_dir.outcome == Outcome.KNOWN_REDISCOVERY
-    assert loaded_from_file.outcome == Outcome.KNOWN_REDISCOVERY
+    assert loaded_from_dir.outcome == Outcome.SUCCESS
+    assert loaded_from_file.outcome == Outcome.SUCCESS
 
 
 def test_iter_records_skips_partials(tmp_path: Path) -> None:

@@ -1,3 +1,13 @@
+# SARA — Sans Agentic Rop Analysis
+# Copyright (c) 2026 Jeff Powers. MIT License — see LICENSE.
+# SPDX-License-Identifier: MIT
+#
+# Research instrument for a SANS.edu thesis on LLM agents that build ROP
+# exploit chains. The ethical scope in README.md is non-negotiable and binds
+# all copies, forks, and derived works: educational/CTF targets only,
+# proof-of-concept payloads only. Use against systems you do not own or are
+# not authorized to test is prohibited.
+
 """Tests for the harness CLI (harness.cli).
 
 These exercise the real command surface: a single ``run`` against the fixture
@@ -95,7 +105,6 @@ def test_verify_pass(monkeypatch: pytest.MonkeyPatch) -> None:
             succeeded=True,
             return_code=0,
             stdout_marker_found=True,
-            matched_documented_chain=True,
         ),
     )
     result = CliRunner().invoke(cli, ["verify", "--binary", "sample-overflow"])
@@ -111,7 +120,6 @@ def test_verify_fail_exits_nonzero(monkeypatch: pytest.MonkeyPatch) -> None:
             succeeded=False,
             return_code=1,
             stdout_marker_found=False,
-            matched_documented_chain=False,
             stderr_excerpt="boom",
         ),
     )
@@ -125,7 +133,7 @@ def test_replay_prints_result(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -
         succeeded=True,
         return_code=0,
         stdout_marker_found=True,
-        matched_documented_chain=False,
+        chain_fingerprint=None,
     )
     monkeypatch.setattr(cli_mod, "replay_run", lambda run_id, **kw: (None, output))
     result = CliRunner().invoke(cli, ["replay", "--run-id", "abc", "--output-dir", str(tmp_path)])

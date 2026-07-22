@@ -1,10 +1,21 @@
+# SARA — Sans Agentic Rop Analysis
+# Copyright (c) 2026 Jeff Powers. MIT License — see LICENSE.
+# SPDX-License-Identifier: MIT
+#
+# Research instrument for a SANS.edu thesis on LLM agents that build ROP
+# exploit chains. The ethical scope in README.md is non-negotiable and binds
+# all copies, forks, and derived works: educational/CTF targets only,
+# proof-of-concept payloads only. Use against systems you do not own or are
+# not authorized to test is prohibited.
+
 """Unit tests for validator.runner (Step 3).
 
 Two surfaces:
 
 * ``chain_fingerprint`` — the ADR 0003 ordered-sequence fingerprint. The key
   property is order-sensitivity: ``[A, B, C]`` and a reordering of it must hash
-  differently, which is what separates KNOWN_REDISCOVERY from NEW_DISCOVERY.
+  differently, so distinct working chains cluster apart in the uniqueness
+  analysis (ADR 0009).
 * ``execute`` — driven against a ``FakeDockerClient`` so the suite needs no
   Docker daemon (no Docker-in-Docker in CI). The fakes raise the real timeout /
   docker exception types the runner catches.
@@ -252,34 +263,31 @@ def test_execute_missing_payload_raises(tmp_path: Path) -> None:
 
 
 # --------------------------------------------------------------------------- #
-# execute — chain fingerprint -> matched_documented_chain -> classifier
+# execute — chain fingerprint recorded for uniqueness; anti-echo guard (ADR 0009)
 # --------------------------------------------------------------------------- #
 
 
-def test_execute_matching_chain_is_known_rediscovery(
+def test_execute_records_candidate_chain_fingerprint(
     binary_and_payload: tuple[Path, Path],
 ) -> None:
+    """A successful run stores the candidate chain's fingerprint (for uniqueness
+    clustering) and classifies as a single SUCCESS."""
     binary, payload = binary_and_payload
     client = succeeding_client(stdout=MARKER.encode())
 
     out = execute(
-        binary,
-        payload,
-        success_marker=MARKER,
-        candidate_chain=DOCUMENTED_CHAIN,
-        documented_chain_fingerprint=chain_fingerprint(DOCUMENTED_CHAIN),
-        client=client,
+        binary, payload, success_marker=MARKER, candidate_chain=DOCUMENTED_CHAIN, client=client
     )
 
-    assert out.matched_documented_chain is True
-    assert classify(_state(), out) == (Outcome.KNOWN_REDISCOVERY, None)
+    assert out.chain_fingerprint == chain_fingerprint(DOCUMENTED_CHAIN)
+    assert classify(_state(), out) == (Outcome.SUCCESS, None)
 
 
-def test_execute_reordered_chain_is_new_discovery(
+def test_execute_reordered_chain_has_distinct_fingerprint(
     binary_and_payload: tuple[Path, Path],
 ) -> None:
-    """Same gadgets, different order: a successful but distinct chain. Ordered
-    fingerprint -> no match -> NEW_DISCOVERY (the point of ADR 0003)."""
+    """Same gadgets, different order: still a SUCCESS, but a distinct fingerprint
+    so the analysis counts it as a separate working chain (ADR 0003 order)."""
     binary, payload = binary_and_payload
     client = succeeding_client(stdout=MARKER.encode())
 
@@ -288,49 +296,55 @@ def test_execute_reordered_chain_is_new_discovery(
         payload,
         success_marker=MARKER,
         candidate_chain=list(reversed(DOCUMENTED_CHAIN)),
-        documented_chain_fingerprint=chain_fingerprint(DOCUMENTED_CHAIN),
         client=client,
     )
 
-    assert out.matched_documented_chain is False
-    assert classify(_state(), out) == (Outcome.NEW_DISCOVERY, None)
+    assert out.chain_fingerprint != chain_fingerprint(DOCUMENTED_CHAIN)
+    assert classify(_state(), out) == (Outcome.SUCCESS, None)
 
 
-def test_execute_no_documented_fingerprint_never_matches(
+def test_execute_without_candidate_chain_records_no_fingerprint(
     binary_and_payload: tuple[Path, Path],
 ) -> None:
     binary, payload = binary_and_payload
     client = succeeding_client(stdout=MARKER.encode())
 
-    out = execute(
-        binary,
-        payload,
-        success_marker=MARKER,
-        candidate_chain=DOCUMENTED_CHAIN,
-        client=client,
-    )
+    out = execute(binary, payload, success_marker=MARKER, client=client)
 
-    assert out.matched_documented_chain is False
-    assert classify(_state(), out) == (Outcome.NEW_DISCOVERY, None)
+    assert out.chain_fingerprint is None
+    assert classify(_state(), out) == (Outcome.SUCCESS, None)
 
 
-def test_execute_match_is_independent_of_execution_failure(
+def test_execute_records_fingerprint_even_on_start_failure(
     binary_and_payload: tuple[Path, Path],
 ) -> None:
-    """The fingerprint comparison is computed even when the container fails to
-    start — though a non-success run never classifies as a rediscovery."""
+    """The fingerprint is recorded even when the container fails to start —
+    though a non-success run never classifies as SUCCESS."""
     binary, payload = binary_and_payload
     client = failing_to_start_client()
 
     out = execute(
-        binary,
-        payload,
-        success_marker=MARKER,
-        candidate_chain=DOCUMENTED_CHAIN,
-        documented_chain_fingerprint=chain_fingerprint(DOCUMENTED_CHAIN),
-        client=client,
+        binary, payload, success_marker=MARKER, candidate_chain=DOCUMENTED_CHAIN, client=client
     )
 
-    assert out.matched_documented_chain is True
+    assert out.chain_fingerprint == chain_fingerprint(DOCUMENTED_CHAIN)
+    assert out.succeeded is False
+    assert classify(_state(), out) == (Outcome.FAILURE, FailureMode.OTHER)
+
+
+def test_execute_marker_echoed_from_payload_is_not_success(tmp_path: Path) -> None:
+    """Anti-echo guard (ADR 0009): the marker on stdout is not a success when the
+    literal marker also appears in the payload bytes — the target may just be
+    echoing its input rather than spawning a shell."""
+    binary = tmp_path / "echo_bin"
+    payload = tmp_path / "payload.bin"
+    binary.write_bytes(b"\x7fELF fake binary")
+    payload.write_bytes(b"A" * 8 + MARKER.encode() + b"\n")  # marker embedded in the payload
+    client = succeeding_client(stdout=MARKER.encode())
+
+    out = execute(binary, payload, success_marker=MARKER, client=client)
+
+    assert out.stdout_marker_found is True
+    assert out.marker_in_payload is True
     assert out.succeeded is False
     assert classify(_state(), out) == (Outcome.FAILURE, FailureMode.OTHER)

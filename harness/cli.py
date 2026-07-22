@@ -1,3 +1,13 @@
+# SARA — Sans Agentic Rop Analysis
+# Copyright (c) 2026 Jeff Powers. MIT License — see LICENSE.
+# SPDX-License-Identifier: MIT
+#
+# Research instrument for a SANS.edu thesis on LLM agents that build ROP
+# exploit chains. The ethical scope in README.md is non-negotiable and binds
+# all copies, forks, and derived works: educational/CTF targets only,
+# proof-of-concept payloads only. Use against systems you do not own or are
+# not authorized to test is prohibited.
+
 """
 Command-line entry point for the run harness.
 
@@ -51,7 +61,7 @@ def cli() -> None:
 @click.option(
     "--strategy",
     default="zero_shot",
-    type=click.Choice(["zero_shot", "chain_of_thought", "react"]),
+    type=click.Choice(["zero_shot", "chain_of_thought", "react", "majorca"]),
     help="Prompting strategy",
 )
 @click.option(
@@ -190,7 +200,7 @@ def replay(run_id: str, output_dir: Path | None) -> None:
     console.print(
         f"[green]replayed[/] succeeded={output.succeeded} "
         f"marker_found={output.stdout_marker_found} rc={output.return_code} "
-        f"matched_documented_chain={output.matched_documented_chain}"
+        f"chain_fingerprint={output.chain_fingerprint}"
     )
 
 
