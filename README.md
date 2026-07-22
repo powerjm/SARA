@@ -61,9 +61,9 @@ make bootstrap
 make test
 make sandbox-build                        # build the validator sandbox image
 
-# 4. Run against the sample binary (once you have a backend key)
+# 4. Run against a corpus binary (once you have a backend key)
 cp .env.example .env   # edit and add your ANTHROPIC_API_KEY (or another)
-python -m harness.cli run --binary sample-overflow --backend claude-sonnet
+python -m harness.cli run --binary cgc-cadet-00001 --backend claude-sonnet
 ```
 
 ## Running locally vs in the cloud

@@ -23,9 +23,9 @@ make sandbox-build # docker build -f Dockerfile.sandbox -t sara-sandbox:latest .
 .venv/bin/pytest tests/test_record_schema.py::test_name -q
 
 # CLI entry point (installed as `sara`, or `python -m harness.cli`)
-sara run    --binary sample-overflow --backend claude-sonnet --strategy zero_shot
+sara run    --binary cgc-cadet-00001 --backend claude-sonnet --strategy zero_shot
 sara batch  --config experiments.yaml
-sara verify --binary sample-overflow        # reproduce documented exploit (corpus-truth)
+sara verify --binary cgc-cadet-00001        # reproduce documented exploit (corpus-truth)
 sara replay --run-id <uuid>                 # re-run validator on a stored payload
 ```
 
