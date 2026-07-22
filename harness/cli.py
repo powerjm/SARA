@@ -51,7 +51,7 @@ def cli() -> None:
 @click.option(
     "--strategy",
     default="zero_shot",
-    type=click.Choice(["zero_shot", "chain_of_thought", "react"]),
+    type=click.Choice(["zero_shot", "chain_of_thought", "react", "majorca"]),
     help="Prompting strategy",
 )
 @click.option(

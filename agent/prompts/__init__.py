@@ -16,7 +16,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from agent.prompts import chain_of_thought, react, zero_shot
+from agent.prompts import chain_of_thought, majorca, react, zero_shot
 
 
 @dataclass(frozen=True)
@@ -47,6 +47,12 @@ STRATEGIES: dict[str, Strategy] = {
         system_prompt=react.SYSTEM,
         tool_use_guidance=react.TOOL_USE,
         task_template=react.task,
+    ),
+    "majorca": Strategy(
+        name="majorca",
+        system_prompt=majorca.SYSTEM,
+        tool_use_guidance=majorca.TOOL_USE,
+        task_template=majorca.task,
     ),
 }
 

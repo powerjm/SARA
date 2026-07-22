@@ -38,7 +38,10 @@ def test_no_fallback_returns_empty(tmp_path: Path) -> None:
 def test_axes_helpers() -> None:
     records = load_runs.load_all(Path("/nonexistent-runs"), seed=0)
     assert len(load_runs.backend_names(records)) == 3
-    assert set(load_runs.strategies(records)) == {"zero_shot", "chain_of_thought", "react"}
+    # The synthetic loader draws from every registered strategy (DEFAULT_STRATEGIES
+    # == tuple(PromptingStrategy)); assert against that so adding a strategy here
+    # is not a silent drift.
+    assert set(load_runs.strategies(records)) == {s.value for s in synthetic.DEFAULT_STRATEGIES}
     cats = load_runs.category_of(records)
     assert set(cats.values()) == {"premium", "open_weight", "unrestricted"}
 

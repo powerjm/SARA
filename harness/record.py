@@ -45,6 +45,10 @@ class PromptingStrategy(StrEnum):
     ZERO_SHOT = "zero_shot"
     CHAIN_OF_THOUGHT = "chain_of_thought"
     REACT = "react"
+    # Staged code-reuse chain generation after MAJORCA (arXiv:2111.05781).
+    # Additive independent-variable value: no record structure changes, so this
+    # is not a schema_version event — every existing v3 record stays valid.
+    MAJORCA = "majorca"
 
 
 class Outcome(StrEnum):
