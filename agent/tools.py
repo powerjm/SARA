@@ -54,6 +54,7 @@ import re
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 from agent.state import ToolObservation
@@ -303,6 +304,50 @@ def _format_gadgets(result: ropgadget.EnumerateResult) -> str:
     return "\n".join([header, *lines])
 
 
+def _takes_binary_path(schema: dict[str, Any]) -> bool:
+    """Whether a tool's input schema declares a ``binary_path`` parameter."""
+    return "binary_path" in schema.get("properties", {})
+
+
+def _inject_binary_path(
+    arguments: dict[str, Any], schema: dict[str, Any], binary_path: str | Path
+) -> dict[str, Any]:
+    """Force the harness-staged host path into a binary-analysis tool's arguments.
+
+    The analysis tools (ropgadget, radare2, ropper, gdb, ghidra) run on the **host**,
+    not inside the validator sandbox, so the model's ``/work/target`` — a path that
+    exists only inside the sandbox ``run_exploit_script`` spins up — is meaningless
+    to them and raises ``FileNotFoundError``. The harness, not the model, owns which
+    file is analyzed: we overwrite any model-supplied ``binary_path`` with the real
+    staged path (the same file the validator copies in as ``/work/target``). This
+    fixes the path mismatch *and* confines the tools to the target — a model cannot
+    point a host-side analysis tool at an arbitrary file (ADR 0018). Tools without a
+    ``binary_path`` input (the pure pwntools helpers) are passed through untouched.
+    """
+    if not _takes_binary_path(schema):
+        return arguments
+    return {**arguments, "binary_path": str(binary_path)}
+
+
+def _advertised_schema(schema: dict[str, Any]) -> dict[str, Any]:
+    """The model-facing copy of a tool schema with ``binary_path`` removed.
+
+    The harness injects ``binary_path`` at dispatch time (:func:`_inject_binary_path`),
+    so advertising it would only invite the model to supply a path we discard. The
+    server-owned schema object is never mutated — the standalone MCP stdio servers
+    still require ``binary_path`` from their own clients — so this returns a copy.
+    """
+    if not _takes_binary_path(schema):
+        return schema
+    advertised = {
+        **schema,
+        "properties": {k: v for k, v in schema["properties"].items() if k != "binary_path"},
+    }
+    if "required" in schema:
+        advertised["required"] = [r for r in schema["required"] if r != "binary_path"]
+    return advertised
+
+
 @dataclass
 class ToolLayer:
     """Dispatches the agent's tool calls to the underlying tool functions.
@@ -345,13 +390,15 @@ class ToolLayer:
         The three always-present tools first (``enumerate_gadgets`` + the terminal
         ``submit_payload`` / ``run_exploit_script``), then the enabled additional
         servers' tools in ``servers`` order — a deterministic, provenance-ordered
-        list.
+        list. ``binary_path`` is stripped from every analysis tool's advertised
+        schema: the harness injects the staged path at dispatch time (ADR 0018), so
+        the model neither supplies nor sees it.
         """
         specs = [
             ToolSpec(
                 name=ENUMERATE_GADGETS,
                 description=ropgadget.TOOL_DESCRIPTION,
-                input_schema=ropgadget.TOOL_INPUT_SCHEMA,
+                input_schema=_advertised_schema(ropgadget.TOOL_INPUT_SCHEMA),
             ),
             ToolSpec(
                 name=SUBMIT_PAYLOAD,
@@ -365,7 +412,11 @@ class ToolLayer:
             ),
         ]
         specs.extend(
-            ToolSpec(name=tool.name, description=tool.description, input_schema=tool.input_schema)
+            ToolSpec(
+                name=tool.name,
+                description=tool.description,
+                input_schema=_advertised_schema(tool.input_schema),
+            )
             for tool in self._registry.values()
         )
         return specs
@@ -379,8 +430,17 @@ class ToolLayer:
         """
         return frozenset({ENUMERATE_GADGETS, SUBMIT_PAYLOAD, RUN_SCRIPT, *self._registry})
 
-    def dispatch(self, name: str, arguments: dict[str, Any]) -> ToolObservation:
+    def dispatch(
+        self, name: str, arguments: dict[str, Any], *, binary_path: str | Path
+    ) -> ToolObservation:
         """Run one tool call and return its observation.
+
+        ``binary_path`` is the harness-staged host path of the target; it is forced
+        into every binary-analysis tool's arguments, overriding whatever the model
+        supplied (ADR 0018) — the analysis tools run on the host, where the model's
+        sandbox-only ``/work/target`` does not exist, and the harness (not the model)
+        decides which file is analyzed. The observation records the arguments that
+        actually ran.
 
         A tool that raises (missing binary, bad arguments, a tool absent on this
         host) is captured into an error observation rather than propagated, so
@@ -396,30 +456,32 @@ class ToolLayer:
             raise ValueError(f"{name} is terminal; it is handled by the propose node")
 
         if name == ENUMERATE_GADGETS:
+            call_args = _inject_binary_path(arguments, ropgadget.TOOL_INPUT_SCHEMA, binary_path)
             start = time.monotonic()
             try:
-                result = self.enumerate_fn(**arguments)
+                result = self.enumerate_fn(**call_args)
             except Exception as exc:  # noqa: BLE001 - surface any tool failure to the agent
                 return self._observation(
-                    name, arguments, f"ERROR: {type(exc).__name__}: {exc}", time.monotonic() - start
+                    name, call_args, f"ERROR: {type(exc).__name__}: {exc}", time.monotonic() - start
                 )
             return self._observation(
-                name, arguments, _format_gadgets(result), time.monotonic() - start
+                name, call_args, _format_gadgets(result), time.monotonic() - start
             )
 
         tool = self._registry.get(name)
         if tool is None:
             return self._observation(name, arguments, f"ERROR: unknown tool {name!r}", 0.0)
 
+        call_args = _inject_binary_path(arguments, tool.input_schema, binary_path)
         start = time.monotonic()
         try:
-            tool_result = _SERVER_DISPATCH[tool.server](tool.server_tool, arguments)
+            tool_result = _SERVER_DISPATCH[tool.server](tool.server_tool, call_args)
         except Exception as exc:  # noqa: BLE001 - surface any tool failure to the agent
             return self._observation(
-                name, arguments, f"ERROR: {type(exc).__name__}: {exc}", time.monotonic() - start
+                name, call_args, f"ERROR: {type(exc).__name__}: {exc}", time.monotonic() - start
             )
         return self._observation(
-            name, arguments, _format_tool_result(name, tool_result), time.monotonic() - start
+            name, call_args, _format_tool_result(name, tool_result), time.monotonic() - start
         )
 
     def _observation(

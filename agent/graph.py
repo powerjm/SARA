@@ -351,7 +351,12 @@ def node_enumerate(state: AgentState, config: AgentConfig | None = None) -> Agen
     )
 
     for call in model_calls:
-        observation = config.tools.dispatch(call.name, call.arguments)
+        # The analysis tools run on the host, so they need the real staged binary
+        # path, not the model's sandbox-only /work/target; the harness injects it
+        # and ignores any path the model supplied (ADR 0018).
+        observation = config.tools.dispatch(
+            call.name, call.arguments, binary_path=state.binary.binary_path
+        )
         state.observations.append(observation)
         state.messages.append(
             Message(role="tool", content=observation.output, tool_call_id=call.id or None)

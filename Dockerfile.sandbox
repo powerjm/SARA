@@ -31,11 +31,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         gcc-multilib \
     && rm -rf /var/lib/apt/lists/*
 
-# Non-root execution
-RUN useradd --create-home --shell /bin/bash --uid 1500 sandbox
-USER sandbox
-WORKDIR /home/sandbox
-
 # Python deps for exploit-script execution inside the sandbox.
 # Under ADR 0016 the agent's exploit.py runs *inside* this one sandbox (the
 # validator's single execution point), so the exploitation toolkit lives here:
@@ -44,9 +39,31 @@ WORKDIR /home/sandbox
 # outside the sandbox — ADR 0016 supersedes that.) pwntools runs offline: the
 # sandbox has no network, and PWNLIB_NOTERM/PWNLIB_SILENT + HOME/XDG_CACHE_HOME
 # on /tmp (set by the runner) keep it from touching the read-only rootfs.
-RUN pip install --user --break-system-packages --no-cache-dir \
+#
+# Installed system-wide (as root, before dropping to the sandbox user) rather than
+# per-user: the runner overrides HOME to /tmp at run time (for pwntools' writable
+# cache on the read-only rootfs), which would move Python's --user site-packages to
+# an empty /tmp/.local and hide a per-user install (ModuleNotFoundError: pwn). A
+# global install is on sys.path regardless of HOME, so the package location and
+# pwntools' runtime cache dir are decoupled.
+#
+# unicorn is pinned to 2.1.1 deliberately. pwntools 4.15.0 requires
+# `unicorn!=2.1.3,!=2.1.4,>=2.0.1`, whose highest match (2.1.2) publishes NO wheel,
+# so pip builds it from the vendored-QEMU sdist — which fails to compile on this
+# toolchain (Ubuntu 26.04 / GCC 14+ treats the implicit mprotect/PROT_* uses as hard
+# errors). 2.1.1 ships a `py2.py3-none-manylinux` wheel that installs on Python 3.14
+# with no compiler, so the image builds reproducibly and needs no build tooling.
+# unicorn only backs pwntools' CPU emulation; ROP/ELF/packing/cyclic do not use it,
+# so the pin has no effect on exploit construction or scoring.
+RUN pip install --break-system-packages --no-cache-dir \
         pyelftools==0.32 \
+        unicorn==2.1.1 \
         pwntools==4.15.0
+
+# Non-root execution
+RUN useradd --create-home --shell /bin/bash --uid 1500 sandbox
+USER sandbox
+WORKDIR /home/sandbox
 
 # Hard timeout wrapper. The harness also enforces a timeout, but defence in depth.
 ENTRYPOINT ["/usr/bin/timeout", "--kill-after=5", "30"]

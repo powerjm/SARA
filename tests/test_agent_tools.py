@@ -93,7 +93,9 @@ def test_dispatch_namespaced_tool_routes_to_owning_server() -> None:
     # pwntools tools are pure (no native dep / subprocess), so this exercises the
     # real server dispatch end-to-end in CI.
     layer = ToolLayer()
-    obs = layer.dispatch("pwntools_pack_address", {"address": "0x4011ad", "arch": "amd64"})
+    obs = layer.dispatch(
+        "pwntools_pack_address", {"address": "0x4011ad", "arch": "amd64"}, binary_path="/bin/target"
+    )
     assert obs.tool_name == "pwntools_pack_address"
     assert not obs.output.startswith("ERROR")
     assert "ad11400000000000" in obs.output  # 0x4011ad packed little-endian, 8 bytes
@@ -101,7 +103,9 @@ def test_dispatch_namespaced_tool_routes_to_owning_server() -> None:
 
 def test_dispatch_namespaced_tool_captures_error_instead_of_raising() -> None:
     layer = ToolLayer()
-    obs = layer.dispatch("pwntools_pack_address", {"address": "not-a-number"})
+    obs = layer.dispatch(
+        "pwntools_pack_address", {"address": "not-a-number"}, binary_path="/bin/target"
+    )
     assert obs.output.startswith("ERROR")
     assert not obs.truncated
 
@@ -109,7 +113,7 @@ def test_dispatch_namespaced_tool_captures_error_instead_of_raising() -> None:
 def test_dispatch_disabled_server_tool_is_unknown() -> None:
     # A tool whose server is not enabled is not dispatchable.
     layer = ToolLayer(servers=("pwntools",))
-    obs = layer.dispatch("radare2_analyze_binary", {"binary_path": "/bin/target"})
+    obs = layer.dispatch("radare2_analyze_binary", {}, binary_path="/bin/target")
     assert "unknown tool" in obs.output
 
 
@@ -130,7 +134,7 @@ def test_submit_spec_requires_payload_hex() -> None:
 
 def test_dispatch_enumerate_returns_observation_with_addresses() -> None:
     layer = ToolLayer(enumerate_fn=lambda **_: _result())
-    obs = layer.dispatch(ENUMERATE_GADGETS, {"binary_path": "/bin/target"})
+    obs = layer.dispatch(ENUMERATE_GADGETS, {}, binary_path="/bin/target")
     assert obs.tool_name == ENUMERATE_GADGETS
     assert not obs.truncated
     assert "0x4011ad: pop rdi ; ret" in obs.output
@@ -144,7 +148,7 @@ def test_dispatch_truncates_to_observation_budget() -> None:
         returned=2000,
     )
     layer = ToolLayer(enumerate_fn=lambda **_: big, max_observation_chars=200)
-    obs = layer.dispatch(ENUMERATE_GADGETS, {"binary_path": "/bin/target"})
+    obs = layer.dispatch(ENUMERATE_GADGETS, {}, binary_path="/bin/target")
     assert obs.truncated
     assert len(obs.output) == 200
 
@@ -154,19 +158,98 @@ def test_dispatch_captures_tool_error_instead_of_raising() -> None:
         raise FileNotFoundError("binary not found: /nope")
 
     layer = ToolLayer(enumerate_fn=boom)
-    obs = layer.dispatch(ENUMERATE_GADGETS, {"binary_path": "/nope"})
+    obs = layer.dispatch(ENUMERATE_GADGETS, {}, binary_path="/nope")
     assert obs.output.startswith("ERROR: FileNotFoundError")
     assert not obs.truncated
 
 
+# --- ADR 0018: the harness injects the staged binary path; the model neither ---- #
+# --- supplies nor sees it. The analysis tools run on the host, where the model's -- #
+# --- sandbox-only /work/target does not exist, and confining them to the staged --- #
+# --- target keeps a host-side tool from being pointed at an arbitrary file. ------- #
+
+
+def test_specs_strip_binary_path_from_analysis_tools() -> None:
+    specs = {s.name: s for s in ToolLayer().specs()}
+    for name in (
+        ENUMERATE_GADGETS,
+        "radare2_analyze_binary",
+        "ghidra_list_imports",
+        "ropper_get_strings",
+        "gdb_inspect_state",
+    ):
+        schema = specs[name].input_schema
+        assert "binary_path" not in schema.get("properties", {}), name
+        assert "binary_path" not in schema.get("required", []), name
+    # A pure pwntools helper never took binary_path and is left alone.
+    assert "binary_path" not in specs["pwntools_pack_address"].input_schema.get("properties", {})
+
+
+def test_specs_do_not_mutate_server_owned_schemas() -> None:
+    # Advertising a stripped copy must not clobber the server-owned schema — the
+    # standalone MCP stdio servers still require binary_path from their own clients.
+    from mcp_servers.radare2 import server as radare2
+
+    ToolLayer().specs()
+    assert "binary_path" in radare2.ANALYZE_BINARY_SCHEMA["properties"]
+    assert "binary_path" in radare2.ANALYZE_BINARY_SCHEMA["required"]
+
+
+def test_dispatch_injects_staged_path_over_model_value_on_enumerate() -> None:
+    captured: dict[str, object] = {}
+
+    def cap(**kwargs: object) -> EnumerateResult:
+        captured.update(kwargs)
+        return _result()
+
+    layer = ToolLayer(enumerate_fn=cap)
+    # The model asks for the sandbox-only path; the staged host path must win.
+    layer.dispatch(ENUMERATE_GADGETS, {"binary_path": "/work/target"}, binary_path="/staged/target")
+    assert captured["binary_path"] == "/staged/target"
+
+
+def test_dispatch_injects_staged_path_for_namespaced_analysis_tool(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import agent.tools as tools_mod
+
+    captured: dict[str, object] = {}
+
+    def cap(tool_name: str, arguments: dict[str, object]) -> dict[str, object]:
+        captured.update(arguments)
+        return {"ok": True}
+
+    monkeypatch.setitem(tools_mod._SERVER_DISPATCH, "radare2", cap)
+    ToolLayer().dispatch(
+        "radare2_analyze_binary", {"binary_path": "/work/target"}, binary_path="/staged/target"
+    )
+    assert captured["binary_path"] == "/staged/target"
+
+
+def test_dispatch_does_not_inject_binary_path_into_pure_helper(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import agent.tools as tools_mod
+
+    captured: dict[str, object] = {}
+
+    def cap(tool_name: str, arguments: dict[str, object]) -> dict[str, object]:
+        captured.update(arguments)
+        return {"ok": True}
+
+    monkeypatch.setitem(tools_mod._SERVER_DISPATCH, "pwntools", cap)
+    ToolLayer().dispatch("pwntools_pack_address", {"address": "0x1"}, binary_path="/staged/target")
+    assert "binary_path" not in captured
+
+
 def test_dispatch_unknown_tool_returns_error_observation() -> None:
-    obs = ToolLayer().dispatch("ghidra_decompile", {})
+    obs = ToolLayer().dispatch("ghidra_decompile", {}, binary_path="/bin/target")
     assert "unknown tool" in obs.output
 
 
 def test_dispatch_submit_is_terminal_and_raises() -> None:
     with pytest.raises(ValueError, match="terminal"):
-        ToolLayer().dispatch(SUBMIT_PAYLOAD, {"payload_hex": "41"})
+        ToolLayer().dispatch(SUBMIT_PAYLOAD, {"payload_hex": "41"}, binary_path="/bin/target")
 
 
 def test_run_exploit_script_is_advertised() -> None:
@@ -183,7 +266,7 @@ def test_run_exploit_script_is_advertised() -> None:
 def test_dispatch_run_script_is_terminal_and_raises() -> None:
     # Like submit_payload, it is committed via the propose node, never dispatched.
     with pytest.raises(ValueError, match="terminal"):
-        ToolLayer().dispatch(RUN_SCRIPT, {"script": "print(1)"})
+        ToolLayer().dispatch(RUN_SCRIPT, {"script": "print(1)"}, binary_path="/bin/target")
 
 
 def test_parse_text_actions_recovers_run_exploit_script_by_default() -> None:
