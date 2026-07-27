@@ -28,9 +28,18 @@ import pytest
 from fakes.backend import FakeBackend, ScriptedTurn
 
 from agent import prompts
-from agent.graph import AgentConfig, build_graph, build_run_record, run_agent
-from agent.state import AgentState, BinaryContext
+from agent.graph import (
+    AgentConfig,
+    _to_backend_messages,
+    build_graph,
+    build_run_record,
+    node_propose,
+    node_validate,
+    run_agent,
+)
+from agent.state import AgentState, BinaryContext, Message
 from agent.tools import ToolLayer
+from backends.anthropic_backend import _to_anthropic_messages
 from harness.record import FailureMode, MaxTier, Outcome, PromptingStrategy, RunRecord
 from mcp_servers.ropgadget.parser import Gadget
 from mcp_servers.ropgadget.server import EnumerateResult
@@ -513,3 +522,69 @@ def test_malformed_payload_is_now_retryable_not_terminal(
     assert result.state.validation_attempts == 1  # only the valid payload ran
     assert result.outcome == Outcome.SUCCESS
     assert any(m.role == "tool" and "Could not decode" in m.content for m in result.state.messages)
+
+
+# --------------------------------------------------------------------------- #
+# Regression (ADR 0011): a turn that mixes an analysis call with a terminal    #
+# call routes straight to propose, skipping enumerate — both tool_use blocks   #
+# must still be answered, or the next reason request is rejected by a strict    #
+# provider API (Anthropic 400: `tool_use` ids ... without `tool_result`).      #
+# --------------------------------------------------------------------------- #
+
+
+def _assert_every_tool_use_answered(api_messages: list[dict[str, Any]]) -> None:
+    """Assert every ``tool_use`` block is immediately followed by a user turn
+    carrying its matching ``tool_result`` — the pairing the Anthropic Messages
+    API enforces (a violation is the 400 that killed run 46a2fec7)."""
+    for i, msg in enumerate(api_messages):
+        use_ids = [
+            b["id"] for b in msg["content"] if isinstance(b, dict) and b.get("type") == "tool_use"
+        ]
+        if not use_ids:
+            continue
+        nxt = api_messages[i + 1] if i + 1 < len(api_messages) else {"content": []}
+        result_ids = {
+            b.get("tool_use_id")
+            for b in nxt["content"]
+            if isinstance(b, dict) and b.get("type") == "tool_result"
+        }
+        missing = [uid for uid in use_ids if uid not in result_ids]
+        assert not missing, f"orphaned tool_use id(s) after message {i}: {missing}"
+
+
+def test_mixed_analysis_and_terminal_turn_answers_every_tool_use(
+    sample_overflow_path: Path, tmp_path: Path
+) -> None:
+    config = _config(tmp_path)
+    state = AgentState(binary=_binary(sample_overflow_path))
+    state.messages.extend(
+        [
+            Message(role="user", content="Analyze then exploit."),
+            Message(
+                role="assistant",
+                content="Disassembling, and running my exploit in the same turn.",
+                tool_calls=[
+                    {"id": "toolu_enum", "name": "enumerate_gadgets", "input": {}},
+                    {
+                        "id": "toolu_script",
+                        "name": "run_exploit_script",
+                        "input": {"script": "print('marker')"},
+                    },
+                ],
+            ),
+        ]
+    )
+
+    # This turn routes reason -> propose -> validate (never enumerate); both nodes
+    # together must answer both tool_use blocks.
+    node_propose(state, config)
+    node_validate(state, config)
+
+    # The analysis call got a tool_result (not just the terminal call).
+    answered = {m.tool_call_id for m in state.messages if m.role == "tool"}
+    assert {"toolu_enum", "toolu_script"} <= answered
+
+    # And the serialized Anthropic stream is valid — the exact invariant the API
+    # rejected in the failing run.
+    api_messages, _ = _to_anthropic_messages(_to_backend_messages(state.messages))
+    _assert_every_tool_use_answered(api_messages)

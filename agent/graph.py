@@ -247,7 +247,21 @@ def _to_backend_messages(messages: list[Message]) -> list[BackendMessage]:
 
 
 def _last_assistant(state: AgentState) -> Message | None:
-    return state.messages[-1] if state.messages and state.messages[-1].role == "assistant" else None
+    """The most recent assistant turn, scanning past any trailing ``tool`` results.
+
+    Not just ``messages[-1]``: once ``enumerate``/``propose`` append a tool_result
+    for a dispatched call, the assistant turn that emitted it is no longer last, so
+    ``_find_submit_call`` / ``_find_script_call`` (which key ``validate``'s feedback
+    to the terminal ``tool_use`` id) must still resolve it. Stops at a ``user``
+    boundary so it never reaches back into a prior turn — the "previous turn"
+    semantics ``node_reason`` relies on are preserved.
+    """
+    for message in reversed(state.messages):
+        if message.role == "assistant":
+            return message
+        if message.role == "user":
+            return None
+    return None
 
 
 def _assistant_round_count(state: AgentState) -> int:
@@ -322,6 +336,39 @@ def node_ingest(state: AgentState, config: AgentConfig | None = None) -> AgentSt
     return state
 
 
+def _dispatch_analysis_calls(state: AgentState, config: AgentConfig) -> None:
+    """Dispatch every non-terminal (analysis) tool call in the last assistant turn.
+
+    Appends one ``tool`` message per call so each analysis ``tool_use`` block gets
+    its matching ``tool_result`` — the pairing invariant strict provider APIs
+    enforce (ADR 0011). ``submit_payload`` / ``run_exploit_script`` are terminal
+    and left for ``propose``/``validate`` to answer.
+
+    Called from both ``enumerate`` (pure-analysis turns) and ``propose`` (a turn
+    that mixed an analysis call *and* a terminal call — the router sends that turn
+    straight to ``propose``, skipping ``enumerate``, so ``propose`` must answer the
+    analysis blocks itself or they are orphaned and the next ``reason`` request is
+    rejected with ``tool_use ids ... without tool_result blocks``).
+    """
+    last = _last_assistant(state)
+    if last is None or not last.tool_calls:
+        return
+    for tc in last.tool_calls:
+        if tc.get("name") in (SUBMIT_PAYLOAD, RUN_SCRIPT):
+            continue
+        call = normalize_tool_call(tc)
+        # The analysis tools run on the host, so they need the real staged binary
+        # path, not the model's sandbox-only /work/target; the harness injects it
+        # and ignores any path the model supplied (ADR 0018).
+        observation = config.tools.dispatch(
+            call.name, call.arguments, binary_path=state.binary.binary_path
+        )
+        state.observations.append(observation)
+        state.messages.append(
+            Message(role="tool", content=observation.output, tool_call_id=call.id or None)
+        )
+
+
 def node_enumerate(state: AgentState, config: AgentConfig | None = None) -> AgentState:
     """Dispatch the analysis tool calls the assistant just emitted.
 
@@ -338,30 +385,7 @@ def node_enumerate(state: AgentState, config: AgentConfig | None = None) -> Agen
     ``run_exploit_script`` are terminal (handled by ``propose``) and filtered out.
     """
     config = config or _default_config()
-
-    last = _last_assistant(state)
-    model_calls = (
-        [
-            normalize_tool_call(tc)
-            for tc in last.tool_calls
-            if tc.get("name") not in (SUBMIT_PAYLOAD, RUN_SCRIPT)
-        ]
-        if last is not None and last.tool_calls
-        else []
-    )
-
-    for call in model_calls:
-        # The analysis tools run on the host, so they need the real staged binary
-        # path, not the model's sandbox-only /work/target; the harness injects it
-        # and ignores any path the model supplied (ADR 0018).
-        observation = config.tools.dispatch(
-            call.name, call.arguments, binary_path=state.binary.binary_path
-        )
-        state.observations.append(observation)
-        state.messages.append(
-            Message(role="tool", content=observation.output, tool_call_id=call.id or None)
-        )
-
+    _dispatch_analysis_calls(state, config)
     state.iteration += 1
     return state
 
@@ -544,6 +568,12 @@ def node_propose(state: AgentState, config: AgentConfig | None = None) -> AgentS
     again. ``pending_kind`` records which artifact ``validate`` should run.
     """
     config = config or _default_config()
+
+    # A turn that mixed analysis calls with the terminal call routed straight
+    # here, bypassing ``enumerate``; answer those analysis blocks now so every
+    # ``tool_use`` gets a ``tool_result`` before the terminal candidate is staged
+    # (ADR 0011 — otherwise the next ``reason`` request is rejected).
+    _dispatch_analysis_calls(state, config)
 
     script = _find_script_call(state)
     if script is not None:
