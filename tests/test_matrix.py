@@ -12,6 +12,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -32,16 +33,17 @@ from harness.matrix import (
 from harness.record import Outcome
 from harness.runner import RunSettings, run_one
 from mcp_servers.ropgadget.parser import Gadget
-from mcp_servers.ropgadget.server import EnumerateResult
+from mcp_servers.ropgadget.server import FindResult
 
 # --------------------------------------------------------------------------- #
 # Helpers                                                                     #
 # --------------------------------------------------------------------------- #
 
 
-def _canned_enumerator(**_: object) -> EnumerateResult:
-    return EnumerateResult(
+def _canned_finder(**_: object) -> FindResult:
+    return FindResult(
         binary_path="b",
+        query="pop rdi; ret",
         total_found=1,
         returned=1,
         truncated=False,
@@ -53,8 +55,12 @@ def _giveup_resolver(cost_usd: float = 0.0) -> Any:
     """A backend resolver returning a fresh give-up FakeBackend named for the cell."""
 
     def resolve(name: str) -> FakeBackend:
+        # Huge token count so each run ends on the real token budget after one
+        # call (ADR 0015: no give-up), keeping one backend call per cell.
         return FakeBackend(
-            script=[ScriptedTurn(text="giving up", cost_usd=cost_usd)],
+            script=[
+                ScriptedTurn(text="giving up", cost_usd=cost_usd, completion_tokens=10_000_000)
+            ],
             name=name,
         )
 
@@ -62,9 +68,16 @@ def _giveup_resolver(cost_usd: float = 0.0) -> Any:
 
 
 def _batch_run_one(spec: Any, backend: Any, strategy: str, settings: RunSettings, **kw: Any) -> Any:
-    # Inject the canned enumerator so no ROPgadget CLI is needed.
+    # Inject the canned enumerator so no ROPgadget CLI is needed. The give-up
+    # fakes script a single no-tool-call turn, so disable nudges (ADR 0012) to
+    # keep the one-shot give-up these batch-mechanics tests assume.
     return run_one(
-        spec, backend, strategy, settings, tools=ToolLayer(enumerate_fn=_canned_enumerator)
+        spec,
+        backend,
+        strategy,
+        replace(settings, max_nudges=0),
+        tools=ToolLayer(find_fn=_canned_finder),
+        backend_handle=kw.get("backend_handle"),
     )
 
 
@@ -79,6 +92,8 @@ def _write_config(tmp_path: Path, **over: Any) -> Path:
         "output_dir": str(over.get("output_dir", tmp_path / "runs")),
         "limits": over.get("limits", {"tokens": 200000, "wall_clock_seconds": 1800}),
     }
+    if "tools" in over:
+        data["tools"] = over["tools"]
     tmp_path.mkdir(parents=True, exist_ok=True)
     path = tmp_path / "experiments.yaml"
     path.write_text(yaml.safe_dump(data), encoding="utf-8")
@@ -105,6 +120,56 @@ def test_from_yaml_parses_shape(tmp_path: Path) -> None:
     assert cfg.token_cap == 1000
     assert cfg.cap_for("claude-opus") == 50.0
     assert cfg.cap_for("claude-sonnet") == 0.0  # absent -> unlimited
+
+
+# --------------------------------------------------------------------------- #
+# Config seam (ADR 0019 / 0024): tool surface + per-backend envelope           #
+# --------------------------------------------------------------------------- #
+
+
+def test_tool_layer_defaults_to_curated_set(tmp_path: Path) -> None:
+    cfg = BatchConfig.from_yaml(_write_config(tmp_path))
+    assert cfg.tool_servers is None  # not set -> curated ToolLayer default
+    layer = cfg.tool_layer()
+    names = {s.name for s in layer.specs()}
+    assert "radare2_recon" in names
+    assert not any(n.startswith("ghidra_") for n in names)
+
+
+def test_tools_servers_widen_the_surface(tmp_path: Path) -> None:
+    cfg = BatchConfig.from_yaml(
+        _write_config(tmp_path, tools={"servers": ["radare2", "gdb", "ghidra"]})
+    )
+    assert cfg.tool_servers == ("radare2", "gdb", "ghidra")
+    names = {s.name for s in cfg.tool_layer().specs()}
+    assert "ghidra_decompile_function" in names
+
+
+def test_per_backend_envelope_overrides_settings(tmp_path: Path) -> None:
+    cfg = BatchConfig.from_yaml(
+        _write_config(
+            tmp_path,
+            limits={
+                "tokens": 200000,
+                "wall_clock_seconds": 600,
+                "per_backend": {
+                    "gpt-oss-20b": {"wall_clock_seconds": 1200, "n_ctx": 32768},
+                    "claude-opus": {"tokens": 400000},
+                },
+            },
+        )
+    )
+    # Global default is unchanged for a backend with no envelope.
+    base = cfg.settings_for("claude-sonnet")
+    assert base.wall_clock_cap_seconds == 600
+    assert base.token_cap == 200000
+    # The free local gets a bigger wall-clock; premium gets a bigger token cap.
+    local = cfg.settings_for("gpt-oss-20b")
+    assert local.wall_clock_cap_seconds == 1200
+    opus = cfg.settings_for("claude-opus")
+    assert opus.token_cap == 400000
+    # n_ctx is carried for preflight but not applied to RunSettings here.
+    assert cfg.per_backend["gpt-oss-20b"]["n_ctx"] == 32768
 
 
 def test_example_config_parses() -> None:
@@ -151,6 +216,37 @@ def test_run_batch_executes_full_matrix(fixture_corpus: Any, tmp_path: Path) -> 
     assert len(result.executed) == 8
     assert all(r.outcome == Outcome.FAILURE for r in result.executed)
     assert len(list(persistence.iter_records(cfg.output_dir))) == 8
+
+
+def test_run_batch_survives_a_run_that_raises(fixture_corpus: Any, tmp_path: Path) -> None:
+    # A run raising (e.g. a backend 400/connection error) must not abort the
+    # batch: it is counted as errored, not persisted, and the batch keeps going.
+    cfg = BatchConfig.from_yaml(_write_config(tmp_path, output_dir=tmp_path / "runs"))
+
+    def boom(*_a: Any, **_k: Any) -> Any:
+        raise RuntimeError("backend exploded")
+
+    result = run_batch(cfg, backend_resolver=_giveup_resolver(), run_one_fn=boom)
+    assert result.errored == 8  # every planned run raised
+    assert result.executed == []
+    # Nothing persisted, so a re-run retries them all (resume-safe).
+    assert completed_counts(cfg.output_dir) == {}
+
+
+def test_run_batch_isolates_a_failing_backend(fixture_corpus: Any, tmp_path: Path) -> None:
+    # One backend erroring (the claude-opus temperature 400 incident) must not
+    # take down the others: its cells error, the healthy backend still completes.
+    cfg = BatchConfig.from_yaml(_write_config(tmp_path, output_dir=tmp_path / "runs"))
+
+    def selective(spec: Any, backend: Any, strategy: str, settings: RunSettings, **kw: Any) -> Any:
+        if kw.get("backend_handle") == "claude-opus":
+            raise RuntimeError("temperature is deprecated for this model")
+        return _batch_run_one(spec, backend, strategy, settings, **kw)
+
+    result = run_batch(cfg, backend_resolver=_giveup_resolver(), run_one_fn=selective)
+    assert result.errored == 4  # 1 binary × 2 strategies × 2 replicates for opus
+    assert len(result.executed) == 4
+    assert {r.backend_handle for r in result.executed} == {"claude-sonnet"}
 
 
 def test_run_batch_resumes_without_redoing(fixture_corpus: Any, tmp_path: Path) -> None:

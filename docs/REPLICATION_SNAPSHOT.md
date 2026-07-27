@@ -49,7 +49,7 @@ Output: `dist/sara-snapshot-<commit>.tar.zst` (+ a `.sha256`). Contents:
 | `manifest.yaml` | the corpus metadata catalog |
 | `corpus-binaries/` | the corpus binaries (omitted with `--no-binaries`) |
 | `corpus-binaries.sha256` | corpus binary checksums (always present) |
-| `runs/` | every finalized run directory (`record.json` / `trace.jsonl` / `payload.bin`) |
+| `runs/` | every finalized run directory (`record.json` / `trace.jsonl` / `conversation.jsonl` / `payload.bin`) |
 | `payloads.sha256` | checksums of every stored payload |
 | `notebooks-html/` | executed analysis notebooks rendered to HTML |
 | `environment.txt` | host / OS / CPU / RAM / Docker summary + local-vs-cloud + the LM Studio host (endpoint, description, models served) |

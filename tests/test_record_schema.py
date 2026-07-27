@@ -28,6 +28,7 @@ from harness.record import (
     BackendInfo,
     CostRecord,
     FailureMode,
+    MaxTier,
     Outcome,
     PricingSnapshot,
     PromptingStrategy,
@@ -122,10 +123,143 @@ def test_valid_failure_record_roundtrips() -> None:
     assert restored.failure_mode == FailureMode.HALLUCINATED_GADGET
 
 
-def test_new_records_default_to_schema_v3() -> None:
+def test_new_records_default_to_schema_v6() -> None:
     kwargs = _base_kwargs()
     kwargs["outcome"] = Outcome.SUCCESS
-    assert RunRecord(**kwargs).schema_version == "3"
+    assert RunRecord(**kwargs).schema_version == "6"
+
+
+# --- schema v5 fields: partial-credit tier + tool telemetry ---------------- #
+
+
+def test_v5_fields_default_and_round_trip() -> None:
+    kwargs = _base_kwargs()
+    kwargs["outcome"] = Outcome.SUCCESS
+    rec = RunRecord(**kwargs)
+    # Additive defaults.
+    assert rec.max_tier_reached == MaxTier.NONE
+    assert rec.tools_offered == []
+    assert rec.tool_call_counts == {}
+    # Settable + round-trips through the JSON contract the analysis reads.
+    rec2 = RunRecord(
+        **kwargs,
+        max_tier_reached=MaxTier.CONTROL,
+        tools_offered=["enumerate_gadgets", "submit_payload", "radare2_analyze_binary"],
+        tool_call_counts={"enumerate_gadgets": 4, "submit_payload": 1},
+    )
+    loaded = RunRecord.model_validate_json(rec2.model_dump_json())
+    assert loaded.max_tier_reached == MaxTier.CONTROL
+    assert loaded.tools_offered == ["enumerate_gadgets", "submit_payload", "radare2_analyze_binary"]
+    assert loaded.tool_call_counts == {"enumerate_gadgets": 4, "submit_payload": 1}
+
+
+def test_pre_v5_record_loads_with_v5_defaults() -> None:
+    # A pre-v5 record has no max_tier_reached / tools_offered / tool_call_counts;
+    # they must default so old runs stay loadable/comparable.
+    kwargs = _base_kwargs()
+    kwargs["outcome"] = Outcome.SUCCESS
+    payload = RunRecord(**kwargs).model_dump()
+    payload["schema_version"] = "4"
+    for dropped in ("max_tier_reached", "tools_offered", "tool_call_counts"):
+        payload.pop(dropped, None)
+    loaded = RunRecord.model_validate(payload)
+    assert loaded.schema_version == "4"
+    assert loaded.max_tier_reached == MaxTier.NONE
+    assert loaded.tools_offered == []
+    assert loaded.tool_call_counts == {}
+
+
+def test_v5_granular_budget_modes_are_valid_failure_modes() -> None:
+    # The split resource modes are all constructible on a FAILURE record.
+    for mode in (
+        FailureMode.TOKEN_BUDGET,
+        FailureMode.WALL_CLOCK,
+        FailureMode.ITERATION_CAP,
+        FailureMode.CONTEXT_OVERFLOW,
+        FailureMode.TRUNCATED,
+    ):
+        kwargs = _base_kwargs()
+        kwargs["outcome"] = Outcome.FAILURE
+        kwargs["failure_mode"] = mode
+        assert RunRecord(**kwargs).failure_mode == mode
+
+
+# --- schema v6 fields: 100-pt bonus rubric + context telemetry ------------- #
+
+
+def test_v6_fields_default_and_round_trip() -> None:
+    kwargs = _base_kwargs()
+    kwargs["outcome"] = Outcome.SUCCESS
+    rec = RunRecord(**kwargs)
+    # Additive defaults.
+    assert rec.score == 0
+    assert rec.bonus_w is False
+    assert rec.bonus_id is False
+    assert rec.bonus_root is False
+    assert rec.n_ctx_loaded is None
+    # Settable + round-trips through the JSON contract the analysis reads.
+    rec2 = RunRecord(
+        **kwargs,
+        score=90,
+        bonus_w=True,
+        bonus_id=True,
+        n_ctx_loaded=32768,
+    )
+    loaded = RunRecord.model_validate_json(rec2.model_dump_json())
+    assert loaded.score == 90
+    assert loaded.bonus_w is True
+    assert loaded.bonus_id is True
+    assert loaded.bonus_root is False
+    assert loaded.n_ctx_loaded == 32768
+
+
+def test_pre_v6_record_loads_with_v6_defaults() -> None:
+    # A pre-v6 record has no score / bonus bools / n_ctx_loaded; they must default
+    # so Trial-1/2 runs stay loadable and comparable.
+    kwargs = _base_kwargs()
+    kwargs["outcome"] = Outcome.SUCCESS
+    payload = RunRecord(**kwargs).model_dump()
+    payload["schema_version"] = "5"
+    for dropped in ("score", "bonus_w", "bonus_id", "bonus_root", "n_ctx_loaded"):
+        payload.pop(dropped, None)
+    loaded = RunRecord.model_validate(payload)
+    assert loaded.schema_version == "5"
+    assert loaded.score == 0
+    assert loaded.bonus_w is False
+    assert loaded.bonus_id is False
+    assert loaded.bonus_root is False
+    assert loaded.n_ctx_loaded is None
+
+
+def test_v6_validator_output_carries_bonus_bools() -> None:
+    vout = ValidatorOutput(
+        succeeded=True,
+        return_code=0,
+        stdout_marker_found=True,
+        marker_in_payload=False,
+        bonus_w=True,
+        bonus_id=True,
+    )
+    loaded = ValidatorOutput.model_validate_json(vout.model_dump_json())
+    assert loaded.bonus_w is True
+    assert loaded.bonus_id is True
+    assert loaded.bonus_root is False
+
+
+def test_conversation_path_optional_and_pre_v4_loads() -> None:
+    from pathlib import Path
+
+    kwargs = _base_kwargs()
+    kwargs["outcome"] = Outcome.SUCCESS
+    # Defaults to None; settable to a path.
+    assert RunRecord(**kwargs).conversation_path is None
+    rec = RunRecord(**kwargs, conversation_path=Path("runs/x/conversation.jsonl"))
+    assert rec.conversation_path == Path("runs/x/conversation.jsonl")
+    # A pre-v4 record (no conversation_path) still loads.
+    template = RunRecord(**kwargs).model_dump(mode="json")
+    template.pop("conversation_path", None)
+    restored = RunRecord.model_validate({**template, "schema_version": "3"})
+    assert restored.conversation_path is None
 
 
 def test_legacy_success_outcomes_migrate_to_success() -> None:

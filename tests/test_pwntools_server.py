@@ -100,6 +100,16 @@ def test_pattern_offset_finds_known_offset() -> None:
     assert pwn.pattern_offset(sub, length=128) == 40
 
 
+def test_pattern_offset_default_length_searches_canonical_pattern() -> None:
+    # length=0 (the schema default) searches the full-period canonical pattern.
+    # This branch was never exercised until the tool was wired to the agent; it
+    # used to raise TypeError from bytes(<generator of bytes>).
+    pattern = pwn.generate_pattern(200)
+    sub = pattern[40:44]
+    assert pwn.pattern_offset(sub) == 40
+    assert pwn.pattern_offset(sub.decode("ascii")) == 40
+
+
 def test_pattern_offset_not_found_raises() -> None:
     with pytest.raises(ValueError, match="not found"):
         pwn.pattern_offset("ZZZZ", length=64)

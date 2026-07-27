@@ -151,11 +151,13 @@ def _register_defaults() -> None:
     # --- Google Gemini (Premium) ---
     from backends.google_backend import GoogleBackend
 
+    # gemini-2.5-pro is gated for new API keys (404 "no longer available to new
+    # users"); gemini-pro-latest is the stable "latest Gemini Pro" alias (ADR 0011).
     register(
-        "gemini-2.5-pro",
+        "gemini-pro-latest",
         BackendCategory.PREMIUM,
-        lambda: GoogleBackend(model="gemini-2.5-pro"),
-        model="gemini-2.5-pro",
+        lambda: GoogleBackend(model="gemini-pro-latest"),
+        model="gemini-pro-latest",
     )
 
     # --- LM Studio (local; Open Weight + Unrestricted, per ADR 0005) ---
@@ -164,18 +166,17 @@ def _register_defaults() -> None:
     # price, so no pricing is registered (cost is recorded as usd=0.0).
     from backends.lmstudio_backend import LMStudioBackend
 
-    # NOTE: 70B does NOT fit the 24 GB RTX 4090 local profile (~42 GB at Q4_K_M);
-    # it is a cloud / large-host open-weight entry, not a 4090 run-for-record
-    # model. See backends/README.md for the per-model VRAM footprints.
-    register(
-        "llama-3.3-70b",
-        BackendCategory.OPEN_WEIGHT,
-        lambda: LMStudioBackend("llama-3.3-70b-instruct", BackendCategory.OPEN_WEIGHT),
-    )
+    # Each model string below is the exact API identifier the LM Studio server
+    # advertises via `GET /v1/models` — the full ``publisher/name`` or, for
+    # underscore-namespaced GGUF repos, the whole id. LM Studio resolves a request
+    # by that id (or its post-``/`` suffix); an invented alias returns
+    # ``model_not_found`` (404), so these must stay in sync with the loaded models.
+    # (llama-3.3-70b was intentionally dropped — it does not fit the 24 GB profile
+    # and is not a run-for-record model.)
     register(
         "qwen2.5-coder-32b",
         BackendCategory.OPEN_WEIGHT,
-        lambda: LMStudioBackend("qwen2.5-coder-32b-instruct", BackendCategory.OPEN_WEIGHT),
+        lambda: LMStudioBackend("qwen/qwen2.5-coder-32b", BackendCategory.OPEN_WEIGHT),
     )
     # Small, fast, strong-tool-calling sibling of the 32B above. Intended for
     # smoke-testing the LM Studio transport and the agent tool loop on modest
@@ -196,7 +197,7 @@ def _register_defaults() -> None:
     register(
         "qwen3-coder-30b",  # Qwen3-Coder-30B-A3B-Instruct (MoE, ~3.3B active)
         BackendCategory.OPEN_WEIGHT,
-        lambda: LMStudioBackend("qwen3-coder-30b-a3b-instruct", BackendCategory.OPEN_WEIGHT),
+        lambda: LMStudioBackend("qwen/qwen3-coder-30b", BackendCategory.OPEN_WEIGHT),
     )
     register(
         "gpt-oss-20b",  # OpenAI gpt-oss-20b (MoE, ~3.6B active; harmony format)
@@ -209,12 +210,6 @@ def _register_defaults() -> None:
         lambda: LMStudioBackend("devstral-small-2507", BackendCategory.OPEN_WEIGHT),
     )
 
-    register(
-        "dolphin-mixtral-8x7b",  # NOTE: ~26 GB at Q4 -> over the 24 GB profile
-        BackendCategory.UNRESTRICTED,
-        lambda: LMStudioBackend("dolphin-2.7-mixtral-8x7b", BackendCategory.UNRESTRICTED),
-    )
-
     # 24 GB-profile unrestricted candidates (alignment removed or absent ->
     # UNRESTRICTED per ADR 0005; the axis is safety-alignment status, not licence
     # or host). See backends/README.md for cards and the alignment-contrast
@@ -225,17 +220,23 @@ def _register_defaults() -> None:
     register(
         "whiterabbitneo-v3-7b",  # WhiteRabbitNeo V3 7B (DevSecOps security fine-tune)
         BackendCategory.UNRESTRICTED,
-        lambda: LMStudioBackend("whiterabbitneo-v3-7b", BackendCategory.UNRESTRICTED),
+        lambda: LMStudioBackend(
+            "whiterabbitneo_whiterabbitneo-v3-7b", BackendCategory.UNRESTRICTED
+        ),
     )
     register(
         "qwen3-30b-abliterated",  # Qwen3-30B-A3B abliterated (refusal-ablated MoE)
         BackendCategory.UNRESTRICTED,
-        lambda: LMStudioBackend("qwen3-30b-a3b-abliterated", BackendCategory.UNRESTRICTED),
+        lambda: LMStudioBackend(
+            "huihui-ai_qwen3-30b-a3b-abliterated-clone-i1", BackendCategory.UNRESTRICTED
+        ),
     )
     register(
         "dolphin-3.0-mistral-24b",  # Dolphin 3.0 Mistral-24B (uncensored general fine-tune)
         BackendCategory.UNRESTRICTED,
-        lambda: LMStudioBackend("dolphin3.0-mistral-24b", BackendCategory.UNRESTRICTED),
+        lambda: LMStudioBackend(
+            "cognitivecomputations_dolphin3.0-mistral-24b", BackendCategory.UNRESTRICTED
+        ),
     )
 
 

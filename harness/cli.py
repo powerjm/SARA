@@ -33,6 +33,7 @@ from dotenv import load_dotenv
 from rich.console import Console
 from rich.table import Table
 
+from agent import prompts
 from backends import pricing, registry
 from harness import corpus, persistence
 from harness.matrix import BatchConfig, completed_counts, estimate_cost, plan, run_batch
@@ -61,7 +62,9 @@ def cli() -> None:
 @click.option(
     "--strategy",
     default="zero_shot",
-    type=click.Choice(["zero_shot", "chain_of_thought", "react", "majorca"]),
+    # Derived from the registry so the CLI can never drift from the strategies that
+    # actually exist (test_cli_choices_match_registry pins this).
+    type=click.Choice(sorted(prompts.STRATEGIES)),
     help="Prompting strategy",
 )
 @click.option(
@@ -87,7 +90,7 @@ def run(binary: str, backend: str, strategy: str, output_dir: Path | None) -> No
     except (corpus.CorpusError, KeyError) as exc:
         raise click.ClickException(str(exc)) from exc
 
-    record = run_one(spec, backend_obj, strategy, settings)
+    record = run_one(spec, backend_obj, strategy, settings, backend_handle=backend)
     run_dir = persistence.final_dir(settings.output_dir, str(record.run_id))
     console.print(
         f"[green]done[/] outcome=[bold]{record.outcome.value}[/]"
@@ -158,6 +161,7 @@ def batch(config: Path, dry_run: bool) -> None:
     console.print(
         f"[green]batch done[/] executed={len(result.executed)} "
         f"skipped(existing)={result.skipped_existing} "
+        f"errored={result.errored} "
         f"halted={sorted(result.halted_backends) or 'none'}"
     )
 

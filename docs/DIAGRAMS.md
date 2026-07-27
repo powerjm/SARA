@@ -60,7 +60,7 @@ flowchart TB
         CLASS["classifier.py<br/>(Outcome, FailureMode)"]
     end
 
-    SCHEMA["<b>harness/record.py — RunRecord</b><br/>the contract<br/>record.json · trace.jsonl · payload.bin"]
+    SCHEMA["<b>harness/record.py — RunRecord</b><br/>the contract<br/>record.json · trace.jsonl · conversation.jsonl · payload.bin"]
     CORPUS["corpus/manifest.yaml<br/>+ scripts: fetch · build · verify"]
     ANALYSIS["analysis/<br/>aggregate · stats<br/>load_runs · synthetic · notebooks"]
 
@@ -96,7 +96,7 @@ and *analysing* them.
 flowchart LR
     MATRIX["Experiment matrix<br/>binary × backend × strategy"]
     RUN["Agent run<br/>LangGraph + backend<br/>+ tools + validator"]
-    REC["RunRecord ×N<br/>record.json · trace.jsonl<br/>payload.bin"]
+    REC["RunRecord ×N<br/>record.json · trace.jsonl<br/>conversation.jsonl · payload.bin"]
     AGG["aggregate.py"]
     CELL["CellSummary<br/>success = ANY run<br/>time/cost/iters = median<br/>all-refused reported apart"]
     STATS["stats.py"]
@@ -112,7 +112,10 @@ flowchart LR
 The graph shape **is** the methodology. Each node is a pure
 `AgentState → AgentState` function; `REASON` is the hub, routed by
 `route_after_reason`. The shape is fixed — new prompting strategies and tools
-extend the layers without changing it (ADR 0001).
+extend the layers without changing it (ADR 0001). `ENUMERATE` seeds a baseline
+gadget dump as *user context* (ADR 0011); Step 8 added a bounded `REASON→REASON`
+nudge self-loop (ADR 0012) and text-format tool-call recovery (ADR 0010) without
+adding nodes.
 
 ```mermaid
 stateDiagram-v2
@@ -122,14 +125,16 @@ stateDiagram-v2
     ENUMERATE --> REASON
     REASON --> ENUMERATE: tool call
     REASON --> PROPOSE: submit_payload
-    REASON --> [*]: gives up / budget hit
+    REASON --> REASON: no tool call (nudge, bounded)
+    REASON --> [*]: refusal / budget / gave up
     PROPOSE --> VALIDATE
     VALIDATE --> [*]: RunRecord
 
     note right of REASON
         route_after_reason
-        backend.chat + token / wall-clock
-        / iteration budgets + refusal check
+        backend.chat + token / wall-clock / iteration budgets
+        refusal check (metadata + soft-text keywords)
+        text-action recovery (ADR 0010) + nudge (ADR 0012)
     end note
     note right of VALIDATE
         validator.runner (sandbox)
@@ -141,7 +146,7 @@ stateDiagram-v2
 
 ## Test architecture
 
-The suite is **315 tests** in [`tests/`](../tests), one
+The suite is **379 tests** in [`tests/`](../tests), one
 `tests/test_<module>.py` per subsystem, all green. Tests never touch real API
 keys or the gitignored production corpus: LLM calls replay through a
 `FakeBackend`, the corpus is a throwaway fixture, and the binary-analysis CLIs

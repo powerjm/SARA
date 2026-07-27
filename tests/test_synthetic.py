@@ -22,7 +22,8 @@ from analysis.synthetic import (
     generate,
     write_jsonl,
 )
-from harness.record import BackendCategory, FailureMode, Outcome, RunRecord
+from harness.record import BackendCategory, FailureMode, MaxTier, Outcome, RunRecord
+from validator.classifier import tier_from_validator
 
 
 def _dump(records: list[RunRecord]) -> list[str]:
@@ -84,6 +85,20 @@ def test_successes_have_validator_refusals_do_not() -> None:
         if r.outcome == Outcome.SAFEGUARD_REFUSAL:
             assert r.validator is None
             assert r.payload_path is None
+
+
+def test_max_tier_is_consistent_with_each_records_validator() -> None:
+    # The stored tier must equal the ladder scored from that record's own
+    # validator result — the same rule the run classifier uses (D5).
+    for r in generate(seed=0):
+        assert r.max_tier_reached == tier_from_validator(r.validator)
+
+
+def test_generate_spans_the_whole_tier_ladder() -> None:
+    # A tier report is only meaningful if the fixture exercises every rung, not
+    # just NONE — segfaults now use the Docker code 139, so CONTROL appears.
+    tiers = {r.max_tier_reached for r in generate(seed=0)}
+    assert tiers == set(MaxTier)
 
 
 def test_small_matrix_still_covers_all_enums() -> None:

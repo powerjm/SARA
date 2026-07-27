@@ -10,9 +10,9 @@
 
 """Tests for the analysis notebooks (Step 6).
 
-Structural checks on all seven notebooks plus a single real headless execution
-(the same path ``make notebooks`` uses) to guard against drift between the
-notebooks and the analysis API.
+Structural checks on every committed notebook plus a single real headless
+execution (the same path ``make notebooks`` uses) to guard against drift between
+the notebooks and the analysis API.
 """
 
 from __future__ import annotations
@@ -25,6 +25,16 @@ import nbformat
 import pytest
 
 NOTEBOOK_DIR = Path("analysis/notebooks")
+
+# The committed report set. This is a DELIBERATE MANIFEST, not a frozen snapshot:
+# unlike the old two-tool ``test_specs_advertise_...`` lock (which asserted a set
+# *narrower than the experiment required* and so silently suppressed the five
+# unwired MCP tools — see TRIAL_2_PLAN.md section 1), nothing here is a
+# capability the pipeline needs but lacks. Every entry is an intended deliverable;
+# the equality assertion is a tripwire so adding or removing a report is a
+# conscious edit to this list, reviewed alongside the notebook. When you add a
+# report, add its stem here — the structural + no-output checks below then cover
+# it automatically via parametrization.
 EXPECTED = [
     "01_outcome_omnibus",
     "02_outcome_pairwise",
@@ -33,6 +43,8 @@ EXPECTED = [
     "05_success_intervals",
     "06_failure_mode_crosstab",
     "07_strategy_effect",
+    "08_progress_tier",
+    "09_bonus_score",
 ]
 
 
@@ -41,9 +53,9 @@ def _source(stem: str) -> str:
     return "\n".join(c.source for c in nb.cells)
 
 
-def test_all_seven_notebooks_exist() -> None:
+def test_committed_notebook_set_is_exactly_expected() -> None:
     present = sorted(p.stem for p in NOTEBOOK_DIR.glob("*.ipynb"))
-    assert present == EXPECTED
+    assert present == sorted(EXPECTED)
 
 
 @pytest.mark.parametrize("stem", EXPECTED)

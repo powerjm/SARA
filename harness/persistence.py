@@ -12,11 +12,16 @@
 Run persistence.
 
 Every run produces exactly one directory ``<output_dir>/<run_id>/`` holding the
-canonical triple:
+canonical artifacts:
 
-  * ``record.json``  — the :class:`~harness.record.RunRecord` (the contract).
-  * ``trace.jsonl``  — one JSON object per node transition.
-  * ``payload.bin``  — the candidate payload bytes (absent if none was committed).
+  * ``record.json``       — the :class:`~harness.record.RunRecord` (the contract).
+  * ``trace.jsonl``       — one JSON object per node transition (a lightweight,
+    replayable index: node, tool-call names, token/cost counters).
+  * ``conversation.jsonl`` — the full agent↔LLM↔MCP conversation: one JSON object
+    per message (role, content, tool_calls, tool_call_id), i.e. every system /
+    user / assistant turn, tool call, and tool result the agent actually saw.
+    This is the artifact for post-hoc analysis of *why* a run behaved as it did.
+  * ``payload.bin``       — the candidate payload bytes (absent if none committed).
 
 Writes are **atomic**: the run is assembled inside a sibling ``.partial-<run_id>``
 directory and ``os.replace``-renamed into place only once ``record.json`` is
@@ -36,7 +41,11 @@ from harness.record import RunRecord
 
 RECORD_NAME = "record.json"
 TRACE_NAME = "trace.jsonl"
+CONVERSATION_NAME = "conversation.jsonl"
 PAYLOAD_NAME = "payload.bin"
+# The agent's exploit.py for a script-mode run (ADR 0016); persisted in the run
+# dir for audit/repro alongside the payload. Not referenced by the schema.
+SCRIPT_NAME = "exploit.py"
 
 _PARTIAL_PREFIX = ".partial-"
 
@@ -108,7 +117,9 @@ def _rmtree(path: Path) -> None:
 
 
 __all__ = [
+    "CONVERSATION_NAME",
     "PAYLOAD_NAME",
+    "SCRIPT_NAME",
     "RECORD_NAME",
     "TRACE_NAME",
     "begin_run",

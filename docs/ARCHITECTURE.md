@@ -38,9 +38,9 @@ component reads back upstream:
    experiment matrix (binary × backend × strategy)
             │   one cell, run N times
             ▼
-   agent run ──────────────► RunRecord  ({record.json, trace.jsonl, payload.bin})
-   (LangGraph loop +              │        one per run, atomically persisted
-    backend + tools +             │
+   agent run ──────────────► RunRecord  ({record.json, trace.jsonl,
+   (LangGraph loop +              │        conversation.jsonl, payload.bin})
+    backend + tools +             │        one per run, atomically persisted
     validator)                    ▼
                           aggregation ──► CellSummary  (collapse N runs → one cell)
                                     │       success = ANY run succeeded;
@@ -79,9 +79,10 @@ failure must name one).
 
 Changing a field here is a **versioning event**: bump `schema_version` and add a
 migration note in [`SCHEMA_MIGRATIONS.md`](SCHEMA_MIGRATIONS.md). This is a
-high-review-cost file (see the "Development" section of `README.md`). The current version is **3**;
-readers also accept v1/v2 (the migration log covers the v1 → v2 pricing-snapshot
-change and the v2 → v3 single-`SUCCESS` outcome, ADR 0009). `Outcome` has three
+high-review-cost file (see the "Development" section of `README.md`). The current version is **4**;
+readers also accept v1/v2/v3 (the migration log covers the v1 → v2
+pricing-snapshot change, the v2 → v3 single-`SUCCESS` outcome (ADR 0009), and the
+v3 → v4 optional `conversation_path` artifact reference). `Outcome` has three
 members — `SUCCESS` (a spawned shell printed the marker), `FAILURE`, and
 `SAFEGUARD_REFUSAL`.
 
@@ -96,25 +97,33 @@ shape **is** the methodology:
 
 ```
 INGEST → ENUMERATE → REASON → PROPOSE → VALIDATE
-                       │
-                       └── tool call ──► back to ENUMERATE   (route_after_reason)
-                       └── submit_payload ──► PROPOSE
-                       └── gives up / budget hit ──► terminate
+                       │  ▲
+                       │  └── no tool call: nudge & retry REASON  (bounded, ADR 0012)
+                       ├── tool call ──────────► back to ENUMERATE   (route_after_reason)
+                       ├── submit_payload ─────► PROPOSE
+                       └── budget / refusal / gave up ─► terminate
 ```
 
 - Each node is a pure `AgentState → AgentState` function.
 - `INGEST` summarises arch/protections/entry; `ENUMERATE` dispatches the tool
-  layer; `REASON` calls `backend.chat`, enforces the token / wall-clock /
-  iteration budgets, and detects refusal; `PROPOSE` writes `payload.bin` and the
-  ordered candidate chain; `VALIDATE` calls the validator and hands off to the
-  classifier.
+  layer and, on the first pass, seeds a **baseline** gadget enumeration presented
+  as *user context* (not an orphan `tool` result, so the message stream is valid
+  for strict provider APIs — ADR 0011); `REASON` calls `backend.chat`, enforces
+  the token / wall-clock / iteration budgets, detects refusal (provider metadata
+  then a keyword fallback for soft text refusals), **recovers text-format tool
+  calls** a model wrote as prose instead of a native call (ADR 0010), and issues
+  a bounded **nudge** when a turn produces no tool call (ADR 0012); `PROPOSE`
+  writes `payload.bin` and the ordered candidate chain; `VALIDATE` calls the
+  validator and hands off to the classifier.
 - `AgentState` ([`agent/state.py`](../agent/state.py)) is kept small and
-  serialisable. Large per-iteration artifacts go to the `trace.jsonl` the harness
-  writes (one line per node transition), **not** into state.
-- Per-run dependencies (backend, `ToolLayer`, validator config, budgets, output
-  dir) are bound in by `build_graph` via `AgentConfig`. The graph **shape is
-  fixed**; prompting strategies (`agent/prompts/`) and the tool catalogue expand
-  without changing it.
+  serialisable. Large per-iteration artifacts go to `trace.jsonl` (a per-node
+  index) and the full agent↔LLM↔MCP conversation to `conversation.jsonl` (one
+  message per line), **not** into state.
+- Per-run dependencies (backend, `ToolLayer`, validator config, budgets incl.
+  `max_iterations` / `max_nudges`, output dir) are bound in by `build_graph` via
+  `AgentConfig`. The graph **shape is fixed** (the three Step-8 loop behaviors
+  above added routing/parsing, not new nodes); prompting strategies
+  (`agent/prompts/`) and the tool catalogue expand without changing it.
 
 LangGraph was chosen for inspectable, replayable control flow
 ([ADR 0001](adr/0001-use-langgraph.md)).
@@ -125,7 +134,21 @@ LangGraph was chosen for inspectable, replayable control flow
 `count_tokens()`, with **cost calculation baked into each backend** so the
 harness only ever sees a normalised `CostRecord`. Refusal detection lives on the
 base class (`detect_refusal`, metadata-first: Anthropic `stop_reason` /
-OpenAI-family `finish_reason`, keyword fallback), so every backend inherits it.
+OpenAI-family `finish_reason`, then a keyword fallback that also catches soft
+text refusals like "cannot fulfill your request" — aligned models decline this
+task class as plain prose with a normal finish reason), so every backend inherits
+it.
+
+Each backend translates the provider-agnostic message log to its own wire format
+([ADR 0011](adr/0011-backend-wire-format-contract.md)), a Step-8 fix after the
+premium backends were first exercised against live APIs (the Step-7 cassette
+tests mock the SDK client, so they never validated the outgoing request):
+Anthropic renders tool calls/results as `tool_use` / `tool_result` content blocks
+and merges consecutive same-role turns (the API requires alternation); the real
+OpenAI API requires `max_completion_tokens` (LM Studio keeps `max_tokens`) and
+gpt-5 rejects custom `temperature`/`seed`; Gemini's function-declaration schema
+is sanitized of keys it does not model. The harness baseline enumeration is fed
+as user context so no provider sees an orphan tool result.
 
 Model prices are **not** hard-coded in the backends. They live in one versioned
 file, [`backends/pricing.yaml`](../backends/pricing.yaml), loaded by
@@ -140,11 +163,15 @@ never fetched at run time ([ADR 0007](adr/0007-pricing-source-and-provenance.md)
 for known backends; the CLI `--backend` flag resolves through `registry.get()`.
 Registration is **explicit** (no import side-effects beyond `_register_defaults`)
 and **lazy** (factories are lambdas), so importing the module needs no API keys.
-Implemented: Anthropic, OpenAI, Google (all `PREMIUM`), and LM Studio (serving
-both `OPEN_WEIGHT` and `UNRESTRICTED` locally). The category boundary is
-safety-alignment status, declared a priori per model
+Implemented: Anthropic (`claude-sonnet`/`claude-opus`), OpenAI (`gpt-5`), Google
+(`gemini-pro-latest` — `gemini-2.5-pro` is gated for new API keys) — all
+`PREMIUM` — and LM Studio (serving both `OPEN_WEIGHT` and `UNRESTRICTED` locally;
+model IDs must match what its `GET /v1/models` advertises). The category boundary
+is safety-alignment status, declared a priori per model
 ([ADR 0005](adr/0005-backend-categories.md)). Backends honour `temperature` /
-`seed` for determinism.
+`seed` for determinism **except gpt-5**, a reasoning model that rejects both and
+runs at the default temperature (non-deterministic — an API limitation to note in
+the reproducibility write-up).
 
 ## Layer 3 — tools (`mcp_servers/`)
 
@@ -193,8 +220,10 @@ as a tool.
   run. High-review-cost: add a unit test for any new branch.
 
 The harness ([`harness/`](../harness)) wraps the loop into runnable commands:
-`run_one` (pure callable) → atomic `{record.json, trace.jsonl, payload.bin}`
-persistence (assemble in `.partial-<id>/`, `os.replace` into place);
+`run_one` (pure callable) → atomic
+`{record.json, trace.jsonl, conversation.jsonl, payload.bin}` persistence
+(`conversation.jsonl` is the full agent↔LLM↔MCP transcript for post-hoc analysis;
+assemble in `.partial-<id>/`, `os.replace` into place);
 `harness/matrix.py` (resumable batch, **per-backend** USD cost cap, `--dry-run`
 plan + estimate); `harness/corpus.py` (manifest → `BinarySpec`); and the
 `sara run / batch / verify / replay` CLI ([`harness/cli.py`](../harness/cli.py)).
@@ -264,7 +293,8 @@ LM Studio host, and a cloud VM.
 5. **Cost lives in the backend; prices live in one file.** The harness sees only
    normalised `CostRecord`s, and every rate comes from `backends/pricing.yaml`
    (never hard-coded, never fetched at run time). (ADR 0007)
-6. **State stays small.** Large artifacts go to `trace.jsonl`, not `AgentState`.
+6. **State stays small.** Large artifacts go to `trace.jsonl` (per-node index)
+   and `conversation.jsonl` (full transcript), not `AgentState`.
 7. **Each step ships complete** — no stubs, real tests; `make format && make lint
    && make test` before every commit.
 

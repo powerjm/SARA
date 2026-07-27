@@ -72,7 +72,17 @@ class RunSettings:
     output_dir: Path = Path("./runs")
     token_cap: int = 200_000
     wall_clock_cap_seconds: float = 1800.0
-    max_iterations: int = 8
+    # Runaway backstop only (ADR 0015): the run is bounded by token_cap /
+    # wall-clock, not by a turn count. Set high so it never binds in a normal run.
+    max_iterations: int = 100
+    # Deprecated (ADR 0015 superseded ADR 0012); ignored by the harness. Kept only
+    # so RUN_MAX_NUDGES / old configs do not error.
+    max_nudges: int = 2
+    # Per-call output cap and bounded retries when a reply is cut off at that cap
+    # mid-tool-call (ADR 0013). 16k avoids the truncation that made verbose
+    # reasoning turns misclassify as tool_use_malformed.
+    max_tokens_per_call: int = 16_384
+    max_truncation_retries: int = 2
     validator_image: str | None = None
     validator_timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS
 
@@ -83,7 +93,10 @@ class RunSettings:
             output_dir=Path(os.environ.get("RUN_OUTPUT_DIR", "./runs")),
             token_cap=_env_int("RUN_TOKEN_CAP", 200_000),
             wall_clock_cap_seconds=_env_float("RUN_WALL_CLOCK_CAP_SECONDS", 1800.0),
-            max_iterations=_env_int("RUN_MAX_ITERATIONS", 8),
+            max_iterations=_env_int("RUN_MAX_ITERATIONS", 100),
+            max_nudges=_env_int("RUN_MAX_NUDGES", 2),
+            max_tokens_per_call=_env_int("RUN_MAX_TOKENS_PER_CALL", 16_384),
+            max_truncation_retries=_env_int("RUN_MAX_TRUNCATION_RETRIES", 2),
             validator_image=os.environ.get("VALIDATOR_IMAGE"),
             validator_timeout_seconds=_env_int(
                 "VALIDATOR_TIMEOUT_SECONDS", DEFAULT_TIMEOUT_SECONDS
@@ -97,6 +110,30 @@ class RunSettings:
 # --------------------------------------------------------------------------- #
 
 
+def _write_conversation(path: Path, messages: list[Any]) -> None:
+    """Persist the full conversation as JSONL — one message object per line.
+
+    Captures every system / user / assistant turn plus tool calls and tool
+    results (role, content, tool_calls, tool_call_id) exactly as the agent saw
+    them. Tool-result content is the observation the agent received (already
+    bounded by ``ToolLayer.max_observation_chars``), so this is a faithful,
+    replayable record of the run's reasoning without the untruncated raw dumps.
+    """
+    with path.open("w", encoding="utf-8") as fh:
+        for message in messages:
+            fh.write(
+                json.dumps(
+                    {
+                        "role": message.role,
+                        "content": message.content,
+                        "tool_calls": message.tool_calls,
+                        "tool_call_id": message.tool_call_id,
+                    }
+                )
+                + "\n"
+            )
+
+
 def run_one(
     spec: corpus.BinarySpec,
     backend: Backend,
@@ -106,11 +143,15 @@ def run_one(
     run_id: UUID | None = None,
     tools: ToolLayer | None = None,
     validator_client: Any = None,
+    backend_handle: str | None = None,
 ) -> RunRecord:
     """Execute one run and persist it atomically; return the ``RunRecord``.
 
     ``validator_client`` (a docker client / fake) is injected straight through to
     the validator so the whole run is exercisable without a Docker daemon.
+    ``backend_handle`` is the registry ``--backend`` name this cell was resolved
+    from; it is recorded so batch resume and cost caps key on the cell's handle
+    (not the model string ``backend.name`` resolves to).
     """
     run_id = run_id or uuid4()
     run_key = str(run_id)
@@ -131,6 +172,12 @@ def run_one(
         token_budget=settings.token_cap,
         wall_clock_cap_seconds=float(settings.wall_clock_cap_seconds),
         max_iterations=settings.max_iterations,
+        max_nudges=settings.max_nudges,
+        max_tokens_per_call=settings.max_tokens_per_call,
+        max_truncation_retries=settings.max_truncation_retries,
+        # Iterative validation (ADR 0014) spends up to ~3 supersteps per reason
+        # turn; give the superstep backstop headroom above ~3x max_iterations.
+        recursion_limit=max(128, settings.max_iterations * 12),
     )
 
     trace_file = partial / persistence.TRACE_NAME
@@ -138,8 +185,13 @@ def run_one(
 
         def sink(event: dict[str, Any]) -> None:
             fh.write(json.dumps(event) + "\n")
+            fh.flush()  # stream live so `tail -f` on the partial dir sees each node in real time
 
         result = run_agent(backend, spec.to_context(), config, trace_sink=sink)
+
+    # The full agent<->LLM<->MCP conversation, for post-hoc analysis of a run's
+    # behaviour (the trace is only a lightweight per-node index).
+    _write_conversation(partial / persistence.CONVERSATION_NAME, result.state.messages)
 
     # Build the record with the *final* paths (the partial dir is renamed below).
     record = build_run_record(
@@ -148,6 +200,8 @@ def run_one(
         binary_id=spec.binary_id,
         backend=backend,
         trace_path=final / persistence.TRACE_NAME,
+        conversation_path=final / persistence.CONVERSATION_NAME,
+        backend_handle=backend_handle,
     )
     if record.payload_path is not None:
         record = record.model_copy(update={"payload_path": final / persistence.PAYLOAD_NAME})

@@ -102,6 +102,23 @@ REFUSAL_KEYWORDS: tuple[str, ...] = (
     "against my guidelines",
     "against my policy",
     "violates my safety policy",
+    # Soft text refusals seen from aligned models on this task class (e.g.
+    # gemini-pro-latest returns "Sorry, I cannot fulfill your request …" as plain
+    # text with a normal finish reason, so the metadata hook does not catch it).
+    # "fulfil(l) your request/this request" is a decline-to-act idiom, unlikely
+    # in ordinary gadget discussion.
+    "cannot fulfill your request",
+    "can't fulfill your request",
+    "cannot fulfil your request",
+    "can't fulfil your request",
+    "cannot fulfill this request",
+    "can't fulfill this request",
+    "unable to fulfill that request",
+    "unable to fulfill this request",
+    "i won't create",
+    "i will not create",
+    "i'm not going to help",
+    "i am not going to help",
 )
 
 
@@ -155,6 +172,20 @@ class Backend(ABC):
 
         return pricing.snapshot_for(self.name)
 
+    # --- Context telemetry --------------------------------------------- #
+
+    def n_ctx_loaded(self) -> int | None:
+        """The context window this backend actually loaded for the run (schema v6).
+
+        Telemetry only (ADR 0024), stamped once onto the ``RunRecord``. Hosted /
+        premium backends serve a fixed provider-side context and return ``None``;
+        the LM Studio backend overrides this to report the ``n_ctx`` its local
+        server loaded, so a Trial-2-style silent under-load (a model that loaded
+        far below its pin and truncated) is visible after the fact. Must never
+        raise: a telemetry-probe failure returns ``None``, never aborts a run.
+        """
+        return None
+
     # --- Refusal detection --------------------------------------------- #
     # Policy (Step 4 decision): prefer provider response metadata; fall back
     # to keywords only when the metadata is inconclusive.
@@ -191,6 +222,34 @@ class Backend(ABC):
         if stop in ("refusal", "content_filter"):
             return True
         return None
+
+    # --- Truncation detection ------------------------------------------ #
+    # A reply cut off at the output-token cap loses whatever came after the
+    # cut — most damagingly a tool call, whose ``input`` comes back empty or
+    # half-written and cannot be used. The agent loop treats a truncated reply
+    # as recoverable (re-prompt for a concise, complete reply) rather than
+    # letting the broken tool call become a spurious ``tool_use_malformed``
+    # failure (ADR 0013).
+
+    def detect_truncation(self, response: ChatResponse) -> bool:
+        """Decide whether ``response`` was cut off at the max-output-token cap.
+
+        Reads the provider's stop/finish reason from ``response.raw`` when it is
+        a dict: Anthropic ``stop_reason == "max_tokens"``, the OpenAI family
+        ``finish_reason == "length"``, and Gemini ``finish_reason`` whose
+        ``str()`` contains ``MAX_TOKENS``. Matching is substring- and
+        case-insensitive so the Gemini enum's ``str()`` form (e.g.
+        ``"FinishReason.MAX_TOKENS"``) is caught too. Subclasses may override
+        for richer per-provider signals.
+        """
+        raw = response.raw
+        if not isinstance(raw, dict):
+            return False
+        stop = raw.get("stop_reason") or raw.get("finish_reason")
+        if not isinstance(stop, str):
+            return False
+        normalized = stop.lower()
+        return "max_tokens" in normalized or "length" in normalized
 
 
 __all__ = [

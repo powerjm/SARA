@@ -37,7 +37,7 @@ def test_price_for_known_and_unknown() -> None:
     assert sonnet is not None
     assert sonnet.prompt_per_mtok == 3.0
     assert sonnet.completion_per_mtok == 15.0
-    assert pricing.price_for("llama-3.3-70b-instruct") is None  # local, unpriced
+    assert pricing.price_for("qwen/qwen2.5-coder-32b") is None  # local, unpriced
 
 
 def test_opus_price_is_corrected() -> None:
@@ -65,7 +65,7 @@ def test_snapshot_for_known_and_unknown() -> None:
         ("claude-sonnet", "claude-sonnet-4-6"),
         ("claude-opus", "claude-opus-4-7"),
         ("gpt-5", "gpt-5"),
-        ("gemini-2.5-pro", "gemini-2.5-pro"),
+        ("gemini-pro-latest", "gemini-pro-latest"),
     ],
 )
 def test_registry_pricing_derives_from_single_source(cell: str, model: str) -> None:
@@ -75,7 +75,7 @@ def test_registry_pricing_derives_from_single_source(cell: str, model: str) -> N
 
 
 def test_registry_pricing_none_for_local_backends() -> None:
-    for local in ("llama-3.3-70b", "qwen2.5-coder-32b", "dolphin-mixtral-8x7b"):
+    for local in ("qwen2.5-coder-32b", "dolphin-3.0-mistral-24b"):
         assert registry.pricing(local) is None
 
 

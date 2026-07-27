@@ -71,6 +71,19 @@ class OpenAIBackend(Backend):
 
     category = BackendCategory.PREMIUM
 
+    # The request field bounding the completion length. Modern OpenAI models
+    # (gpt-5, o-series) require ``max_completion_tokens`` and reject the legacy
+    # ``max_tokens``; LM Studio's OpenAI-compatible server only knows
+    # ``max_tokens``, so ``LMStudioBackend`` overrides this back.
+    _max_output_param: str = "max_completion_tokens"
+
+    # Reasoning models (gpt-5, o-series) reject custom sampling params — only the
+    # default temperature is allowed and ``seed`` is unsupported — so the base
+    # backend omits both (gpt-5 runs are therefore non-deterministic, an API
+    # limitation). ``LMStudioBackend`` re-enables them for local models that
+    # honor the determinism knobs.
+    _send_sampling_params: bool = False
+
     def __init__(
         self,
         model: str = "gpt-5",
@@ -110,14 +123,16 @@ class OpenAIBackend(Backend):
         max_tokens: int,
     ) -> ChatResponse:
         api_tools = [_to_openai_tool(t) for t in tools]
-        resp = self._client.chat.completions.create(
-            model=self.name,
-            messages=[_to_openai_message(m) for m in messages],
-            tools=api_tools or None,
-            max_tokens=max_tokens,
-            temperature=self.temperature,
-            seed=self.seed,
-        )
+        params: dict[str, Any] = {
+            "model": self.name,
+            "messages": [_to_openai_message(m) for m in messages],
+            "tools": api_tools or None,
+            self._max_output_param: max_tokens,
+        }
+        if self._send_sampling_params:
+            params["temperature"] = self.temperature
+            params["seed"] = self.seed
+        resp = self._client.chat.completions.create(**params)
         choice = resp.choices[0]
         message = choice.message
         text = message.content or ""

@@ -99,6 +99,9 @@ backends = ["pricing.yaml"]
 [tool.ruff]
 line-length = 100
 target-version = "py314"
+# The per-trial archives are frozen, write-once records of completed runs; their
+# analysis/diagram scripts are not maintained live code, so do not lint them.
+extend-exclude = ["runs_for_record_trial_1", "runs_for_record_trial_2"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "S", "C4", "SIM"]
@@ -106,6 +109,10 @@ ignore = ["S101"]  # assert is fine in tests
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S"]
+# S105 flags the FailureMode enum value TOKEN_BUDGET = "token_budget" as a
+# "hardcoded password" because the name contains "TOKEN"; it is a schema constant,
+# not a secret. Hardcoded-secret detection is a category error in this data model.
+"harness/record.py" = ["S105"]
 
 [tool.mypy]
 python_version = "3.14"

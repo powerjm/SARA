@@ -22,6 +22,7 @@ from analysis.aggregate import (
     aggregate_runs,
     build_metric_matrix,
     build_outcome_matrix,
+    build_tier_matrix,
 )
 from analysis.stats import (
     CochranQResult,
@@ -49,6 +50,7 @@ __all__ = [
     "bonferroni_alpha",
     "build_metric_matrix",
     "build_outcome_matrix",
+    "build_tier_matrix",
     "cochrans_q",
     "friedman",
     "mcnemar_exact",

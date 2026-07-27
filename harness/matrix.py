@@ -27,12 +27,14 @@ estimate without executing anything.
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 import yaml
 
+from agent.tools import ToolLayer
 from backends import registry
 from harness import persistence
 from harness.corpus import resolve_binary
@@ -75,6 +77,21 @@ class BatchConfig:
     wall_clock_cap_seconds: int
     # Per-backend USD cap. Absent/0 means "no cap for this backend".
     usd_per_backend: dict[str, float] = field(default_factory=dict)
+    # Reason-round + nudge budgets (ADR 0012). Exposed here so a batch can give
+    # slow local models more attempts without an env var; premium models stay
+    # bounded by ``usd_per_backend`` regardless.
+    max_iterations: int = 8
+    max_nudges: int = 2
+    # Which additional MCP servers the agent sees (ADR 0019 config seam). ``None``
+    # -> the curated ToolLayer default (radare2 + gdb). Set ``tools.servers`` in the
+    # YAML to widen (e.g. add ghidra) or narrow the surface per experiment.
+    tool_servers: tuple[str, ...] | None = None
+    # Per-backend envelope overrides (ADR 0024): backend handle -> a partial
+    # {tokens, wall_clock_seconds, n_ctx} that overrides the global limits for that
+    # backend's runs. Lets slow free locals get a bigger wall-clock while premium
+    # models stay bounded by ``usd_per_backend``. ``n_ctx`` is recorded for the
+    # preflight gate (the harness cannot set LM Studio's loaded context itself).
+    per_backend: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     @classmethod
     def from_yaml(cls, path: Path) -> BatchConfig:
@@ -82,6 +99,9 @@ class BatchConfig:
             data = yaml.safe_load(fh) or {}
         limits = data.get("limits") or {}
         usd = limits.get("usd_per_backend") or {}
+        per_backend = limits.get("per_backend") or {}
+        tools_cfg = data.get("tools") or {}
+        servers = tools_cfg.get("servers")
         return cls(
             replicates=int(data.get("replicates", 5)),
             binaries=list(data.get("binaries") or []),
@@ -91,6 +111,10 @@ class BatchConfig:
             token_cap=int(limits.get("tokens", 200_000)),
             wall_clock_cap_seconds=int(limits.get("wall_clock_seconds", 1800)),
             usd_per_backend={str(k): float(v) for k, v in usd.items()},
+            max_iterations=int(limits.get("max_iterations", 8)),
+            max_nudges=int(limits.get("max_nudges", 2)),
+            tool_servers=tuple(str(s) for s in servers) if servers is not None else None,
+            per_backend={str(k): dict(v) for k, v in per_backend.items()},
         )
 
     def settings(self) -> RunSettings:
@@ -98,7 +122,36 @@ class BatchConfig:
             output_dir=self.output_dir,
             token_cap=self.token_cap,
             wall_clock_cap_seconds=self.wall_clock_cap_seconds,
+            max_iterations=self.max_iterations,
+            max_nudges=self.max_nudges,
         )
+
+    def settings_for(self, backend: str) -> RunSettings:
+        """Per-backend :class:`RunSettings` with any ``per_backend`` overrides applied.
+
+        Starts from the global :meth:`settings` and overlays this backend's
+        envelope (``tokens`` / ``wall_clock_seconds``) so a slow free local can run
+        on a longer clock while the premium models keep the global budget. Unknown
+        keys (e.g. ``n_ctx``, consumed by preflight) are ignored here.
+        """
+        base = self.settings()
+        env = self.per_backend.get(backend)
+        if not env:
+            return base
+        overrides: dict[str, Any] = {}
+        if "tokens" in env:
+            overrides["token_cap"] = int(env["tokens"])
+        if "wall_clock_seconds" in env:
+            overrides["wall_clock_cap_seconds"] = float(env["wall_clock_seconds"])
+        if "max_iterations" in env:
+            overrides["max_iterations"] = int(env["max_iterations"])
+        return replace(base, **overrides) if overrides else base
+
+    def tool_layer(self) -> ToolLayer:
+        """The :class:`ToolLayer` this batch advertises (curated default unless set)."""
+        if self.tool_servers is None:
+            return ToolLayer()
+        return ToolLayer(servers=self.tool_servers)
 
     def cap_for(self, backend: str) -> float:
         """The USD cap for a backend; ``0.0`` (returned) means unlimited."""
@@ -153,20 +206,34 @@ def estimate_cost(config: BatchConfig) -> dict[str, float]:
 # --------------------------------------------------------------------------- #
 
 
+def _cell_backend(record: RunRecord) -> str:
+    """The cell's backend identity for resume / cost-cap keying.
+
+    The plan keys cells by the registry ``--backend`` handle, so records must be
+    grouped by the same handle — not by ``backend.name``, which is the *model*
+    string the handle resolved to (e.g. handle ``claude-sonnet`` -> model
+    ``claude-sonnet-4-6``). New records carry ``backend_handle``; pre-v4 records
+    predate it and fall back to ``backend.name`` (correct only where handle ==
+    model, which is how those older runs were keyed anyway).
+    """
+    return record.backend_handle or record.backend.name
+
+
 def completed_counts(output_dir: Path) -> dict[tuple[str, str, str], int]:
     """Count finalized runs per cell already on disk (for resume)."""
     counts: dict[tuple[str, str, str], int] = {}
     for record in persistence.iter_records(output_dir):
-        key = (record.binary_id, record.backend.name, record.prompting_strategy.value)
+        key = (record.binary_id, _cell_backend(record), record.prompting_strategy.value)
         counts[key] = counts.get(key, 0) + 1
     return counts
 
 
 def spend_by_backend(output_dir: Path) -> dict[str, float]:
-    """Sum recorded USD cost per backend already on disk."""
+    """Sum recorded USD cost per backend (by cell handle) already on disk."""
     spend: dict[str, float] = {}
     for record in persistence.iter_records(output_dir):
-        spend[record.backend.name] = spend.get(record.backend.name, 0.0) + record.cost.usd
+        handle = _cell_backend(record)
+        spend[handle] = spend.get(handle, 0.0) + record.cost.usd
     return spend
 
 
@@ -183,6 +250,11 @@ class BatchResult:
     skipped_existing: int = 0
     halted_backends: set[str] = field(default_factory=set)
     interrupted: bool = False
+    # Runs that raised (backend/API/validator error) and were skipped so the
+    # batch keeps going; re-running the batch retries them (nothing was persisted
+    # for a skipped run). Kept visible in the summary so a systematic failure is
+    # not silently swallowed.
+    errored: int = 0
 
 
 # A factory mapping a backend *cell name* to the registry name used to resolve it
@@ -213,7 +285,7 @@ def run_batch(
     if dry_run:
         return result
 
-    settings = config.settings()
+    tools = config.tool_layer()
     counts = completed_counts(config.output_dir)
     spend = spend_by_backend(config.output_dir)
 
@@ -228,18 +300,48 @@ def run_batch(
                     break
                 spec = resolve_binary(cell.binary_id)
                 backend = backend_resolver(cell.backend)
-                record = run_one_fn(
-                    spec,
-                    backend,
-                    cell.strategy,
-                    settings,
-                    validator_client=validator_client,
+                # Pre-generate the run id so we can announce it (and its live
+                # folder) BEFORE the run executes: the operator can then tail
+                # <output_dir>/.partial-<run_id>/trace.jsonl in real time. run_one
+                # writes there and atomically renames it to <output_dir>/<run_id>/
+                # on finish.
+                run_id = uuid4()
+                emit(
+                    f"START {cell.binary_id} / {cell.backend} / {cell.strategy} "
+                    f"[{replicate + 1}/{config.replicates}] run={run_id} "
+                    f"-> {config.output_dir}/.partial-{run_id}/"
                 )
+                try:
+                    record = run_one_fn(
+                        spec,
+                        backend,
+                        cell.strategy,
+                        config.settings_for(cell.backend),
+                        run_id=run_id,
+                        tools=tools,
+                        validator_client=validator_client,
+                        backend_handle=cell.backend,
+                    )
+                except Exception as exc:
+                    # A single run raising (backend/API/validator error) must not
+                    # abort a multi-day batch. Skip it (nothing was persisted, so a
+                    # re-run retries it) and keep going; the error is emitted so a
+                    # systematic failure is visible, not silently swallowed.
+                    # KeyboardInterrupt is a BaseException and still propagates to
+                    # the resume-clean handler below.
+                    result.errored += 1
+                    emit(
+                        f"ERROR {cell.binary_id} / {cell.backend} / {cell.strategy} "
+                        f"[{replicate + 1}/{config.replicates}] run={run_id}: "
+                        f"{type(exc).__name__}: {exc} — skipped; re-run to retry"
+                    )
+                    continue
                 result.executed.append(record)
                 spend[cell.backend] = spend.get(cell.backend, 0.0) + record.cost.usd
                 emit(
-                    f"RUN   {cell.binary_id} / {cell.backend} / {cell.strategy} "
-                    f"[{replicate + 1}/{config.replicates}] -> {record.outcome.value}"
+                    f"DONE  {cell.binary_id} / {cell.backend} / {cell.strategy} "
+                    f"[{replicate + 1}/{config.replicates}] -> {record.outcome.value} "
+                    f"({config.output_dir}/{run_id}/)"
                 )
             result.skipped_existing += min(already, config.replicates)
     except KeyboardInterrupt:  # pragma: no cover - exercised via injected raise

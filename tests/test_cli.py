@@ -31,7 +31,12 @@ from harness.record import ValidatorOutput
 
 def _giveup_cassette(tmp_path: Path) -> Path:
     path = tmp_path / "giveup.jsonl"
-    path.write_text('{"text": "no viable chain; giving up"}\n', encoding="utf-8")
+    # Huge token count so the run ends on the real token budget after one call
+    # (ADR 0015: a no-tool-call turn no longer gives up).
+    path.write_text(
+        '{"text": "no viable chain; giving up", "completion_tokens": 10000000}\n',
+        encoding="utf-8",
+    )
     return path
 
 
@@ -76,6 +81,9 @@ def test_run_command_end_to_end_with_fake(
     fixture_corpus: Any, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setenv("FAKE_BACKEND_CASSETTE", str(_giveup_cassette(tmp_path)))
+    # The cassette scripts one no-tool-call turn; disable nudges (ADR 0012) so it
+    # gives up one-shot instead of asking for more turns than the cassette has.
+    monkeypatch.setenv("RUN_MAX_NUDGES", "0")
     out_dir = tmp_path / "runs"
     result = CliRunner().invoke(
         cli,
