@@ -34,7 +34,7 @@ dependencies = [
 
     # --- CLI + telemetry ---
     "click>=8.1.8,<9.0",
-    "rich>=13.9.4,<15.0",
+    "rich>=15.0.0,<16.0",
     "structlog>=24.4.0,<26.0",
 
     # --- Validation / sandboxing helpers ---
