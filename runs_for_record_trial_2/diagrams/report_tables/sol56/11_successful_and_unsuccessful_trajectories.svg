@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="404" viewBox="0 0 1600 404" role="img" aria-labelledby="title desc">
+<title id="title">7.1 Successful and unsuccessful trajectories</title>
+<desc id="desc">Table 11 from RUN_FOR_RECORD_ANALYSIS.Sol56.md, source line 327.</desc>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .head { font: 700 17px system-ui, sans-serif; fill: #fff; }
+    .cell { font: 17px system-ui, sans-serif; fill: #1e293b; }
+    .cellStrong { font: 700 17px system-ui, sans-serif; fill: #172554; }
+    .source { font: 14px system-ui, sans-serif; fill: #64748b; }
+  </style>
+<rect width="1600" height="404" fill="#f8fafc"/>
+<text id="title" class="title" x="60" y="88">7.1 Successful and unsuccessful trajectories</text>
+<text class="sub" x="60" y="114">RUN_FOR_RECORD_ANALYSIS.Sol56.md • Table 11 • source line 327</text>
+<rect x="60" y="156" width="1480" height="176" rx="16" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+<path d="M76 156 H1524 Q1540 156 1540 172 V232 H60 V172 Q60 156 76 156 Z" fill="#172554"/>
+<text class="head" x="75.0" y="207.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">&#160;</tspan></text>
+<line x1="235.3" y1="156" x2="235.3" y2="332" stroke="#cbd5e1"/>
+<text class="head" x="287.9" y="207.0" text-anchor="middle" xml:space="preserve"><tspan x="287.9" dy="0">n</tspan></text>
+<line x1="340.6" y1="156" x2="340.6" y2="332" stroke="#cbd5e1"/>
+<text class="head" x="461.3" y="207.0" text-anchor="middle" xml:space="preserve"><tspan x="461.3" dy="0">Median iterations</tspan></text>
+<line x1="582.0" y1="156" x2="582.0" y2="332" stroke="#cbd5e1"/>
+<text class="head" x="709.1" y="207.0" text-anchor="middle" xml:space="preserve"><tspan x="709.1" dy="0">Median prompt tokens</tspan></text>
+<line x1="836.3" y1="156" x2="836.3" y2="332" stroke="#cbd5e1"/>
+<text class="head" x="963.5" y="195.0" text-anchor="middle" xml:space="preserve"><tspan x="963.5" dy="0">Median completion</tspan><tspan x="963.5" dy="24">tokens</tspan></text>
+<line x1="1090.7" y1="156" x2="1090.7" y2="332" stroke="#cbd5e1"/>
+<text class="head" x="1217.8" y="207.0" text-anchor="middle" xml:space="preserve"><tspan x="1217.8" dy="0">Median total tokens</tspan></text>
+<line x1="1345.0" y1="156" x2="1345.0" y2="332" stroke="#cbd5e1"/>
+<text class="head" x="1360.0" y="207.0" text-anchor="start" xml:space="preserve"><tspan x="1360.0" dy="0">Median wall time</tspan></text>
+<rect x="60" y="232" width="1480" height="50" fill="#ffffff"/>
+<line x1="60" y1="232" x2="1540" y2="232" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="266.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">Success</tspan></text>
+<text class="cell" x="287.9" y="266.0" text-anchor="middle" xml:space="preserve"><tspan x="287.9" dy="0">34</tspan></text>
+<text class="cell" x="461.3" y="266.0" text-anchor="middle" xml:space="preserve"><tspan x="461.3" dy="0">13.5</tspan></text>
+<text class="cell" x="709.1" y="266.0" text-anchor="middle" xml:space="preserve"><tspan x="709.1" dy="0">141,317</tspan></text>
+<text class="cell" x="963.5" y="266.0" text-anchor="middle" xml:space="preserve"><tspan x="963.5" dy="0">8,233</tspan></text>
+<text class="cell" x="1217.8" y="266.0" text-anchor="middle" xml:space="preserve"><tspan x="1217.8" dy="0">155,718</tspan></text>
+<text class="cell" x="1360.0" y="266.0" text-anchor="start" xml:space="preserve"><tspan x="1360.0" dy="0">153.8 s</tspan></text>
+<rect x="60" y="282" width="1480" height="50" fill="#f1f5f9"/>
+<line x1="60" y1="282" x2="1540" y2="282" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="316.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">Failure</tspan></text>
+<text class="cell" x="287.9" y="316.0" text-anchor="middle" xml:space="preserve"><tspan x="287.9" dy="0">58</tspan></text>
+<text class="cell" x="461.3" y="316.0" text-anchor="middle" xml:space="preserve"><tspan x="461.3" dy="0">27</tspan></text>
+<text class="cell" x="709.1" y="316.0" text-anchor="middle" xml:space="preserve"><tspan x="709.1" dy="0">492,178</tspan></text>
+<text class="cell" x="963.5" y="316.0" text-anchor="middle" xml:space="preserve"><tspan x="963.5" dy="0">13,583</tspan></text>
+<text class="cell" x="1217.8" y="316.0" text-anchor="middle" xml:space="preserve"><tspan x="1217.8" dy="0">508,466</tspan></text>
+<text class="cell" x="1360.0" y="316.0" text-anchor="start" xml:space="preserve"><tspan x="1360.0" dy="0">242.8 s</tspan></text>
+<text class="source" x="60" y="377">Source: RUN_FOR_RECORD_ANALYSIS.Sol56.md, Markdown table beginning at line 327</text>
+</svg>

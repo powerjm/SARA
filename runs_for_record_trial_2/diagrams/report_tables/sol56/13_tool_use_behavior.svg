@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="836" viewBox="0 0 1600 836" role="img" aria-labelledby="title desc">
+<title id="title">8. Tool-use behavior</title>
+<desc id="desc">Table 13 from RUN_FOR_RECORD_ANALYSIS.Sol56.md, source line 367.</desc>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .head { font: 700 17px system-ui, sans-serif; fill: #fff; }
+    .cell { font: 17px system-ui, sans-serif; fill: #1e293b; }
+    .cellStrong { font: 700 17px system-ui, sans-serif; fill: #172554; }
+    .source { font: 14px system-ui, sans-serif; fill: #64748b; }
+  </style>
+<rect width="1600" height="836" fill="#f8fafc"/>
+<text id="title" class="title" x="60" y="88">8. Tool-use behavior</text>
+<text class="sub" x="60" y="114">RUN_FOR_RECORD_ANALYSIS.Sol56.md • Table 13 • source line 367</text>
+<rect x="60" y="156" width="1480" height="608" rx="16" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+<path d="M76 156 H1524 Q1540 156 1540 172 V214 H60 V172 Q60 156 76 156 Z" fill="#172554"/>
+<text class="head" x="75.0" y="198.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">Tool</tspan></text>
+<line x1="1306.6" y1="156" x2="1306.6" y2="764" stroke="#cbd5e1"/>
+<text class="head" x="1365.0" y="198.0" text-anchor="middle" xml:space="preserve"><tspan x="1365.0" dy="0">Calls</tspan></text>
+<line x1="1423.3" y1="156" x2="1423.3" y2="764" stroke="#cbd5e1"/>
+<text class="head" x="1481.7" y="198.0" text-anchor="middle" xml:space="preserve"><tspan x="1481.7" dy="0">Share</tspan></text>
+<rect x="60" y="214" width="1480" height="50" fill="#ffffff"/>
+<line x1="60" y1="214" x2="1540" y2="214" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="248.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">enumerate_gadgets</tspan></text>
+<text class="cell" x="1365.0" y="248.0" text-anchor="middle" xml:space="preserve"><tspan x="1365.0" dy="0">474</tspan></text>
+<text class="cell" x="1481.7" y="248.0" text-anchor="middle" xml:space="preserve"><tspan x="1481.7" dy="0">19.2%</tspan></text>
+<rect x="60" y="264" width="1480" height="50" fill="#f1f5f9"/>
+<line x1="60" y1="264" x2="1540" y2="264" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="298.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">run_exploit_script</tspan></text>
+<text class="cell" x="1365.0" y="298.0" text-anchor="middle" xml:space="preserve"><tspan x="1365.0" dy="0">326</tspan></text>
+<text class="cell" x="1481.7" y="298.0" text-anchor="middle" xml:space="preserve"><tspan x="1481.7" dy="0">13.2%</tspan></text>
+<rect x="60" y="314" width="1480" height="50" fill="#ffffff"/>
+<line x1="60" y1="314" x2="1540" y2="314" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="348.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">radare2_search_pattern</tspan></text>
+<text class="cell" x="1365.0" y="348.0" text-anchor="middle" xml:space="preserve"><tspan x="1365.0" dy="0">318</tspan></text>
+<text class="cell" x="1481.7" y="348.0" text-anchor="middle" xml:space="preserve"><tspan x="1481.7" dy="0">12.8%</tspan></text>
+<rect x="60" y="364" width="1480" height="50" fill="#f1f5f9"/>
+<line x1="60" y1="364" x2="1540" y2="364" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="398.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">radare2_disassemble_at</tspan></text>
+<text class="cell" x="1365.0" y="398.0" text-anchor="middle" xml:space="preserve"><tspan x="1365.0" dy="0">296</tspan></text>
+<text class="cell" x="1481.7" y="398.0" text-anchor="middle" xml:space="preserve"><tspan x="1481.7" dy="0">12.0%</tspan></text>
+<rect x="60" y="414" width="1480" height="50" fill="#ffffff"/>
+<line x1="60" y1="414" x2="1540" y2="414" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="448.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">ropper_search_gadget</tspan></text>
+<text class="cell" x="1365.0" y="448.0" text-anchor="middle" xml:space="preserve"><tspan x="1365.0" dy="0">227</tspan></text>
+<text class="cell" x="1481.7" y="448.0" text-anchor="middle" xml:space="preserve"><tspan x="1481.7" dy="0">9.2%</tspan></text>
+<rect x="60" y="464" width="1480" height="50" fill="#f1f5f9"/>
+<line x1="60" y1="464" x2="1540" y2="464" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="498.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">radare2_analyze_binary</tspan></text>
+<text class="cell" x="1365.0" y="498.0" text-anchor="middle" xml:space="preserve"><tspan x="1365.0" dy="0">194</tspan></text>
+<text class="cell" x="1481.7" y="498.0" text-anchor="middle" xml:space="preserve"><tspan x="1481.7" dy="0">7.8%</tspan></text>
+<rect x="60" y="514" width="1480" height="50" fill="#ffffff"/>
+<line x1="60" y1="514" x2="1540" y2="514" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="548.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">radare2_list_functions</tspan></text>
+<text class="cell" x="1365.0" y="548.0" text-anchor="middle" xml:space="preserve"><tspan x="1365.0" dy="0">97</tspan></text>
+<text class="cell" x="1481.7" y="548.0" text-anchor="middle" xml:space="preserve"><tspan x="1481.7" dy="0">3.9%</tspan></text>
+<rect x="60" y="564" width="1480" height="50" fill="#f1f5f9"/>
+<line x1="60" y1="564" x2="1540" y2="564" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="598.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">pwntools_build_payload</tspan></text>
+<text class="cell" x="1365.0" y="598.0" text-anchor="middle" xml:space="preserve"><tspan x="1365.0" dy="0">96</tspan></text>
+<text class="cell" x="1481.7" y="598.0" text-anchor="middle" xml:space="preserve"><tspan x="1481.7" dy="0">3.9%</tspan></text>
+<rect x="60" y="614" width="1480" height="50" fill="#ffffff"/>
+<line x1="60" y1="614" x2="1540" y2="614" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="648.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">ghidra_decompile_function</tspan></text>
+<text class="cell" x="1365.0" y="648.0" text-anchor="middle" xml:space="preserve"><tspan x="1365.0" dy="0">83</tspan></text>
+<text class="cell" x="1481.7" y="648.0" text-anchor="middle" xml:space="preserve"><tspan x="1481.7" dy="0">3.4%</tspan></text>
+<rect x="60" y="664" width="1480" height="50" fill="#f1f5f9"/>
+<line x1="60" y1="664" x2="1540" y2="664" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="698.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">gdb_disassemble</tspan></text>
+<text class="cell" x="1365.0" y="698.0" text-anchor="middle" xml:space="preserve"><tspan x="1365.0" dy="0">83</tspan></text>
+<text class="cell" x="1481.7" y="698.0" text-anchor="middle" xml:space="preserve"><tspan x="1481.7" dy="0">3.4%</tspan></text>
+<rect x="60" y="714" width="1480" height="50" fill="#ffffff"/>
+<line x1="60" y1="714" x2="1540" y2="714" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="748.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">all remaining tools</tspan></text>
+<text class="cell" x="1365.0" y="748.0" text-anchor="middle" xml:space="preserve"><tspan x="1365.0" dy="0">281</tspan></text>
+<text class="cell" x="1481.7" y="748.0" text-anchor="middle" xml:space="preserve"><tspan x="1481.7" dy="0">11.4%</tspan></text>
+<text class="source" x="60" y="809">Source: RUN_FOR_RECORD_ANALYSIS.Sol56.md, Markdown table beginning at line 367</text>
+</svg>

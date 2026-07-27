@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="730" viewBox="0 0 1600 730" role="img">
+<title>Cell = success / n (parenthetical = runs that reached the sandbox, i.e. RAN+)</title>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .label { font: 650 17px system-ui, sans-serif; fill: #1e293b; }
+    .small { font: 15px system-ui, sans-serif; fill: #64748b; }
+    .value { font: 700 15px system-ui, sans-serif; fill: #172554; }
+    .legend { font: 15px system-ui, sans-serif; fill: #334155; }
+    .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .cell { font: 650 16px system-ui, sans-serif; fill: #172554; }
+    .white { font: 700 15px system-ui, sans-serif; fill: #fff; }
+  </style>
+<rect width="1600" height="730" fill="#f8fafc"/>
+<text class="title" x="60" y="56">Cell = success / n (parenthetical = runs that reached the sandbox, i.e.</text>
+<text class="title" x="60" y="98">RAN+)</text>
+<text class="sub" x="60" y="145">OPUS5 report • source table 06, line 143</text>
+<g transform="translate(0,42)">
+<text class="label" x="487.5" y="177.0" text-anchor="middle"><tspan x="487.5" dy="0">Zero-shot</tspan></text>
+<text class="label" x="752.5" y="177.0" text-anchor="middle"><tspan x="752.5" dy="0">Chain of thought</tspan></text>
+<text class="label" x="1017.5" y="177.0" text-anchor="middle"><tspan x="1017.5" dy="0">ReAct</tspan></text>
+<text class="label" x="60.0" y="243.0" text-anchor="start"><tspan x="60.0" dy="0">Claude Sonnet</tspan></text>
+<rect x="355" y="205" width="257" height="60" rx="9" fill="rgb(104,194,140)"/>
+<text class="white" x="483.5" y="233" text-anchor="middle">62.5%</text>
+<text class="white" x="483.5" y="255" text-anchor="middle">5/8 • RAN+ 7</text>
+<rect x="620" y="205" width="257" height="60" rx="9" fill="rgb(132,204,162)"/>
+<text class="white" x="748.5" y="233" text-anchor="middle">50.0%</text>
+<text class="white" x="748.5" y="255" text-anchor="middle">4/8 • RAN+ 8</text>
+<rect x="885" y="205" width="257" height="60" rx="9" fill="rgb(53,175,99)"/>
+<text class="white" x="1013.5" y="233" text-anchor="middle">85.7%</text>
+<text class="white" x="1013.5" y="255" text-anchor="middle">6/7 • RAN+ 7</text>
+<text class="label" x="60.0" y="311.0" text-anchor="start"><tspan x="60.0" dy="0">GPT-5</tspan></text>
+<rect x="355" y="273" width="257" height="60" rx="9" fill="rgb(104,194,140)"/>
+<text class="white" x="483.5" y="301" text-anchor="middle">62.5%</text>
+<text class="white" x="483.5" y="323" text-anchor="middle">5/8 • RAN+ 7</text>
+<rect x="620" y="273" width="257" height="60" rx="9" fill="rgb(85,186,124)"/>
+<text class="white" x="748.5" y="301" text-anchor="middle">71.4%</text>
+<text class="white" x="748.5" y="323" text-anchor="middle">5/7 • RAN+ 7</text>
+<rect x="885" y="273" width="257" height="60" rx="9" fill="rgb(77,184,118)"/>
+<text class="white" x="1013.5" y="301" text-anchor="middle">75.0%</text>
+<text class="white" x="1013.5" y="323" text-anchor="middle">6/8 • RAN+ 7</text>
+<text class="label" x="60.0" y="379.0" text-anchor="start"><tspan x="60.0" dy="0">GPT-OSS 20B</tspan></text>
+<rect x="355" y="341" width="257" height="60" rx="9" fill="rgb(214,235,227)"/>
+<text class="cell" x="483.5" y="369" text-anchor="middle">12.5%</text>
+<text class="small" x="483.5" y="391" text-anchor="middle">1/8 • RAN+ 6</text>
+<rect x="620" y="341" width="257" height="60" rx="9" fill="rgb(186,224,205)"/>
+<text class="cell" x="748.5" y="369" text-anchor="middle">25.0%</text>
+<text class="small" x="748.5" y="391" text-anchor="middle">2/8 • RAN+ 7</text>
+<rect x="885" y="341" width="257" height="60" rx="9" fill="rgb(241,245,249)"/>
+<text class="cell" x="1013.5" y="369" text-anchor="middle">0.0%</text>
+<text class="small" x="1013.5" y="391" text-anchor="middle">0/8 • RAN+ 8</text>
+<text class="label" x="60.0" y="447.0" text-anchor="start"><tspan x="60.0" dy="0">Qwen3 Coder 30B</tspan></text>
+<rect x="355" y="409" width="257" height="60" rx="9" fill="rgb(241,245,249)"/>
+<text class="cell" x="483.5" y="437" text-anchor="middle">0.0%</text>
+<text class="small" x="483.5" y="459" text-anchor="middle">0/4 • RAN+ 1</text>
+<rect x="620" y="409" width="257" height="60" rx="9" fill="rgb(241,245,249)"/>
+<text class="cell" x="748.5" y="437" text-anchor="middle">0.0%</text>
+<text class="small" x="748.5" y="459" text-anchor="middle">0/4 • RAN+ 0</text>
+<rect x="885" y="409" width="257" height="60" rx="9" fill="rgb(241,245,249)"/>
+<text class="cell" x="1013.5" y="437" text-anchor="middle">0.0%</text>
+<text class="small" x="1013.5" y="459" text-anchor="middle">0/2 • RAN+ 1</text>
+<text class="label" x="60.0" y="515.0" text-anchor="start"><tspan x="60.0" dy="0">WhiteRabbitNeo 7B</tspan></text>
+<rect x="355" y="477" width="257" height="60" rx="9" fill="rgb(241,245,249)"/>
+<text class="cell" x="483.5" y="505" text-anchor="middle">0.0%</text>
+<text class="small" x="483.5" y="527" text-anchor="middle">0/2 • RAN+ 0</text>
+<rect x="620" y="477" width="257" height="60" rx="9" fill="rgb(241,245,249)"/>
+<text class="cell" x="748.5" y="505" text-anchor="middle">0.0%</text>
+<text class="small" x="748.5" y="527" text-anchor="middle">0/2 • RAN+ 0</text>
+<rect x="885" y="477" width="257" height="60" rx="9" fill="rgb(241,245,249)"/>
+<text class="cell" x="1013.5" y="505" text-anchor="middle">0.0%</text>
+<text class="small" x="1013.5" y="527" text-anchor="middle">0/2 • RAN+ 0</text>
+<text class="label" x="60.0" y="583.0" text-anchor="start"><tspan x="60.0" dy="0">Qwen3 Abliterated</tspan></text>
+<rect x="355" y="545" width="257" height="60" rx="9" fill="rgb(241,245,249)"/>
+<text class="cell" x="483.5" y="573" text-anchor="middle">0.0%</text>
+<text class="small" x="483.5" y="595" text-anchor="middle">0/2 • RAN+ 1</text>
+<rect x="620" y="545" width="257" height="60" rx="9" fill="rgb(241,245,249)"/>
+<text class="cell" x="748.5" y="573" text-anchor="middle">0.0%</text>
+<text class="small" x="748.5" y="595" text-anchor="middle">0/2 • RAN+ 1</text>
+<rect x="885" y="545" width="257" height="60" rx="9" fill="rgb(241,245,249)"/>
+<text class="cell" x="1013.5" y="573" text-anchor="middle">0.0%</text>
+<text class="small" x="1013.5" y="595" text-anchor="middle">0/2 • RAN+ 1</text>
+<rect x="60" y="634" width="18" height="18" rx="3" fill="#f1f5f9"/>
+<text class="small" x="88" y="649">0%</text>
+<rect x="135" y="634" width="18" height="18" rx="3" fill="#16a34a"/>
+<text class="small" x="163" y="649">100% success</text>
+</g>
+</svg>

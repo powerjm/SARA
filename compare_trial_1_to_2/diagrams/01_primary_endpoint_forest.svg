@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="610" viewBox="0 0 1600 610" role="img">
+<title>Primary endpoint: validator-confirmed success</title>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .label { font: 650 17px system-ui, sans-serif; fill: #1e293b; }
+    .small { font: 15px system-ui, sans-serif; fill: #64748b; }
+    .value { font: 700 15px system-ui, sans-serif; fill: #172554; }
+    .legend { font: 15px system-ui, sans-serif; fill: #334155; }
+    .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .white { font: 700 15px system-ui, sans-serif; fill: #fff; }
+    .source { font: 14px system-ui, sans-serif; fill: #64748b; }
+  </style>
+<rect width="1600" height="610" fill="#f8fafc"/>
+<text class="title" x="60" y="57">Primary endpoint: validator-confirmed success</text>
+<text class="sub" x="60" y="103">Finalized-run rate with descriptive Wilson 95% intervals</text>
+<g transform="translate(0,0)">
+<line x1="380.0" y1="175" x2="380.0" y2="440" stroke="#e2e8f0"/>
+<text class="axis" x="380.0" y="164" text-anchor="middle">0%</text>
+<line x1="588.0" y1="175" x2="588.0" y2="440" stroke="#e2e8f0"/>
+<text class="axis" x="588.0" y="164" text-anchor="middle">10%</text>
+<line x1="796.0" y1="175" x2="796.0" y2="440" stroke="#e2e8f0"/>
+<text class="axis" x="796.0" y="164" text-anchor="middle">20%</text>
+<line x1="1004.0" y1="175" x2="1004.0" y2="440" stroke="#e2e8f0"/>
+<text class="axis" x="1004.0" y="164" text-anchor="middle">30%</text>
+<line x1="1212.0" y1="175" x2="1212.0" y2="440" stroke="#e2e8f0"/>
+<text class="axis" x="1212.0" y="164" text-anchor="middle">40%</text>
+<line x1="1420.0" y1="175" x2="1420.0" y2="440" stroke="#e2e8f0"/>
+<text class="axis" x="1420.0" y="164" text-anchor="middle">50%</text>
+<text class="label" x="60" y="250">Trial 1</text>
+<line x1="380.0" y1="245" x2="384.5" y2="245" stroke="#2563eb" stroke-width="7"/>
+<circle cx="380.0" cy="245" r="11" fill="#172554"/>
+<text class="value" x="400.5" y="250">0/1755 = 0.0% [0.00, 0.22]</text>
+<text class="label" x="60" y="390">Trial 2</text>
+<line x1="958.3" y1="385" x2="1360.9" y2="385" stroke="#16a34a" stroke-width="7"/>
+<circle cx="1148.7" cy="385" r="11" fill="#172554"/>
+<text class="value" x="1376.9" y="390">34/92 = 37.0% [27.80, 47.16]</text>
+<rect x="60" y="485" width="1420" height="65" rx="12" fill="#fef3c7"/>
+<text class="small" x="84" y="512">Wilson intervals are descriptive. The trials changed tools, targets, budgets, models, prompts, replication,</text>
+<text class="small" x="84" y="536">and scoring schema, so the rate difference is not an isolated treatment effect.</text>
+<text class="source" x="60" y="588">Source: Trial 1 and Trial 2 finalized RunRecord metadata</text>
+</g>
+</svg>

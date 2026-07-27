@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="804" viewBox="0 0 1600 804" role="img">
+<title>Winning versus losing tool behavior</title>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .label { font: 650 17px system-ui, sans-serif; fill: #1e293b; }
+    .small { font: 15px system-ui, sans-serif; fill: #64748b; }
+    .value { font: 700 15px system-ui, sans-serif; fill: #172554; }
+    .legend { font: 15px system-ui, sans-serif; fill: #334155; }
+    .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .cell { font: 650 16px system-ui, sans-serif; fill: #172554; }
+    .white { font: 700 15px system-ui, sans-serif; fill: #fff; }
+  </style>
+<rect width="1600" height="804" fill="#f8fafc"/>
+<text class="title" x="60" y="56">Winning versus losing tool behavior</text>
+<text class="sub" x="60" y="103">SOL56 report • source table 14, line 390</text>
+<g transform="translate(0,0)">
+<rect x="920" y="122" width="18" height="18" rx="3" fill="#16a34a"/>
+<text class="legend" x="947" y="137">successes</text>
+<rect x="1049" y="122" width="18" height="18" rx="3" fill="#dc2626"/>
+<text class="legend" x="1076" y="137">failures</text>
+<text class="label" x="60.0" y="219.0" text-anchor="start"><tspan x="60.0" dy="0">Total calls</tspan></text>
+<rect x="500" y="192" width="297.6" height="22" rx="4" fill="#16a34a"/>
+<rect x="500" y="222" width="900.0" height="22" rx="4" fill="#dc2626"/>
+<text class="value" x="807.6" y="208">615</text>
+<text class="value" x="1410.0" y="239">1,860</text>
+<text class="label" x="60.0" y="303.0" text-anchor="start"><tspan x="60.0" dy="0">Median calls per run</tspan></text>
+<rect x="500" y="276" width="492.2" height="22" rx="4" fill="#16a34a"/>
+<rect x="500" y="306" width="900.0" height="22" rx="4" fill="#dc2626"/>
+<text class="value" x="1002.2" y="292">17.5</text>
+<text class="value" x="1410.0" y="323">32</text>
+<text class="label" x="60.0" y="387.0" text-anchor="start"><tspan x="60.0" dy="0">Mean enumerate_gadgets calls per run</tspan></text>
+<rect x="500" y="360" width="230.7" height="22" rx="4" fill="#16a34a"/>
+<rect x="500" y="390" width="900.0" height="22" rx="4" fill="#dc2626"/>
+<text class="value" x="740.7" y="376">1.82</text>
+<text class="value" x="1410.0" y="407">7.10</text>
+<text class="label" x="60.0" y="471.0" text-anchor="start"><tspan x="60.0" dy="0">Median enumerate_gadgets calls per</tspan><tspan x="60.0" dy="22">run</tspan></text>
+<rect x="500" y="444" width="300.0" height="22" rx="4" fill="#16a34a"/>
+<rect x="500" y="474" width="900.0" height="22" rx="4" fill="#dc2626"/>
+<text class="value" x="810.0" y="460">1</text>
+<text class="value" x="1410.0" y="491">3</text>
+<text class="label" x="60.0" y="555.0" text-anchor="start"><tspan x="60.0" dy="0">Mean run_exploit_script calls per</tspan><tspan x="60.0" dy="22">run</tspan></text>
+<rect x="500" y="528" width="900.0" height="22" rx="4" fill="#16a34a"/>
+<rect x="500" y="558" width="807.4" height="22" rx="4" fill="#dc2626"/>
+<text class="value" x="1410.0" y="544">3.79</text>
+<text class="value" x="1317.4" y="575">3.40</text>
+<text class="label" x="60.0" y="639.0" text-anchor="start"><tspan x="60.0" dy="0">Runs using run_exploit_script</tspan></text>
+<rect x="500" y="612" width="900.0" height="22" rx="4" fill="#16a34a"/>
+<rect x="500" y="642" width="900.0" height="22" rx="4" fill="#dc2626"/>
+<text class="value" x="1410.0" y="628">34</text>
+<text class="value" x="1410.0" y="659">34</text>
+<rect x="60" y="714" width="1420" height="54" rx="12" fill="#fef3c7"/>
+<text class="small" x="84" y="747">Each measure is scaled independently; totals reflect unequal group sizes (34 successes, 58 failures).</text>
+</g>
+</svg>

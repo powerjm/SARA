@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="865" viewBox="0 0 1600 865" role="img">
+<title>Aggregate token expenditure and observed success yield</title>
+<style>
+  .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+  .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+  .label { font: 650 17px system-ui, sans-serif; fill: #1e293b; }
+  .small { font: 15px system-ui, sans-serif; fill: #64748b; }
+  .value { font: 700 15px system-ui, sans-serif; fill: #172554; }
+  .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+  .legend { font: 15px system-ui, sans-serif; fill: #334155; }
+  .white { font: 700 15px system-ui, sans-serif; fill: #fff; }
+  .source { font: 14px system-ui, sans-serif; fill: #64748b; }
+</style>
+<rect width="1600" height="865" fill="#f8fafc"/>
+<text class="title" x="60" y="58">Aggregate token expenditure and observed success yield</text>
+<text class="sub" x="60" y="103">Total finalized-run tokens by backend, with success counts and aggregate tokens per observed success</text>
+<line x1="410.0" y1="180" x2="410.0" y2="735" stroke="#e2e8f0"/>
+<text class="axis" x="410.0" y="165" text-anchor="middle">0M</text>
+<line x1="576.6666666666666" y1="180" x2="576.6666666666666" y2="735" stroke="#e2e8f0"/>
+<text class="axis" x="576.6666666666666" y="165" text-anchor="middle">2M</text>
+<line x1="743.3333333333333" y1="180" x2="743.3333333333333" y2="735" stroke="#e2e8f0"/>
+<text class="axis" x="743.3333333333333" y="165" text-anchor="middle">4M</text>
+<line x1="910.0" y1="180" x2="910.0" y2="735" stroke="#e2e8f0"/>
+<text class="axis" x="910.0" y="165" text-anchor="middle">6M</text>
+<line x1="1076.6666666666665" y1="180" x2="1076.6666666666665" y2="735" stroke="#e2e8f0"/>
+<text class="axis" x="1076.6666666666665" y="165" text-anchor="middle">8M</text>
+<line x1="1243.3333333333335" y1="180" x2="1243.3333333333335" y2="735" stroke="#e2e8f0"/>
+<text class="axis" x="1243.3333333333335" y="165" text-anchor="middle">10M</text>
+<line x1="1410.0" y1="180" x2="1410.0" y2="735" stroke="#e2e8f0"/>
+<text class="axis" x="1410.0" y="165" text-anchor="middle">12M</text>
+<text class="label" x="60" y="240">Claude Sonnet</text>
+<rect x="410" y="215" width="608.1" height="42" rx="6" fill="#2563eb"/>
+<text class="value" x="1030.1" y="241">7.30M</text>
+<text class="small" x="410" y="281">15/23 successes · 487k aggregate tokens per observed success</text>
+<text class="label" x="60" y="330">GPT-5</text>
+<rect x="410" y="305" width="506.6" height="42" rx="6" fill="#2563eb"/>
+<text class="value" x="928.6" y="331">6.08M</text>
+<text class="small" x="410" y="371">16/23 successes · 380k aggregate tokens per observed success</text>
+<text class="label" x="60" y="420">GPT-OSS 20B</text>
+<rect x="410" y="395" width="981.6" height="42" rx="6" fill="#2563eb"/>
+<text class="value" x="1403.6" y="421">11.78M</text>
+<text class="small" x="410" y="461">3/24 successes · 3.9M aggregate tokens per observed success</text>
+<text class="label" x="60" y="510">Qwen3 Coder</text>
+<rect x="410" y="485" width="158.5" height="42" rx="6" fill="#2563eb"/>
+<text class="value" x="580.5" y="511">1.90M</text>
+<text class="small" x="410" y="551">0/10 successes · no observed success; ratio undefined</text>
+<text class="label" x="60" y="600">WhiteRabbitNeo</text>
+<rect x="410" y="575" width="261.8" height="42" rx="6" fill="#2563eb"/>
+<text class="value" x="683.8" y="601">3.14M</text>
+<text class="small" x="410" y="641">0/6 successes · no observed success; ratio undefined</text>
+<text class="label" x="60" y="690">Qwen3 Abliterated</text>
+<rect x="410" y="665" width="175.0" height="42" rx="6" fill="#2563eb"/>
+<text class="value" x="597.0" y="691">2.10M</text>
+<text class="small" x="410" y="731">0/6 successes · no observed success; ratio undefined</text>
+<rect x="60" y="755" width="1420" height="60" rx="11" fill="#fef3c7"/>
+<text class="small" x="84" y="791">Aggregate tokens per success is descriptive workload yield, not a model-intrinsic efficiency estimate; backend coverage and task difficulty differ.</text>
+<text class="source" x="60" y="843">Source: Trial 2 finalized record.json metadata (n=92)</text>
+</svg>

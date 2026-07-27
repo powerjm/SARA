@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="768" viewBox="0 0 1600 768" role="img">
+<title>9. Replicate behavior</title>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .label { font: 650 17px system-ui, sans-serif; fill: #1e293b; }
+    .small { font: 15px system-ui, sans-serif; fill: #64748b; }
+    .value { font: 700 15px system-ui, sans-serif; fill: #172554; }
+    .legend { font: 15px system-ui, sans-serif; fill: #334155; }
+    .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .cell { font: 650 16px system-ui, sans-serif; fill: #172554; }
+    .white { font: 700 15px system-ui, sans-serif; fill: #fff; }
+  </style>
+<rect width="1600" height="768" fill="#f8fafc"/>
+<text class="title" x="60" y="56">9. Replicate behavior</text>
+<text class="sub" x="60" y="103">SOL56 report • source table 15, line 427</text>
+<g transform="translate(0,0)">
+<rect x="650" y="122" width="18" height="18" rx="3" fill="#2563eb"/>
+<text class="legend" x="677" y="137">scripts present</text>
+<rect x="833" y="122" width="18" height="18" rx="3" fill="#7c3aed"/>
+<text class="legend" x="860" y="137">distinct digests</text>
+<line x1="400.0" y1="175" x2="400.0" y2="645" stroke="#e2e8f0"/>
+<text class="axis" x="400.0" y="166" text-anchor="middle">0</text>
+<line x1="670.0" y1="175" x2="670.0" y2="645" stroke="#e2e8f0"/>
+<text class="axis" x="670.0" y="166" text-anchor="middle">0.5</text>
+<line x1="940.0" y1="175" x2="940.0" y2="645" stroke="#e2e8f0"/>
+<text class="axis" x="940.0" y="166" text-anchor="middle">1</text>
+<line x1="1210.0" y1="175" x2="1210.0" y2="645" stroke="#e2e8f0"/>
+<text class="axis" x="1210.0" y="166" text-anchor="middle">1.5</text>
+<line x1="1480.0" y1="175" x2="1480.0" y2="645" stroke="#e2e8f0"/>
+<text class="axis" x="1480.0" y="166" text-anchor="middle">2</text>
+<text class="label" x="60.0" y="208.0" text-anchor="start"><tspan x="60.0" dy="0">Sonnet</tspan></text>
+<rect x="400" y="184.0" width="1031.4" height="19.0" rx="4" fill="#2563eb"/>
+<text class="value" x="1441.4" y="199.0">1.91</text>
+<rect x="400" y="205.0" width="1031.4" height="19.0" rx="4" fill="#7c3aed"/>
+<text class="value" x="1441.4" y="220.0">1.91</text>
+<text class="label" x="60.0" y="286.0" text-anchor="start"><tspan x="60.0" dy="0">GPT-5</tspan></text>
+<rect x="400" y="262.0" width="982.8" height="19.0" rx="4" fill="#2563eb"/>
+<text class="value" x="1392.8" y="277.0">1.82</text>
+<rect x="400" y="283.0" width="982.8" height="19.0" rx="4" fill="#7c3aed"/>
+<text class="value" x="1392.8" y="298.0">1.82</text>
+<text class="label" x="60.0" y="364.0" text-anchor="start"><tspan x="60.0" dy="0">GPT-OSS 20B</tspan></text>
+<rect x="400" y="340.0" width="901.8" height="19.0" rx="4" fill="#2563eb"/>
+<text class="value" x="1311.8" y="355.0">1.67</text>
+<rect x="400" y="361.0" width="901.8" height="19.0" rx="4" fill="#7c3aed"/>
+<text class="value" x="1311.8" y="376.0">1.67</text>
+<text class="label" x="60.0" y="442.0" text-anchor="start"><tspan x="60.0" dy="0">Qwen3 Coder</tspan></text>
+<rect x="400" y="418.0" width="216.0" height="19.0" rx="4" fill="#2563eb"/>
+<text class="value" x="626.0" y="433.0">0.4</text>
+<rect x="400" y="439.0" width="216.0" height="19.0" rx="4" fill="#7c3aed"/>
+<text class="value" x="626.0" y="454.0">0.4</text>
+<text class="label" x="60.0" y="520.0" text-anchor="start"><tspan x="60.0" dy="0">Qwen3 Abliterated</tspan></text>
+<rect x="400" y="496.0" width="540.0" height="19.0" rx="4" fill="#2563eb"/>
+<text class="value" x="950.0" y="511.0">1</text>
+<rect x="400" y="517.0" width="540.0" height="19.0" rx="4" fill="#7c3aed"/>
+<text class="value" x="950.0" y="532.0">1</text>
+<text class="label" x="60.0" y="598.0" text-anchor="start"><tspan x="60.0" dy="0">WhiteRabbitNeo</tspan></text>
+<rect x="400" y="574.0" width="0.0" height="19.0" rx="4" fill="#2563eb"/>
+<text class="value" x="410.0" y="589.0">0</text>
+<rect x="400" y="595.0" width="0.0" height="19.0" rx="4" fill="#7c3aed"/>
+<text class="value" x="410.0" y="610.0">0</text>
+<rect x="60" y="685" width="1420" height="54" rx="12" fill="#e0f2fe"/>
+<text class="small" x="84" y="718">Both measures have a theoretical maximum of 2 scripts per complete replicate cell.</text>
+</g>
+</svg>

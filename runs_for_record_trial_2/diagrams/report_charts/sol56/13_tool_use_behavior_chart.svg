@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1118" viewBox="0 0 1600 1118" role="img">
+<title>8. Tool-use behavior</title>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .label { font: 650 17px system-ui, sans-serif; fill: #1e293b; }
+    .small { font: 15px system-ui, sans-serif; fill: #64748b; }
+    .value { font: 700 15px system-ui, sans-serif; fill: #172554; }
+    .legend { font: 15px system-ui, sans-serif; fill: #334155; }
+    .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .cell { font: 650 16px system-ui, sans-serif; fill: #172554; }
+    .white { font: 700 15px system-ui, sans-serif; fill: #fff; }
+  </style>
+<rect width="1600" height="1118" fill="#f8fafc"/>
+<text class="title" x="60" y="56">8. Tool-use behavior</text>
+<text class="sub" x="60" y="103">SOL56 report • source table 13, line 367</text>
+<g transform="translate(0,0)">
+<rect x="650" y="122" width="18" height="18" rx="3" fill="#2563eb"/>
+<text class="legend" x="677" y="137">calls</text>
+<line x1="400.0" y1="175" x2="400.0" y2="1035" stroke="#e2e8f0"/>
+<text class="axis" x="400.0" y="166" text-anchor="middle">0</text>
+<line x1="670.0" y1="175" x2="670.0" y2="1035" stroke="#e2e8f0"/>
+<text class="axis" x="670.0" y="166" text-anchor="middle">125</text>
+<line x1="940.0" y1="175" x2="940.0" y2="1035" stroke="#e2e8f0"/>
+<text class="axis" x="940.0" y="166" text-anchor="middle">250</text>
+<line x1="1210.0" y1="175" x2="1210.0" y2="1035" stroke="#e2e8f0"/>
+<text class="axis" x="1210.0" y="166" text-anchor="middle">375</text>
+<line x1="1480.0" y1="175" x2="1480.0" y2="1035" stroke="#e2e8f0"/>
+<text class="axis" x="1480.0" y="166" text-anchor="middle">500</text>
+<text class="label" x="60.0" y="208.0" text-anchor="start"><tspan x="60.0" dy="0">enumerate_gadgets</tspan></text>
+<rect x="400" y="184.0" width="1023.8" height="20.0" rx="4" fill="#2563eb"/>
+<text class="value" x="1433.8" y="200.0">474</text>
+<text class="label" x="60.0" y="286.0" text-anchor="start"><tspan x="60.0" dy="0">run_exploit_script</tspan></text>
+<rect x="400" y="262.0" width="704.2" height="20.0" rx="4" fill="#2563eb"/>
+<text class="value" x="1114.2" y="278.0">326</text>
+<text class="label" x="60.0" y="364.0" text-anchor="start"><tspan x="60.0" dy="0">radare2_search_pattern</tspan></text>
+<rect x="400" y="340.0" width="686.9" height="20.0" rx="4" fill="#2563eb"/>
+<text class="value" x="1096.9" y="356.0">318</text>
+<text class="label" x="60.0" y="442.0" text-anchor="start"><tspan x="60.0" dy="0">radare2_disassemble_at</tspan></text>
+<rect x="400" y="418.0" width="639.4" height="20.0" rx="4" fill="#2563eb"/>
+<text class="value" x="1049.4" y="434.0">296</text>
+<text class="label" x="60.0" y="520.0" text-anchor="start"><tspan x="60.0" dy="0">ropper_search_gadget</tspan></text>
+<rect x="400" y="496.0" width="490.3" height="20.0" rx="4" fill="#2563eb"/>
+<text class="value" x="900.3" y="512.0">227</text>
+<text class="label" x="60.0" y="598.0" text-anchor="start"><tspan x="60.0" dy="0">radare2_analyze_binary</tspan></text>
+<rect x="400" y="574.0" width="419.0" height="20.0" rx="4" fill="#2563eb"/>
+<text class="value" x="829.0" y="590.0">194</text>
+<text class="label" x="60.0" y="676.0" text-anchor="start"><tspan x="60.0" dy="0">radare2_list_functions</tspan></text>
+<rect x="400" y="652.0" width="209.5" height="20.0" rx="4" fill="#2563eb"/>
+<text class="value" x="619.5" y="668.0">97</text>
+<text class="label" x="60.0" y="754.0" text-anchor="start"><tspan x="60.0" dy="0">pwntools_build_payload</tspan></text>
+<rect x="400" y="730.0" width="207.4" height="20.0" rx="4" fill="#2563eb"/>
+<text class="value" x="617.4" y="746.0">96</text>
+<text class="label" x="60.0" y="832.0" text-anchor="start"><tspan x="60.0" dy="0">ghidra_decompile_function</tspan></text>
+<rect x="400" y="808.0" width="179.3" height="20.0" rx="4" fill="#2563eb"/>
+<text class="value" x="589.3" y="824.0">83</text>
+<text class="label" x="60.0" y="910.0" text-anchor="start"><tspan x="60.0" dy="0">gdb_disassemble</tspan></text>
+<rect x="400" y="886.0" width="179.3" height="20.0" rx="4" fill="#2563eb"/>
+<text class="value" x="589.3" y="902.0">83</text>
+<text class="label" x="60.0" y="988.0" text-anchor="start"><tspan x="60.0" dy="0">all remaining tools</tspan></text>
+<rect x="400" y="964.0" width="607.0" height="20.0" rx="4" fill="#2563eb"/>
+<text class="value" x="1017.0" y="980.0">281</text>
+</g>
+</svg>
