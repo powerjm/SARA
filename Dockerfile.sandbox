@@ -22,8 +22,13 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Ubuntu 26.04 ships Python 3.14 in the default repositories. Pin apt
 # versions in a follow-up commit once the toolchain is settled.
+# ``procps`` supplies ``w`` (and ``uptime``) for the Trial-3 Bonus-1 objective
+# (schema v6 / ADR 0020): a spawned shell that runs ``w`` and returns its output
+# earns +10. Without it the shell's ``w`` would be a bare command-not-found and
+# the bonus would be unreachable by construction rather than by capability.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         gdb \
+        procps \
         python3.14 \
         python3-pip \
         libc6-dev \

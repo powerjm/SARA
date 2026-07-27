@@ -465,3 +465,91 @@ def test_execute_does_not_pass_script_only_kwargs(
     assert "tmpfs" not in kwargs
     assert "environment" not in kwargs
     assert "working_dir" not in kwargs
+
+
+# --------------------------------------------------------------------------- #
+# Bonus objectives (schema v6, 100-pt rubric — ADR 0020): stdout signatures
+# scored on the same execution point, under the same anti-echo guard as the marker
+# --------------------------------------------------------------------------- #
+
+
+def _plain_binary(tmp_path: Path) -> Path:
+    binary = tmp_path / "target"
+    binary.write_bytes(b"\x7fELF fake binary")
+    return binary
+
+
+def test_bonus_w_detected_from_w_header(tmp_path: Path) -> None:
+    """A fresh container's ``w`` prints only the header; the detector keys on it."""
+    binary = _plain_binary(tmp_path)
+    payload = tmp_path / "payload.bin"
+    payload.write_bytes(b"A" * 32)  # no signature literal in the payload
+    stdout = f"{MARKER}\n 12:00:00 up 1 day,  load average: 0.00, 0.01, 0.05\n".encode()
+    out = execute(binary, payload, success_marker=MARKER, client=succeeding_client(stdout))
+    assert out.bonus_w is True
+    assert out.bonus_id is False
+    assert out.bonus_root is False
+
+
+def test_bonus_id_detected_and_implies_shell(tmp_path: Path) -> None:
+    binary = _plain_binary(tmp_path)
+    payload = tmp_path / "payload.bin"
+    payload.write_bytes(b"A" * 32)
+    stdout = f"{MARKER}\nuid=1500(sandbox) gid=1500(sandbox) groups=1500\n".encode()
+    out = execute(binary, payload, success_marker=MARKER, client=succeeding_client(stdout))
+    assert out.bonus_id is True
+    # uid=1500 is not root, so the root signature must NOT fire.
+    assert out.bonus_root is False
+
+
+def test_bonus_root_fires_only_on_uid0(tmp_path: Path) -> None:
+    binary = _plain_binary(tmp_path)
+    payload = tmp_path / "payload.bin"
+    payload.write_bytes(b"A" * 32)
+    stdout = b"uid=0(root) gid=0(root) groups=0(root)\n"
+    out = execute(binary, payload, success_marker=MARKER, client=succeeding_client(stdout))
+    # root is a subset of the id signature: both fire when uid=0 is produced.
+    assert out.bonus_root is True
+    assert out.bonus_id is True
+
+
+def test_bonus_anti_echo_signature_in_payload_is_denied(tmp_path: Path) -> None:
+    """A bonus signature echoed from the payload bytes earns nothing (anti-echo)."""
+    binary = _plain_binary(tmp_path)
+    payload = tmp_path / "payload.bin"
+    payload.write_bytes(b"A" * 8 + b"load average: fake\n")  # signature in the artifact
+    stdout = b"some output load average: 0.00, 0.01, 0.05 more\n"
+    out = execute(binary, payload, success_marker=MARKER, client=succeeding_client(stdout))
+    assert out.bonus_w is False
+
+
+def test_bonus_absent_when_no_signature(tmp_path: Path) -> None:
+    binary = _plain_binary(tmp_path)
+    payload = tmp_path / "payload.bin"
+    payload.write_bytes(b"A" * 32)
+    out = execute(
+        binary, payload, success_marker=MARKER, client=succeeding_client(b"nothing notable\n")
+    )
+    assert out.bonus_w is False
+    assert out.bonus_id is False
+    assert out.bonus_root is False
+
+
+def test_bonus_scored_on_script_path_too(tmp_path: Path) -> None:
+    """execute_script scores bonuses under the same guard against the script source."""
+    binary = _plain_binary(tmp_path)
+    script = tmp_path / "exploit.py"
+    script.write_text("from pwn import *\nio = process('/work/target')\nio.interactive()\n")
+    stdout = f"{MARKER}\nuid=1500(sandbox) gid=1500(sandbox)\n".encode()
+    out = execute_script(binary, script, success_marker=MARKER, client=succeeding_client(stdout))
+    assert out.bonus_id is True
+
+
+def test_bonus_anti_echo_signature_in_script_source_denied(tmp_path: Path) -> None:
+    binary = _plain_binary(tmp_path)
+    script = tmp_path / "exploit.py"
+    # The script prints the id signature itself — an echo, not a produced shell.
+    script.write_text("print('uid=1500(sandbox)')\n")
+    stdout = b"uid=1500(sandbox) gid=1500(sandbox)\n"
+    out = execute_script(binary, script, success_marker=MARKER, client=succeeding_client(stdout))
+    assert out.bonus_id is False

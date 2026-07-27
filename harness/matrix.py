@@ -27,13 +27,14 @@ estimate without executing anything.
 from __future__ import annotations
 
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
 import yaml
 
+from agent.tools import ToolLayer
 from backends import registry
 from harness import persistence
 from harness.corpus import resolve_binary
@@ -81,6 +82,16 @@ class BatchConfig:
     # bounded by ``usd_per_backend`` regardless.
     max_iterations: int = 8
     max_nudges: int = 2
+    # Which additional MCP servers the agent sees (ADR 0019 config seam). ``None``
+    # -> the curated ToolLayer default (radare2 + gdb). Set ``tools.servers`` in the
+    # YAML to widen (e.g. add ghidra) or narrow the surface per experiment.
+    tool_servers: tuple[str, ...] | None = None
+    # Per-backend envelope overrides (ADR 0024): backend handle -> a partial
+    # {tokens, wall_clock_seconds, n_ctx} that overrides the global limits for that
+    # backend's runs. Lets slow free locals get a bigger wall-clock while premium
+    # models stay bounded by ``usd_per_backend``. ``n_ctx`` is recorded for the
+    # preflight gate (the harness cannot set LM Studio's loaded context itself).
+    per_backend: dict[str, dict[str, Any]] = field(default_factory=dict)
 
     @classmethod
     def from_yaml(cls, path: Path) -> BatchConfig:
@@ -88,6 +99,9 @@ class BatchConfig:
             data = yaml.safe_load(fh) or {}
         limits = data.get("limits") or {}
         usd = limits.get("usd_per_backend") or {}
+        per_backend = limits.get("per_backend") or {}
+        tools_cfg = data.get("tools") or {}
+        servers = tools_cfg.get("servers")
         return cls(
             replicates=int(data.get("replicates", 5)),
             binaries=list(data.get("binaries") or []),
@@ -99,6 +113,8 @@ class BatchConfig:
             usd_per_backend={str(k): float(v) for k, v in usd.items()},
             max_iterations=int(limits.get("max_iterations", 8)),
             max_nudges=int(limits.get("max_nudges", 2)),
+            tool_servers=tuple(str(s) for s in servers) if servers is not None else None,
+            per_backend={str(k): dict(v) for k, v in per_backend.items()},
         )
 
     def settings(self) -> RunSettings:
@@ -109,6 +125,33 @@ class BatchConfig:
             max_iterations=self.max_iterations,
             max_nudges=self.max_nudges,
         )
+
+    def settings_for(self, backend: str) -> RunSettings:
+        """Per-backend :class:`RunSettings` with any ``per_backend`` overrides applied.
+
+        Starts from the global :meth:`settings` and overlays this backend's
+        envelope (``tokens`` / ``wall_clock_seconds``) so a slow free local can run
+        on a longer clock while the premium models keep the global budget. Unknown
+        keys (e.g. ``n_ctx``, consumed by preflight) are ignored here.
+        """
+        base = self.settings()
+        env = self.per_backend.get(backend)
+        if not env:
+            return base
+        overrides: dict[str, Any] = {}
+        if "tokens" in env:
+            overrides["token_cap"] = int(env["tokens"])
+        if "wall_clock_seconds" in env:
+            overrides["wall_clock_cap_seconds"] = float(env["wall_clock_seconds"])
+        if "max_iterations" in env:
+            overrides["max_iterations"] = int(env["max_iterations"])
+        return replace(base, **overrides) if overrides else base
+
+    def tool_layer(self) -> ToolLayer:
+        """The :class:`ToolLayer` this batch advertises (curated default unless set)."""
+        if self.tool_servers is None:
+            return ToolLayer()
+        return ToolLayer(servers=self.tool_servers)
 
     def cap_for(self, backend: str) -> float:
         """The USD cap for a backend; ``0.0`` (returned) means unlimited."""
@@ -242,7 +285,7 @@ def run_batch(
     if dry_run:
         return result
 
-    settings = config.settings()
+    tools = config.tool_layer()
     counts = completed_counts(config.output_dir)
     spend = spend_by_backend(config.output_dir)
 
@@ -273,8 +316,9 @@ def run_batch(
                         spec,
                         backend,
                         cell.strategy,
-                        settings,
+                        config.settings_for(cell.backend),
                         run_id=run_id,
+                        tools=tools,
                         validator_client=validator_client,
                         backend_handle=cell.backend,
                     )

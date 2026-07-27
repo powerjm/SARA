@@ -26,6 +26,7 @@ from analysis.aggregate import (
     aggregate_runs,
     build_metric_matrix,
     build_outcome_matrix,
+    build_score_matrix,
     build_tier_matrix,
     collect_success_chains,
 )
@@ -54,11 +55,19 @@ def _record(
     iters: int = 5,
     failure_mode: FailureMode | None = None,
     max_tier: MaxTier | None = None,
+    score: int | None = None,
+    bonus_w: bool = False,
+    bonus_id: bool = False,
+    bonus_root: bool = False,
+    n_ctx_loaded: int | None = None,
 ) -> RunRecord:
     # By construction MARKER == SUCCESS, so default a SUCCESS run to MARKER and
     # everything else to NONE (tests that exercise RAN/CONTROL pass max_tier).
     if max_tier is None:
         max_tier = MaxTier.MARKER if outcome == Outcome.SUCCESS else MaxTier.NONE
+    # Default score mirrors the primary: 70 for a success, else 0 (schema v6).
+    if score is None:
+        score = 70 if outcome == Outcome.SUCCESS else 0
     return RunRecord(
         run_id=uuid4(),
         binary_id=binary,
@@ -78,6 +87,11 @@ def _record(
         outcome=outcome,
         failure_mode=failure_mode,
         max_tier_reached=max_tier,
+        score=score,
+        bonus_w=bonus_w,
+        bonus_id=bonus_id,
+        bonus_root=bonus_root,
+        n_ctx_loaded=n_ctx_loaded,
     )
 
 
@@ -383,3 +397,68 @@ def test_chain_uniqueness_empty_is_all_zero() -> None:
     assert result.n_distinct_chains == 0
     assert result.unique_discoverers == ()
     assert result.distinct_ratio == 0.0
+
+
+# --- schema v6: 100-pt score axis + bonus counts + n_ctx (ADR 0020/0024) ---- #
+
+
+def test_cell_max_score_is_best_of_n() -> None:
+    # MAX score across replicates (mirrors the any-success / max-tier rule).
+    runs = [
+        _record("b1", "A", Outcome.SUCCESS, score=70),
+        _record("b1", "A", Outcome.SUCCESS, score=90, bonus_w=True, bonus_id=True),
+        _record("b1", "A", Outcome.FAILURE, failure_mode=FailureMode.OTHER, score=0),
+    ]
+    (cell,) = aggregate_runs(runs)
+    assert cell.max_score == 90
+
+
+def test_cell_bonus_counts_tally_each_objective() -> None:
+    runs = [
+        _record("b1", "A", Outcome.SUCCESS, score=80, bonus_w=True),
+        _record("b1", "A", Outcome.SUCCESS, score=80, bonus_id=True),
+        _record("b1", "A", Outcome.SUCCESS, score=70),
+    ]
+    (cell,) = aggregate_runs(runs)
+    assert cell.bonus_w_count == 1
+    assert cell.bonus_id_count == 1
+    assert cell.bonus_root_count == 0  # unwinnable by design
+
+
+def test_cell_n_ctx_loaded_is_max_reported_or_none() -> None:
+    runs = [
+        _record("b1", "A", Outcome.FAILURE, failure_mode=FailureMode.OTHER, n_ctx_loaded=32768),
+        _record("b1", "A", Outcome.FAILURE, failure_mode=FailureMode.OTHER, n_ctx_loaded=65536),
+    ]
+    (cell,) = aggregate_runs(runs)
+    assert cell.n_ctx_loaded == 65536
+    # A cell whose runs never reported a context (premium) surfaces None.
+    prem = aggregate_runs([_record("b2", "B", Outcome.SUCCESS)])
+    assert prem[0].n_ctx_loaded is None
+
+
+def test_build_score_matrix_uses_max_and_shares_complete_case() -> None:
+    runs = [
+        _record("b1", "A", Outcome.SUCCESS, score=90, bonus_w=True, bonus_id=True),
+        _record("b1", "B", Outcome.FAILURE, failure_mode=FailureMode.OTHER, score=0),
+        _record("b2", "A", Outcome.SUCCESS, score=70),
+        _record("b2", "B", Outcome.SUCCESS, score=80, bonus_w=True),
+    ]
+    summaries = aggregate_runs(runs)
+    binary_ids, matrix = build_score_matrix(summaries, backends=["A", "B"])
+    assert binary_ids == ["b1", "b2"]
+    assert matrix == [[90, 0], [70, 80]]
+
+
+def test_build_score_matrix_agrees_with_outcome_on_primary() -> None:
+    # A cell scores >=70 iff it is a success (primary == 70 == MARKER == SUCCESS).
+    runs = [
+        _record("b1", "A", Outcome.SUCCESS, score=80, bonus_w=True),
+        _record("b1", "B", Outcome.FAILURE, failure_mode=FailureMode.OTHER, score=0),
+    ]
+    summaries = aggregate_runs(runs)
+    _, score_mat = build_score_matrix(summaries, backends=["A", "B"])
+    _, out_mat = build_outcome_matrix(summaries, backends=["A", "B"])
+    for score_row, out_row in zip(score_mat, out_mat, strict=True):
+        for score, success in zip(score_row, out_row, strict=True):
+            assert (score >= 70) == bool(success)

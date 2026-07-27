@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="830" viewBox="0 0 1400 830" role="img" aria-labelledby="title desc">
+<title id="title">Trial 2 termination mix by backend</title>
+<desc id="desc">Normalized bars show success, token-budget, wall-clock, and truncation endings by backend.</desc>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 18px system-ui, sans-serif; fill: #475569; }
+    .name { font: 600 17px system-ui, sans-serif; fill: #1e293b; }
+    .meta { font: 15px system-ui, sans-serif; fill: #475569; }
+    .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .legend { font: 15px system-ui, sans-serif; fill: #334155; }
+    .section { font: 700 15px system-ui, sans-serif; fill: #64748b; letter-spacing: 1.5px; }
+    .source { font: 14px system-ui, sans-serif; fill: #64748b; }
+  </style>
+<rect width="1400" height="830" fill="#f8fafc"/>
+<text class="title" x="55" y="58">How finalized Trial 2 runs ended, by backend</text>
+<text class="sub" x="55" y="91">Bars are normalized within backend; metadata reports runnable-or-higher and marker success</text>
+<rect x="690" y="112" width="18" height="18" rx="3" fill="#16a34a"/><text class="legend" x="718" y="127">success</text>
+<rect x="800" y="112" width="18" height="18" rx="3" fill="#2563eb"/><text class="legend" x="828" y="127">token budget</text>
+<rect x="950" y="112" width="18" height="18" rx="3" fill="#f59e0b"/><text class="legend" x="978" y="127">wall clock</text>
+<rect x="1085" y="112" width="18" height="18" rx="3" fill="#dc2626"/><text class="legend" x="1113" y="127">truncated</text>
+<text class="axis" x="355" y="166">0%</text><text class="axis" x="732" y="166">50%</text><text class="axis" x="1110" y="166">100%</text>
+<line x1="360" y1="175" x2="360" y2="695" stroke="#cbd5e1"/>
+<line x1="740" y1="175" x2="740" y2="695" stroke="#e2e8f0"/>
+<line x1="1120" y1="175" x2="1120" y2="695" stroke="#cbd5e1"/>
+<text class="section" x="55" y="203">PREMIUM</text>
+<text class="section" x="55" y="378">OPEN WEIGHT</text>
+<text class="section" x="55" y="553">UNRESTRICTED</text>
+<rect x="360.0" y="218" width="495.7" height="30" rx="4" fill="#16a34a"/>
+<rect x="855.7" y="218" width="231.3" height="30" rx="4" fill="#2563eb"/>
+<rect x="1087.0" y="218" width="33.0" height="30" rx="4" fill="#dc2626"/>
+<text class="name" x="55" y="240">Claude Sonnet</text>
+<text class="meta" x="1140" y="240">n=23 • RAN+ 95.7% • success 65.2%</text>
+<rect x="360.0" y="278" width="528.7" height="30" rx="4" fill="#16a34a"/>
+<rect x="888.7" y="278" width="165.2" height="30" rx="4" fill="#2563eb"/>
+<rect x="1053.9" y="278" width="66.1" height="30" rx="4" fill="#f59e0b"/>
+<text class="name" x="55" y="300">GPT-5</text>
+<text class="meta" x="1140" y="300">n=23 • RAN+ 91.3% • success 69.6%</text>
+<rect x="360.0" y="393" width="95.0" height="30" rx="4" fill="#16a34a"/>
+<rect x="455.0" y="393" width="665.0" height="30" rx="4" fill="#2563eb"/>
+<text class="name" x="55" y="415">GPT-OSS 20B</text>
+<text class="meta" x="1140" y="415">n=24 • RAN+ 87.5% • success 12.5%</text>
+<rect x="360.0" y="453" width="760.0" height="30" rx="4" fill="#f59e0b"/>
+<text class="name" x="55" y="475">Qwen3 Coder 30B</text>
+<text class="meta" x="1140" y="475">n=10 • RAN+ 20.0% • success 0.0%</text>
+<rect x="360.0" y="568" width="253.3" height="30" rx="4" fill="#2563eb"/>
+<rect x="613.3" y="568" width="506.7" height="30" rx="4" fill="#dc2626"/>
+<text class="name" x="55" y="590">Qwen3 30B Abliterated</text>
+<text class="meta" x="1140" y="590">n=6 • RAN+ 50.0% • success 0.0%</text>
+<rect x="360.0" y="628" width="633.3" height="30" rx="4" fill="#2563eb"/>
+<rect x="993.3" y="628" width="126.7" height="30" rx="4" fill="#dc2626"/>
+<text class="name" x="55" y="650">WhiteRabbitNeo 7B</text>
+<text class="meta" x="1140" y="650">n=6 • RAN+ 0.0% • success 0.0%</text>
+<rect x="55" y="715" width="1290" height="66" rx="12" fill="#dcfce7"/>
+<text class="name" x="80" y="744" fill="#166534">Primary endpoint: 34 validator-confirmed successes among 92 finalized runs (37.0%).</text>
+<text class="meta" x="80" y="768">Coverage is incomplete and backend-skewed; normalized bars describe observed finalized records only.</text>
+<text class="source" x="55" y="812">Source: 92 finalized record.json and trace.jsonl artifacts; submitted files were not opened</text>
+</svg>

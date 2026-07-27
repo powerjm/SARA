@@ -72,6 +72,15 @@ class AgentState:
     observations: list[ToolObservation] = field(default_factory=list)
     iteration: int = 0
 
+    # Run-scoped scratchpad / store (ADR 0022): the context-engineering substrate,
+    # strictly WITHIN-RUN — a fresh state starts empty, so a second run/thread can
+    # never see another's store (the independence the paired stats assume, Trial 3
+    # §1). Holds the pinned C1 plan (key ``"plan"``) and anything else the
+    # send-time compaction pins into the stable prefix. ``messages`` stays the full
+    # append-only log (trace/replay unaffected); compaction happens only in what is
+    # *sent* to the backend, reading this store for the facts it pins.
+    scratchpad: dict[str, str] = field(default_factory=dict)
+
     # Token + cost accumulators, summed across reason rounds for the RunRecord.
     tokens_used: int = 0  # prompt + completion, running total (budget check)
     prompt_tokens: int = 0

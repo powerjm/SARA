@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="1024" viewBox="0 0 1536 1024" role="img" aria-labelledby="title desc">
+  <title id="title">SARA Trial 2 configuration and execution</title>
+  <desc id="desc">Trial 2 used four binaries, six backends, three strategies, two replicates, a 500,000-token limit, and a 600-second limit.</desc>
+  <style>
+    .title { font: 800 48px system-ui, sans-serif; fill: #071a4d; letter-spacing: 2px; }
+    .headline { font: 800 31px system-ui, sans-serif; fill: #071a4d; }
+    .sub { font: 750 24px system-ui, sans-serif; fill: #071a4d; }
+    .panel { fill: #fff; stroke: #071a4d; stroke-width: 2.5; }
+    .panelTitle { font: 750 24px system-ui, sans-serif; fill: #071a4d; letter-spacing: 1px; }
+    .group { font: 750 20px system-ui, sans-serif; fill: #123b4a; }
+    .groupOrange { font: 750 20px system-ui, sans-serif; fill: #c42d09; }
+    .item { font: 18px ui-monospace, monospace; fill: #123b4a; }
+    .itemOrange { font: 18px ui-monospace, monospace; fill: #c42d09; }
+    .strategy { font: 700 25px ui-monospace, monospace; fill: #071a4d; }
+    .limit { font: 20px ui-monospace, monospace; fill: #071a4d; }
+    .foot { font: 700 20px system-ui, sans-serif; fill: #071a4d; }
+    .caveat { font: 15px system-ui, sans-serif; fill: #64748b; }
+  </style>
+  <rect width="1536" height="1024" fill="#fafafa"/>
+  <text class="title" x="768" y="54" text-anchor="middle">SARA TRIAL 2 — CONFIGURATION &amp; EXECUTION</text>
+  <text class="headline" x="768" y="100" text-anchor="middle">4 BINARIES × 6 BACKENDS × 3 STRATEGIES = 72 CELLS</text>
+  <text class="sub" x="768" y="137" text-anchor="middle">2 REPLICATES PER CELL → 144 PLANNED RUNS</text>
+  <text class="sub" x="768" y="169" text-anchor="middle">96 ATTEMPT DIRECTORIES → 92 FINALIZED + 4 PARTIAL</text>
+  <text class="sub" x="768" y="201" text-anchor="middle">48 PLANNED RUNS PRODUCED NO ARCHIVED DIRECTORY</text>
+
+  <rect class="panel" x="55" y="220" width="460" height="505" rx="12"/>
+  <text class="panelTitle" x="285" y="258" text-anchor="middle">BINARIES · FINALIZED RUNS</text>
+  <rect class="panel" x="73" y="276" width="424" height="92" rx="9"/>
+  <text class="group" x="285" y="305" text-anchor="middle">TIER −1 · BASELINE</text>
+  <text class="item" x="285" y="340" text-anchor="middle">ret2win-baseline · 36</text>
+  <rect class="panel" x="73" y="380" width="424" height="92" rx="9"/>
+  <text class="group" x="285" y="409" text-anchor="middle">HIGH · DARPA CGC</text>
+  <text class="item" x="285" y="444" text-anchor="middle">cgc-cadet-00001 · 20</text>
+  <rect x="73" y="484" width="424" height="92" rx="9" fill="#fff" stroke="#c42d09" stroke-width="2"/>
+  <text class="groupOrange" x="285" y="513" text-anchor="middle">MEDIUM · ISP RAS SYNTHETIC</text>
+  <text class="itemOrange" x="285" y="548" text-anchor="middle">ropbench-synth-ex005 · 18</text>
+  <rect class="panel" x="73" y="588" width="424" height="112" rx="9"/>
+  <text class="group" x="285" y="620" text-anchor="middle">LOW · BRONCOCTF 2026</text>
+  <text class="item" x="285" y="657" text-anchor="middle">broncoctf2026-</text>
+  <text class="item" x="285" y="682" text-anchor="middle">proper-pwning · 18</text>
+
+  <rect class="panel" x="535" y="220" width="460" height="505" rx="12"/>
+  <text class="panelTitle" x="765" y="258" text-anchor="middle">BACKENDS · FINALIZED RUNS</text>
+  <rect class="panel" x="553" y="276" width="424" height="126" rx="9"/>
+  <text class="group" x="765" y="305" text-anchor="middle">PREMIUM · HOSTED</text>
+  <text class="item" x="765" y="340" text-anchor="middle">claude-sonnet · 23</text>
+  <text class="item" x="765" y="372" text-anchor="middle">gpt-5 · 23</text>
+  <rect x="553" y="414" width="424" height="126" rx="9" fill="#fff" stroke="#c42d09" stroke-width="2"/>
+  <text class="groupOrange" x="765" y="443" text-anchor="middle">OPEN WEIGHT · LM STUDIO</text>
+  <text class="itemOrange" x="765" y="478" text-anchor="middle">gpt-oss-20b · 24</text>
+  <text class="itemOrange" x="765" y="510" text-anchor="middle">qwen3-coder-30b · 10</text>
+  <rect class="panel" x="553" y="552" width="424" height="148" rx="9"/>
+  <text class="group" x="765" y="581" text-anchor="middle">UNRESTRICTED · LM STUDIO</text>
+  <text class="item" x="765" y="616" text-anchor="middle">whiterabbitneo-v3-7b · 6</text>
+  <text class="item" x="765" y="650" text-anchor="middle">qwen3-30b-abliterated ·</text>
+  <text class="item" x="765" y="678" text-anchor="middle">6</text>
+
+  <rect class="panel" x="1015" y="220" width="466" height="505" rx="12"/>
+  <text class="panelTitle" x="1248" y="258" text-anchor="middle">STRATEGIES · FINALIZED RUNS</text>
+  <rect class="panel" x="1033" y="292" width="430" height="105" rx="9"/>
+  <text class="strategy" x="1248" y="355" text-anchor="middle">zero_shot · 32</text>
+  <rect class="panel" x="1033" y="420" width="430" height="105" rx="9"/>
+  <text class="strategy" x="1248" y="483" text-anchor="middle">chain_of_thought · 31</text>
+  <rect class="panel" x="1033" y="548" width="430" height="105" rx="9"/>
+  <text class="strategy" x="1248" y="611" text-anchor="middle">react · 29</text>
+
+  <rect class="panel" x="55" y="738" width="1426" height="78" rx="10"/>
+  <text class="panelTitle" x="768" y="765" text-anchor="middle">RUN LIMITS</text>
+  <rect class="panel" x="70" y="775" width="340" height="32" rx="6"/><text class="limit" x="240" y="799" text-anchor="middle">500,000 tokens</text>
+  <rect class="panel" x="420" y="775" width="340" height="32" rx="6"/><text class="limit" x="590" y="799" text-anchor="middle">600 seconds</text>
+  <rect class="panel" x="770" y="775" width="340" height="32" rx="6"/><text class="limit" x="940" y="799" text-anchor="middle">100-reason-turn backstop</text>
+  <rect class="panel" x="1120" y="775" width="346" height="32" rx="6"/><text class="limit" x="1293" y="799" text-anchor="middle">max_nudges: 3 · ignored</text>
+
+  <rect class="panel" x="55" y="828" width="1426" height="88" rx="10"/>
+  <text class="panelTitle" x="768" y="855" text-anchor="middle">ACTIVE PREMIUM COST CAPS</text>
+  <rect class="panel" x="260" y="866" width="480" height="34" rx="6"/><text class="limit" x="500" y="891" text-anchor="middle">claude-sonnet · $75</text>
+  <rect class="panel" x="795" y="866" width="480" height="34" rx="6"/><text class="limit" x="1035" y="891" text-anchor="middle">gpt-5 · $100</text>
+
+  <text class="foot" x="350" y="949" text-anchor="middle">output_dir: ./runs</text>
+  <text class="foot" x="768" y="949" text-anchor="middle">overrides: {}</text>
+  <text class="foot" x="1160" y="949" text-anchor="middle">PRIMARY ENDPOINT: 34 / 92</text>
+  <text class="caveat" x="768" y="984" text-anchor="middle">Aggregate experiments.yaml shown; exact runtime split configuration files were not archived.</text>
+</svg>

@@ -60,6 +60,16 @@ class AnthropicBackend(Backend):
 
     category = BackendCategory.PREMIUM
 
+    # Prompt caching (ADR 0023): mark the stable prefix — the system prompt and the
+    # tool schema — with ``cache_control: ephemeral`` so a cache hit re-bills that
+    # (large, byte-stable) prefix at ~10%. SARA sends the whole tool schema and
+    # system prompt every reason turn, and Trial-3 compaction keeps them byte-stable
+    # while confining churn to the suffix, so the prefix is a cache hit on turn ≥2.
+    # Cache-read/write counts come back in ``resp.usage`` and are surfaced via
+    # ``ChatResponse.raw`` for the preflight cache-hit-rate gate.
+    _prompt_cache: bool = True
+    _CACHE_CONTROL: dict[str, str] = {"type": "ephemeral"}
+
     # Some Anthropic models (the opus reasoning line) deprecated the
     # ``temperature`` sampling param and return 400 ("temperature is deprecated
     # for this model") if it is sent, so the backend omits it for those models —
@@ -101,6 +111,15 @@ class AnthropicBackend(Backend):
     ) -> ChatResponse:
         api_messages, system = _to_anthropic_messages(messages)
         api_tools = [_to_anthropic_tool(t) for t in tools]
+        if self._prompt_cache:
+            # Cache the stable prefix: the whole tool schema (mark the LAST tool —
+            # the breakpoint caches every tool before it) and the system prompt.
+            if api_tools:
+                api_tools[-1] = {**api_tools[-1], "cache_control": self._CACHE_CONTROL}
+            if system is not None:
+                system = [  # type: ignore[assignment]
+                    {"type": "text", "text": system, "cache_control": self._CACHE_CONTROL}
+                ]
 
         kwargs: dict[str, Any] = {
             "model": self.name,

@@ -33,6 +33,7 @@ from dotenv import load_dotenv
 from rich.console import Console
 from rich.table import Table
 
+from agent import prompts
 from backends import pricing, registry
 from harness import corpus, persistence
 from harness.matrix import BatchConfig, completed_counts, estimate_cost, plan, run_batch
@@ -61,7 +62,9 @@ def cli() -> None:
 @click.option(
     "--strategy",
     default="zero_shot",
-    type=click.Choice(["zero_shot", "chain_of_thought", "react", "majorca"]),
+    # Derived from the registry so the CLI can never drift from the strategies that
+    # actually exist (test_cli_choices_match_registry pins this).
+    type=click.Choice(sorted(prompts.STRATEGIES)),
     help="Prompting strategy",
 )
 @click.option(

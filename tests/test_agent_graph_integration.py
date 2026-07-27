@@ -42,7 +42,7 @@ from agent.tools import ToolLayer
 from backends.anthropic_backend import _to_anthropic_messages
 from harness.record import FailureMode, MaxTier, Outcome, PromptingStrategy, RunRecord
 from mcp_servers.ropgadget.parser import Gadget
-from mcp_servers.ropgadget.server import EnumerateResult
+from mcp_servers.ropgadget.server import FindResult
 from validator.runner import chain_fingerprint
 from validator.runner_test_helpers import FakeContainer, succeeding_client
 
@@ -51,10 +51,11 @@ from validator.runner_test_helpers import FakeContainer, succeeding_client
 # --------------------------------------------------------------------------- #
 
 
-def _fake_enumerator(**_: object) -> EnumerateResult:
-    """A canned ROPgadget result containing the documented gadgets."""
-    return EnumerateResult(
+def _fake_finder(**_: object) -> FindResult:
+    """A canned find_gadget result containing the documented gadgets."""
+    return FindResult(
         binary_path="sample_overflow",
+        query="pop rdi ; ret",
         total_found=3,
         returned=3,
         truncated=False,
@@ -83,7 +84,7 @@ def _binary(sample_overflow_path: Path) -> BinaryContext:
 def _config(tmp_path: Path, **overrides: Any) -> AgentConfig:
     base: dict[str, Any] = {
         "strategy": prompts.get("zero_shot"),
-        "tools": ToolLayer(enumerate_fn=_fake_enumerator),
+        "tools": ToolLayer(find_fn=_fake_finder),
         "success_marker": "Hello World",
         "validator_client": succeeding_client(b"Hello World\n"),
         "runs_dir": tmp_path / "runs",
@@ -318,7 +319,7 @@ def test_build_run_record_populates_v5_telemetry(
     # tools_offered captures the advertised set (closing the Trial-1 blind spot);
     # tool_call_counts records what the agent actually called; a success is MARKER.
     assert "submit_payload" in record.tools_offered
-    assert "enumerate_gadgets" in record.tools_offered
+    assert "find_gadget" in record.tools_offered
     assert record.tool_call_counts.get("submit_payload") == 1
     assert record.max_tier_reached == MaxTier.MARKER
 
@@ -357,7 +358,7 @@ def test_enumerate_loop_then_submit(
             ScriptedTurn(
                 text="First, enumerate gadgets.",
                 tool_calls=[
-                    {"id": "e1", "name": "enumerate_gadgets", "input": {"binary_path": "x"}}
+                    {"id": "e1", "name": "find_gadget", "input": {"query": "pop rdi ; ret"}}
                 ],
             ),
             _submit_turn(payload.hex(), [f"0x{a:x}" for a in addresses]),
@@ -375,7 +376,7 @@ def test_enumerate_loop_then_submit(
     # decision, 2026-07-26), so no "Baseline gadget enumeration:" context exists.
     tool_msgs = [m for m in result.state.messages if m.role == "tool"]
     assert len(tool_msgs) == 2
-    assert any("ROP gadgets" in m.content for m in tool_msgs)  # explicit enumerate result
+    assert any("find_gadget" in m.content for m in tool_msgs)  # explicit find_gadget result
     assert any("EXECUTION SUCCEEDED" in m.content for m in tool_msgs)  # validate feedback
     assert not any(
         m.role == "user" and m.content.startswith("Baseline gadget enumeration:")
@@ -398,7 +399,7 @@ def test_iteration_cap_yields_iteration_cap_failure(
 ) -> None:
     # The backend would loop forever asking for tools; max_iterations cuts it.
     looping = [
-        ScriptedTurn(tool_calls=[{"id": "e", "name": "enumerate_gadgets", "input": {}}])
+        ScriptedTurn(tool_calls=[{"id": "e", "name": "find_gadget", "input": {}}])
         for _ in range(20)
     ]
     backend = FakeBackend(script=looping)
@@ -412,7 +413,7 @@ def test_token_budget_halts_before_overspending(sample_overflow_path: Path, tmp_
     backend = FakeBackend(
         script=[
             ScriptedTurn(
-                tool_calls=[{"id": "e", "name": "enumerate_gadgets", "input": {}}],
+                tool_calls=[{"id": "e", "name": "find_gadget", "input": {}}],
                 prompt_tokens=500,
                 completion_tokens=500,
             )
@@ -564,7 +565,7 @@ def test_mixed_analysis_and_terminal_turn_answers_every_tool_use(
                 role="assistant",
                 content="Disassembling, and running my exploit in the same turn.",
                 tool_calls=[
-                    {"id": "toolu_enum", "name": "enumerate_gadgets", "input": {}},
+                    {"id": "toolu_enum", "name": "find_gadget", "input": {}},
                     {
                         "id": "toolu_script",
                         "name": "run_exploit_script",

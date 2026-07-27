@@ -26,7 +26,7 @@ from harness.matrix import completed_counts, spend_by_backend
 from harness.record import FailureMode, Outcome
 from harness.runner import RunSettings, replay_run, run_one, verify_binary
 from mcp_servers.ropgadget.parser import Gadget
-from mcp_servers.ropgadget.server import EnumerateResult
+from mcp_servers.ropgadget.server import FindResult
 from validator.runner_test_helpers import succeeding_client
 
 # --------------------------------------------------------------------------- #
@@ -34,9 +34,10 @@ from validator.runner_test_helpers import succeeding_client
 # --------------------------------------------------------------------------- #
 
 
-def _canned_enumerator(**_: object) -> EnumerateResult:
-    return EnumerateResult(
+def _canned_finder(**_: object) -> FindResult:
+    return FindResult(
         binary_path="sample-overflow",
+        query="pop rdi ; ret",
         total_found=2,
         returned=2,
         truncated=False,
@@ -45,7 +46,7 @@ def _canned_enumerator(**_: object) -> EnumerateResult:
 
 
 def _tools() -> ToolLayer:
-    return ToolLayer(enumerate_fn=_canned_enumerator)
+    return ToolLayer(find_fn=_canned_finder)
 
 
 def _submit_turn(payload_hex: str, addresses: list[str]) -> ScriptedTurn:
@@ -158,7 +159,7 @@ def test_preflight_smoke_run_reaches_a_non_ropgadget_tool(
     tool must record it in the schema-v5 telemetry: ``tools_offered`` proves the
     full toolkit was advertised, and ``tool_call_counts`` proves the agent seam
     actually dispatched the call (not a KeyError, not silently dropped). Runs with
-    the REAL default ToolLayer (all five extra servers), no baseline hand-out."""
+    the REAL default ToolLayer (the Trial-3 curated set), no baseline hand-out."""
     spec = corpus.resolve_binary("sample-overflow")
     settings = RunSettings.from_env(output_dir=tmp_path / "runs")
     backend = FakeBackend(
@@ -168,7 +169,7 @@ def test_preflight_smoke_run_reaches_a_non_ropgadget_tool(
                 tool_calls=[
                     {
                         "id": "r1",
-                        "name": "radare2_analyze_binary",
+                        "name": "radare2_recon",
                         "input": {"binary_path": str(spec.binary_path)},
                     }
                 ],
@@ -182,10 +183,10 @@ def test_preflight_smoke_run_reaches_a_non_ropgadget_tool(
     record = run_one(spec, backend, "zero_shot", settings, tools=ToolLayer())
 
     # The full toolkit was advertised to the model (closes the §1 blind spot)...
-    assert "radare2_analyze_binary" in record.tools_offered
-    assert len(record.tools_offered) >= 6  # core three + the five extra servers' tools
+    assert "radare2_recon" in record.tools_offered
+    assert len(record.tools_offered) >= 6  # core three + curated radare2/gdb tools
     # ...and the non-ROPgadget call was actually dispatched through the seam.
-    assert "radare2_analyze_binary" in record.tool_call_counts
+    assert "radare2_recon" in record.tool_call_counts
 
 
 def test_resume_and_cost_cap_key_on_backend_handle(fixture_corpus: Any, tmp_path: Path) -> None:
@@ -255,7 +256,7 @@ def test_run_one_token_cap_yields_token_budget(fixture_corpus: Any, tmp_path: Pa
     spec = corpus.resolve_binary("sample-overflow")
     looping = [
         ScriptedTurn(
-            tool_calls=[{"id": "e", "name": "enumerate_gadgets", "input": {}}],
+            tool_calls=[{"id": "e", "name": "find_gadget", "input": {}}],
             prompt_tokens=500,
             completion_tokens=500,
         )
@@ -275,7 +276,7 @@ def test_run_one_wall_clock_cap_yields_wall_clock(fixture_corpus: Any, tmp_path:
 
     spec = corpus.resolve_binary("sample-overflow")
     looping = [
-        ScriptedTurn(tool_calls=[{"id": "e", "name": "enumerate_gadgets", "input": {}}])
+        ScriptedTurn(tool_calls=[{"id": "e", "name": "find_gadget", "input": {}}])
         for _ in range(20)
     ]
     settings = RunSettings.from_env(output_dir=tmp_path / "runs", wall_clock_cap_seconds=0.01)

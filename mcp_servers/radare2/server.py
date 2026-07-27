@@ -31,7 +31,9 @@ when `r2` / `radare2` is absent.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
@@ -42,6 +44,7 @@ if TYPE_CHECKING:
 DEFAULT_MAX_RESULTS = 2_000
 DEFAULT_TIMEOUT_SECONDS = 120
 DEFAULT_DISASM_COUNT = 16
+DEFAULT_RECON_STRINGS = 60
 
 
 # ---------------------------------------------------------------------------
@@ -179,6 +182,127 @@ def parse_analysis(json_str: str) -> BinaryInfo:
     )
 
 
+# --- recon parsers (ADR 0019): one-call target snapshot, canned-JSON tested ---
+
+
+@dataclass(frozen=True, slots=True)
+class ReconInfo:
+    """The protection/architecture summary a `recon` call leads with."""
+
+    arch: str
+    bits: int
+    endian: str
+    os: str
+    relro: str
+    nx: bool
+    pie: bool
+    canary: bool
+
+
+def parse_recon_info(json_str: str) -> ReconInfo:
+    """Parse `iIj` (or `ij`'s `bin` object) into the checksec-style protections.
+
+    Handles both the `iIj` shape (info object directly) and the `ij` shape (info
+    nested under `bin`), reusing the same permissive approach as `parse_analysis`.
+    `relro` is a string (`full`/`partial`/`no`) as radare2 reports it.
+    """
+    raw = json.loads(json_str) if json_str.strip() else {}
+    if not isinstance(raw, dict):
+        raise ValueError("info output is not a JSON object")
+    info = raw.get("bin", raw)
+    if not isinstance(info, dict):
+        raise ValueError("info output missing 'bin' object")
+    return ReconInfo(
+        arch=str(info.get("arch", "")),
+        bits=int(info.get("bits", 0)),
+        endian=str(info.get("endian", "")),
+        os=str(info.get("os", "")),
+        relro=str(info.get("relro", "")),
+        nx=bool(info.get("nx", False)),
+        pie=bool(info.get("pic", info.get("pie", False))),
+        canary=bool(info.get("canary", False)),
+    )
+
+
+def parse_entrypoint(json_str: str) -> int | None:
+    """Parse `iej` (entrypoints) into the first entry vaddr, or None."""
+    raw = json.loads(json_str) if json_str.strip() else []
+    if not isinstance(raw, list):
+        return None
+    for entry in raw:
+        if isinstance(entry, dict):
+            value = entry.get("vaddr", entry.get("paddr"))
+            if value is not None:
+                return int(value)
+    return None
+
+
+def parse_imports(json_str: str) -> list[str]:
+    """Parse `iij` (imports) into a de-duplicated, order-preserving name list."""
+    raw = json.loads(json_str) if json_str.strip() else []
+    if not isinstance(raw, list):
+        raise ValueError("iij output is not a JSON array")
+    names: list[str] = []
+    seen: set[str] = set()
+    for entry in raw:
+        if not isinstance(entry, dict):
+            continue
+        name = str(entry.get("name", "")).strip()
+        if name and name not in seen:
+            seen.add(name)
+            names.append(name)
+    return names
+
+
+def parse_strings(json_str: str) -> list[dict[str, Any]]:
+    """Parse `izj` / `izzj` (strings) into `{address, string}` rows.
+
+    Accepts both the bare-list shape and the `{"strings": [...]}` wrapper; each row
+    carries the string's vaddr (address) and text, permissive about missing keys.
+    """
+    raw = json.loads(json_str) if json_str.strip() else []
+    entries = raw.get("strings", []) if isinstance(raw, dict) else raw
+    if not isinstance(entries, list):
+        raise ValueError("strings output is not a JSON array")
+    rows: list[dict[str, Any]] = []
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        text = entry.get("string")
+        if text is None:
+            continue
+        addr = entry.get("vaddr", entry.get("paddr"))
+        rows.append({"address": int(addr) if addr is not None else None, "string": str(text)})
+    return rows
+
+
+def parse_writable_sections(json_str: str) -> list[dict[str, Any]]:
+    """Parse `iSj` (sections) into the writable ones (`.bss`/`.data`/…).
+
+    Keeps sections whose permission string contains `w`, returning `{name,
+    address, size}` — the scratch space a store-gadget chain plants `/bin/sh` in.
+    """
+    raw = json.loads(json_str) if json_str.strip() else []
+    if not isinstance(raw, list):
+        raise ValueError("iSj output is not a JSON array")
+    rows: list[dict[str, Any]] = []
+    for entry in raw:
+        if not isinstance(entry, dict):
+            continue
+        perm = str(entry.get("perm", ""))
+        if "w" not in perm.lower():
+            continue
+        addr = entry.get("vaddr", entry.get("paddr"))
+        rows.append(
+            {
+                "name": str(entry.get("name", "")),
+                "address": int(addr) if addr is not None else None,
+                "size": int(entry.get("size", 0)),
+            }
+        )
+    return rows
+
+
 # ---------------------------------------------------------------------------
 # Tool functions (open an r2pipe session)
 # ---------------------------------------------------------------------------
@@ -225,22 +349,85 @@ class SearchResult:
     addresses: list[int]
 
 
+# --- Per-run session cache (ADR 0019: the biggest radare2 speed win) --------
+#
+# Trial 2's `_open_session(analyze=True)` re-ran the slow `aaa` on EVERY
+# analyze/list/disasm/search call — the same binary re-analyzed a dozen times a
+# run. We now memoize one session per `(path, mtime)` and reuse it across every
+# tool call in the run: `aaa` runs at most once, and the quiet-open flags fold in
+# the log-hygiene fix (no `aaa` progress / reloc WARN / mouse-tracking escapes on
+# stderr). `mtime` keys the cache so a rebuilt binary is re-opened, never stale.
+# The opener is injectable (`_OPENER`) so the memoization is unit-testable in CI
+# without r2pipe (which is a lab-host-only dependency).
+
+
+@dataclass(slots=True)
+class _CachedSession:
+    """One memoized r2pipe session plus the state needed to reuse it safely."""
+
+    session: Any
+    mtime: float
+    analyzed: bool
+
+
+# path -> cached session. Process-global but scoped to one run in practice: the
+# harness runs one binary at a time and calls `reset_session_cache()` between runs
+# (there is no cross-run state to leak — the cache holds only open r2 handles).
+_SESSION_CACHE: dict[str, _CachedSession] = {}
+
+# Injectable opener for tests: `(binary_path) -> session`. None -> the real
+# r2pipe opener with the quiet flags. A test sets this to a fake session factory
+# and asserts the memoization (opener called once, `aaa` run once) without r2.
+_OPENER: Callable[[str], Any] | None = None
+
+
+def _default_opener(binary_path: str) -> Any:
+    """Open a quiet r2pipe session (imported lazily; absent on CI)."""
+    import r2pipe  # lazy: absent on CI, present on the lab host
+
+    # `-2` sends r2's own stderr (aaa progress, reloc WARN) to /dev/null; the
+    # scr.* settings drop ANSI colour and the interactive mouse-tracking escapes
+    # that dominated the Trial-2 logs. Pure log hygiene: no effect on results.
+    session = r2pipe.open(binary_path, flags=["-2"])
+    session.cmd("e scr.color=0")
+    session.cmd("e scr.interactive=false")
+    return session
+
+
+def reset_session_cache() -> None:
+    """Quit and drop every cached session (call between runs / in test teardown)."""
+    for cached in _SESSION_CACHE.values():
+        # Best-effort cleanup — a session that never opened / already closed must
+        # not raise on teardown.
+        with contextlib.suppress(Exception):
+            cached.session.quit()
+    _SESSION_CACHE.clear()
+
+
 def _open_session(binary_path: str, *, analyze: bool, timeout_seconds: int) -> Any:
-    """Open an r2pipe session on the binary (importing r2pipe lazily).
+    """Return a memoized r2pipe session for the binary, analyzing it at most once.
 
     Raises FileNotFoundError if the binary is missing; the r2pipe import failing
-    (tool absent) propagates so the integration tests skip.
+    (tool absent) propagates so the integration tests skip. The returned session
+    is owned by the cache — callers must NOT quit it (that would close it for the
+    next tool call); `reset_session_cache()` disposes of them.
     """
     bp = Path(binary_path)
     if not bp.is_file():
         raise FileNotFoundError(f"binary not found: {binary_path}")
-    import r2pipe  # lazy: absent on CI, present on the lab host
-
-    session = r2pipe.open(str(bp))
-    session.cmd(f"e anal.timeout={timeout_seconds}")
-    if analyze:
-        session.cmd("aaa")
-    return session
+    key = str(bp)
+    mtime = bp.stat().st_mtime
+    cached = _SESSION_CACHE.get(key)
+    if cached is None or cached.mtime != mtime:
+        opener = _OPENER or _default_opener
+        session = opener(key)
+        session.cmd(f"e anal.timeout={timeout_seconds}")
+        cached = _CachedSession(session=session, mtime=mtime, analyzed=False)
+        _SESSION_CACHE[key] = cached
+    if analyze and not cached.analyzed:
+        cached.session.cmd("aaa")
+        cached.analyzed = True
+    return cached.session
 
 
 def analyze_binary(
@@ -248,11 +435,8 @@ def analyze_binary(
 ) -> AnalyzeResult:
     """Run full analysis (`aaa`) and return a binary-info summary."""
     session = _open_session(binary_path, analyze=True, timeout_seconds=timeout_seconds)
-    try:
-        info = parse_analysis(session.cmd("ij"))
-        functions = parse_functions(session.cmd("aflj"))
-    finally:
-        session.quit()
+    info = parse_analysis(session.cmd("ij"))
+    functions = parse_functions(session.cmd("aflj"))
     return AnalyzeResult(
         binary_path=str(Path(binary_path)),
         info=info,
@@ -268,10 +452,7 @@ def list_functions(
 ) -> FunctionsResult:
     """List analyzed functions, truncated to `max_results`."""
     session = _open_session(binary_path, analyze=True, timeout_seconds=timeout_seconds)
-    try:
-        functions = parse_functions(session.cmd("aflj"))
-    finally:
-        session.quit()
+    functions = parse_functions(session.cmd("aflj"))
     total_found = len(functions)
     truncated = total_found > max_results
     if truncated:
@@ -295,10 +476,7 @@ def disassemble_at(
     """Disassemble `count` instructions starting at `address`."""
     addr = _coerce_int(address)
     session = _open_session(binary_path, analyze=False, timeout_seconds=timeout_seconds)
-    try:
-        instructions = parse_disasm(session.cmd(f"pdj {int(count)} @ {addr}"))
-    finally:
-        session.quit()
+    instructions = parse_disasm(session.cmd(f"pdj {int(count)} @ {addr}"))
     return DisasmResult(
         binary_path=str(Path(binary_path)),
         address=addr,
@@ -315,11 +493,8 @@ def search_pattern(
 ) -> SearchResult:
     """Search for a hex/string pattern, returning the addresses it occurs at."""
     session = _open_session(binary_path, analyze=False, timeout_seconds=timeout_seconds)
-    try:
-        raw = session.cmd(f"/j {pattern}")
-        hits = json.loads(raw) if raw.strip() else []
-    finally:
-        session.quit()
+    raw = session.cmd(f"/j {pattern}")
+    hits = json.loads(raw) if raw.strip() else []
     addresses: list[int] = []
     if isinstance(hits, list):
         for hit in hits:
@@ -349,6 +524,82 @@ def _coerce_int(raw: int | str) -> int:
         return raw
     token = str(raw).strip()
     return int(token, 0)
+
+
+@dataclass(slots=True)
+class ReconResult:
+    """One-call target snapshot (ADR 0019): the winning-trajectory recon step."""
+
+    binary_path: str
+    info: ReconInfo
+    entrypoint: int | None
+    functions: dict[str, int]  # name -> entry address
+    imports: list[str]
+    interesting_strings: list[dict[str, Any]]  # {address, string}
+    writable_sections: list[dict[str, Any]]  # {name, address, size}
+
+
+# Substrings that mark a string as exploitation-relevant, so recon surfaces them
+# even when the string table is truncated to the first N rows (a `/bin/sh` buried
+# past the cap would otherwise be missed — and finding it first is step 4a of the
+# methodology). Case-insensitive.
+_INTERESTING_STRING_MARKERS = ("/bin/sh", "/bin/bash", "sh", "system", "flag", "cat ")
+
+
+def _select_interesting(strings: list[dict[str, Any]], limit: int) -> list[dict[str, Any]]:
+    """First `limit` strings, but always include any exploitation-relevant one."""
+    head = strings[:limit]
+    seen = {id(row) for row in head}
+    for row in strings[limit:]:
+        text = str(row.get("string", "")).lower()
+        if any(marker in text for marker in _INTERESTING_STRING_MARKERS) and id(row) not in seen:
+            head.append(row)
+    return head
+
+
+def recon(
+    binary_path: str,
+    *,
+    max_strings: int = DEFAULT_RECON_STRINGS,
+    timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
+) -> ReconResult:
+    """Snapshot a target in one call: arch/checksec, entry, functions, imports,
+    interesting strings (incl. ``/bin/sh``), and writable segments.
+
+    Replaces the 5+ round-trip ``analyze + list_functions + list_imports +
+    list_strings + search_pattern`` opening sequence (ADR 0019) using the single
+    cached analyzed session, so ``aaa`` runs once. Mechanically equivalent to
+    ``rabin2 -I`` + ``checksec`` + ``nm`` + ``strings`` (capability-parity, ADR 0017).
+    """
+    session = _open_session(binary_path, analyze=True, timeout_seconds=timeout_seconds)
+    info = parse_recon_info(session.cmd("iIj"))
+    entrypoint = parse_entrypoint(session.cmd("iej"))
+    functions = {f.name: f.offset for f in parse_functions(session.cmd("aflj"))}
+    imports = parse_imports(session.cmd("iij"))
+    strings = _select_interesting(parse_strings(session.cmd("izj")), max_strings)
+    writable = parse_writable_sections(session.cmd("iSj"))
+    return ReconResult(
+        binary_path=str(Path(binary_path)),
+        info=info,
+        entrypoint=entrypoint,
+        functions=functions,
+        imports=imports,
+        interesting_strings=strings,
+        writable_sections=writable,
+    )
+
+
+def recon_result_to_dict(result: ReconResult) -> dict[str, Any]:
+    """Terse plain-dict view of a ReconResult."""
+    return {
+        "binary_path": result.binary_path,
+        "info": asdict(result.info),
+        "entrypoint": result.entrypoint,
+        "functions": result.functions,
+        "imports": result.imports,
+        "interesting_strings": result.interesting_strings,
+        "writable_sections": result.writable_sections,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -462,6 +713,32 @@ DISASSEMBLE_AT_SCHEMA: dict[str, Any] = {
     },
 }
 
+RECON_NAME = "recon"
+RECON_DESCRIPTION = (
+    "One-call target reconnaissance: architecture/bits/endianness, checksec "
+    "(NX, PIE, RELRO, canary), entrypoint, the function table (name -> address), "
+    "imports, exploitation-relevant strings (including /bin/sh if present), and "
+    "writable segments (.bss/.data scratch). Start here — it replaces the "
+    "analyze + list_functions + list_imports + list_strings opening sequence in a "
+    "single call, and searches strings for you so you can point an argument "
+    "register at /bin/sh when it already exists in the binary."
+)
+RECON_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "required": ["binary_path"],
+    "additionalProperties": False,
+    "properties": {
+        "binary_path": {"type": "string", "description": "Path to the ELF binary."},
+        "max_strings": {
+            "type": "integer",
+            "default": DEFAULT_RECON_STRINGS,
+            "minimum": 1,
+            "maximum": 2_000,
+            "description": "Cap on returned strings (relevant ones are kept beyond the cap).",
+        },
+    },
+}
+
 SEARCH_PATTERN_NAME = "search_pattern"
 SEARCH_PATTERN_DESCRIPTION = (
     "Search the binary for a pattern (radare2 /j; a string, or hex with a 0x "
@@ -495,6 +772,11 @@ SEARCH_PATTERN_SCHEMA: dict[str, Any] = {
 
 def _dispatch(name: str, arguments: dict[str, Any]) -> dict[str, Any]:
     """Run one tool call by name and return its plain-dict result."""
+    if name == RECON_NAME:
+        kwargs_recon: dict[str, Any] = {}
+        if "max_strings" in arguments:
+            kwargs_recon["max_strings"] = int(arguments["max_strings"])
+        return recon_result_to_dict(recon(arguments["binary_path"], **kwargs_recon))
     if name == ANALYZE_BINARY_NAME:
         return analyze_result_to_dict(analyze_binary(arguments["binary_path"]))
     if name == LIST_FUNCTIONS_NAME:
@@ -531,6 +813,11 @@ def _build_server() -> Server[Any]:
     @server.list_tools()  # type: ignore[no-untyped-call, untyped-decorator]
     async def _list_tools() -> list[Tool]:
         return [
+            Tool(
+                name=RECON_NAME,
+                description=RECON_DESCRIPTION,
+                inputSchema=RECON_SCHEMA,
+            ),
             Tool(
                 name=ANALYZE_BINARY_NAME,
                 description=ANALYZE_BINARY_DESCRIPTION,
@@ -593,6 +880,7 @@ __all__ = [
     "ANALYZE_BINARY_SCHEMA",
     "DEFAULT_DISASM_COUNT",
     "DEFAULT_MAX_RESULTS",
+    "DEFAULT_RECON_STRINGS",
     "DEFAULT_TIMEOUT_SECONDS",
     "DISASSEMBLE_AT_DESCRIPTION",
     "DISASSEMBLE_AT_NAME",
@@ -600,6 +888,9 @@ __all__ = [
     "LIST_FUNCTIONS_DESCRIPTION",
     "LIST_FUNCTIONS_NAME",
     "LIST_FUNCTIONS_SCHEMA",
+    "RECON_DESCRIPTION",
+    "RECON_NAME",
+    "RECON_SCHEMA",
     "SEARCH_PATTERN_DESCRIPTION",
     "SEARCH_PATTERN_NAME",
     "SEARCH_PATTERN_SCHEMA",
@@ -609,6 +900,8 @@ __all__ = [
     "Function",
     "FunctionsResult",
     "Instruction",
+    "ReconInfo",
+    "ReconResult",
     "SearchResult",
     "analyze_binary",
     "analyze_result_to_dict",
@@ -618,7 +911,15 @@ __all__ = [
     "list_functions",
     "parse_analysis",
     "parse_disasm",
+    "parse_entrypoint",
     "parse_functions",
+    "parse_imports",
+    "parse_recon_info",
+    "parse_strings",
+    "parse_writable_sections",
+    "recon",
+    "recon_result_to_dict",
+    "reset_session_cache",
     "search_pattern",
     "search_result_to_dict",
 ]

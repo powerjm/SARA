@@ -34,7 +34,7 @@ from agent.tools import ToolLayer
 from backends.base import ChatResponse
 from harness.record import CostRecord, FailureMode, Outcome, TokenUsage
 from mcp_servers.ropgadget.parser import Gadget
-from mcp_servers.ropgadget.server import EnumerateResult
+from mcp_servers.ropgadget.server import FindResult
 from validator.runner_test_helpers import succeeding_client
 
 # --------------------------------------------------------------------------- #
@@ -42,9 +42,10 @@ from validator.runner_test_helpers import succeeding_client
 # --------------------------------------------------------------------------- #
 
 
-def _fake_enumerator(**_: object) -> EnumerateResult:
-    return EnumerateResult(
+def _fake_finder(**_: object) -> FindResult:
+    return FindResult(
         binary_path="sample_overflow",
+        query="pop rdi ; ret",
         total_found=3,
         returned=3,
         truncated=False,
@@ -68,7 +69,7 @@ def _binary(sample_overflow_path: Path) -> BinaryContext:
 def _config(tmp_path: Path, **overrides: Any) -> AgentConfig:
     base: dict[str, Any] = {
         "strategy": prompts.get("zero_shot"),
-        "tools": ToolLayer(enumerate_fn=_fake_enumerator),
+        "tools": ToolLayer(find_fn=_fake_finder),
         "success_marker": "Hello World",
         "validator_client": succeeding_client(b"Hello World\n"),
         "runs_dir": tmp_path / "runs",

@@ -158,14 +158,14 @@ def test_classify_unknown_returns_failure_other() -> None:
 def test_reason_recovers_text_action_and_loops_to_enumerate() -> None:
     backend = FakeBackend(
         script=[
-            ScriptedTurn(text='Thought: look.\nAction: enumerate_gadgets({"binary_path": "/x"})')
+            ScriptedTurn(text='Thought: look.\nAction: find_gadget({"query": "pop rdi ; ret"})')
         ]
     )
     out = node_reason(_state(), backend)
     last = out.messages[-1]
     assert last.role == "assistant"
     assert last.tool_calls is not None
-    assert last.tool_calls[0]["name"] == "enumerate_gadgets"
+    assert last.tool_calls[0]["name"] == "find_gadget"
     assert route_after_reason(out) == "enumerate"
 
 

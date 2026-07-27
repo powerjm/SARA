@@ -32,6 +32,38 @@ from backends.openai_backend import OpenAIBackend
 from harness.record import BackendCategory
 
 
+def _loaded_ctx_from_models(payload: Any, model: str) -> int | None:
+    """Pull the loaded context length for ``model`` from an LM Studio models list.
+
+    LM Studio's native REST API (``GET /api/v0/models``) returns
+    ``{"data": [{"id": ..., "loaded_context_length": N, "state": "loaded", ...}]}``.
+    We report the entry whose ``id`` matches the model this backend targets; if the
+    exact id is absent we fall back to the single loaded entry (LM Studio typically
+    serves one model at a time). Returns ``None`` when nothing usable is present, so
+    the caller can leave ``n_ctx_loaded`` unset rather than guess. Pure/defensive so
+    it is unit-testable without a running server.
+    """
+    if not isinstance(payload, dict):
+        return None
+    entries = payload.get("data")
+    if not isinstance(entries, list):
+        return None
+    loaded = [e for e in entries if isinstance(e, dict) and e.get("state") == "loaded"]
+
+    def _ctx(entry: dict[str, Any]) -> int | None:
+        value = entry.get("loaded_context_length")
+        if value is None:
+            value = entry.get("max_context_length")
+        return value if isinstance(value, int) and value > 0 else None
+
+    for entry in loaded:
+        if entry.get("id") == model:
+            return _ctx(entry)
+    if len(loaded) == 1:
+        return _ctx(loaded[0])
+    return None
+
+
 class LMStudioBackend(OpenAIBackend):
     """OpenAI-compatible backend talking to a local LM Studio endpoint."""
 
@@ -68,5 +100,26 @@ class LMStudioBackend(OpenAIBackend):
         )
         self.base_url = resolved_url
 
+    def n_ctx_loaded(self) -> int | None:
+        """Report the context length LM Studio actually loaded (schema v6, ADR 0024).
 
-__all__ = ["LMStudioBackend"]
+        Queries LM Studio's native REST endpoint (``GET {root}/api/v0/models``,
+        where ``root`` is the base URL with the OpenAI-compat ``/v1`` suffix
+        stripped) and returns this model's ``loaded_context_length``. Fully
+        defensive: any network/parse failure — or a server that does not expose the
+        native API — yields ``None`` so a telemetry gap never aborts a run.
+        """
+        base = self.base_url.rstrip("/")
+        root = base[: -len("/v1")] if base.endswith("/v1") else base
+        url = f"{root}/api/v0/models"
+        try:
+            import requests
+
+            resp = requests.get(url, timeout=5)
+            resp.raise_for_status()
+            return _loaded_ctx_from_models(resp.json(), self.name)
+        except Exception:
+            return None
+
+
+__all__ = ["LMStudioBackend", "_loaded_ctx_from_models"]

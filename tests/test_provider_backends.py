@@ -119,6 +119,60 @@ def test_lmstudio_unrestricted_category() -> None:
     assert backend.category == BackendCategory.UNRESTRICTED
 
 
+# --- schema v6: n_ctx_loaded telemetry (ADR 0024) -------------------------- #
+
+
+def test_lmstudio_loaded_ctx_parsing_matches_model() -> None:
+    from backends.lmstudio_backend import _loaded_ctx_from_models
+
+    payload = {
+        "data": [
+            {"id": "gpt-oss-20b", "state": "loaded", "loaded_context_length": 32768},
+            {"id": "other-model", "state": "not-loaded", "max_context_length": 4096},
+        ]
+    }
+    assert _loaded_ctx_from_models(payload, "gpt-oss-20b") == 32768
+
+
+def test_lmstudio_loaded_ctx_falls_back_to_single_loaded_entry() -> None:
+    from backends.lmstudio_backend import _loaded_ctx_from_models
+
+    # Model id mismatch (LM Studio sometimes advertises a different id string), but
+    # exactly one model is loaded -> report its context.
+    payload = {"data": [{"id": "served-alias", "state": "loaded", "loaded_context_length": 65536}]}
+    assert _loaded_ctx_from_models(payload, "the-model-i-asked-for") == 65536
+
+
+def test_lmstudio_loaded_ctx_none_when_absent_or_malformed() -> None:
+    from backends.lmstudio_backend import _loaded_ctx_from_models
+
+    assert _loaded_ctx_from_models({}, "m") is None
+    assert _loaded_ctx_from_models({"data": "nope"}, "m") is None
+    assert _loaded_ctx_from_models({"data": []}, "m") is None
+    # A loaded entry with no context length is unusable -> None, not a guess.
+    assert _loaded_ctx_from_models({"data": [{"id": "m", "state": "loaded"}]}, "m") is None
+
+
+def test_lmstudio_n_ctx_loaded_is_defensive_on_network_failure() -> None:
+    # No server reachable at the (unused) default URL: the probe must return None,
+    # never raise, so a telemetry gap can't abort a run.
+    backend = LMStudioBackend(
+        "gpt-oss-20b",
+        BackendCategory.OPEN_WEIGHT,
+        base_url="http://127.0.0.1:9/v1",  # port 9 (discard) — connection refused
+        client=_openai_client(content="x"),
+    )
+    assert backend.n_ctx_loaded() is None
+
+
+def test_premium_backend_reports_no_loaded_ctx() -> None:
+    # Hosted/premium backends serve a fixed provider context -> None.
+    from backends.openai_backend import OpenAIBackend
+
+    backend = OpenAIBackend("gpt-5", client=_openai_client(content="x"))
+    assert backend.n_ctx_loaded() is None
+
+
 # --------------------------------------------------------------------------- #
 # Google Gemini                                                               #
 # --------------------------------------------------------------------------- #
@@ -290,6 +344,46 @@ def test_anthropic_opus_omits_deprecated_temperature() -> None:
     AnthropicBackend(model="claude-opus-4-7", client=client).chat(_MESSAGES, _TOOLS, 256)
     assert "temperature" not in captured
     assert captured["max_tokens"] == 256
+
+
+# --- prompt caching (ADR 0023): stable-prefix cache_control -------------------- #
+
+
+def test_anthropic_marks_system_and_tools_with_cache_control() -> None:
+    from backends.anthropic_backend import AnthropicBackend
+
+    client, captured = _capturing_anthropic_client()
+    AnthropicBackend(model="claude-sonnet-4-6", client=client).chat(_MESSAGES, _TOOLS, 256)
+    # System becomes a cached text block (the stable prefix).
+    system = captured["system"]
+    assert isinstance(system, list)
+    assert system[0]["cache_control"] == {"type": "ephemeral"}
+    # The last tool carries the cache breakpoint (caches the whole tool schema).
+    assert captured["tools"][-1]["cache_control"] == {"type": "ephemeral"}
+
+
+def test_anthropic_cache_control_is_byte_stable_across_turns() -> None:
+    # The cached prefix (system + tools) must be identical across reason turns for
+    # the cache to hit; the same inputs produce the same marked request.
+    from backends.anthropic_backend import AnthropicBackend
+
+    c1, cap1 = _capturing_anthropic_client()
+    c2, cap2 = _capturing_anthropic_client()
+    AnthropicBackend(model="claude-sonnet-4-6", client=c1).chat(_MESSAGES, _TOOLS, 256)
+    AnthropicBackend(model="claude-sonnet-4-6", client=c2).chat(_MESSAGES, _TOOLS, 256)
+    assert cap1["system"] == cap2["system"]
+    assert cap1["tools"] == cap2["tools"]
+
+
+def test_anthropic_caching_can_be_disabled() -> None:
+    from backends.anthropic_backend import AnthropicBackend
+
+    client, captured = _capturing_anthropic_client()
+    backend = AnthropicBackend(model="claude-sonnet-4-6", client=client)
+    backend._prompt_cache = False
+    backend.chat(_MESSAGES, _TOOLS, 256)
+    assert isinstance(captured["system"], str)  # plain system, no cache blocks
+    assert all("cache_control" not in t for t in captured["tools"])
 
 
 def test_gemini_sanitize_strips_unsupported_schema_keys() -> None:

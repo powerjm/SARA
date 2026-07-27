@@ -11,40 +11,38 @@
 """
 Agent tool layer.
 
-Maps the agent's tool calls onto the MCP-backed tool functions. Two kinds of
-tool are always advertised to the backend, plus the full exploit-dev toolkit:
+Maps the agent's tool calls onto the MCP-backed tool functions. Trial 3 curated
+the surface from 22 tools down to a lean ~8 (ADR 0019): a smaller schema is a
+cheaper cached prefix and a cheaper cache miss, and the Trial-2 data showed the
+losers thrashed on redundant gadget dumps while the winners ran a tight
+recon→find→write→run→debug loop. Three tools are always advertised, plus the
+curated additional servers:
 
-* ``enumerate_gadgets`` — wraps ``mcp_servers.ropgadget``'s pure
-  ``enumerate_gadgets`` function. Dispatched by the ``enumerate`` graph node,
-  which turns the result into a ``ToolObservation`` the agent sees on its next
-  reason round.
-* ``submit_payload`` — the agent's terminal action: it hands over the assembled
-  payload bytes (hex) plus the ordered chain addresses. This one is *not*
-  dispatched here — the ``propose`` node materializes it into ``payload.bin``
-  and the ``validate`` node executes it. The spec is advertised so the backend
-  knows the action exists.
-* the **five additional MCP servers** (radare2, ropper, pwntools, gdb, ghidra).
-  Each exposes a public ``(NAME, DESCRIPTION, SCHEMA)`` trio per tool plus a
-  module-level ``_dispatch(name, arguments) -> dict``; this layer adapts those
-  into agent-facing :class:`~backends.base.ToolSpec`\\ s and routes their calls
-  to the owning server. Their names are **namespaced with the server**
-  (``radare2_analyze_binary``) so the two servers that both expose an
-  ``enumerate_gadgets`` (ropgadget and ropper) do not collide in the agent's
-  flat tool namespace, and so a tool's provenance is obvious to the model.
-  None of these tools execute a payload — pwntools only *builds* bytes and gdb
-  is inspect-only — so the single-execution-point guarantee (ADR 0002) is
-  untouched: the validator sandbox is still the only place a payload runs.
+* ``find_gadget`` — the QUERY-ONLY gadget finder (replacing the three gadget-dump
+  tools). Wraps ``mcp_servers.ropgadget.find_gadget``; dispatched by the
+  ``enumerate`` graph node, which turns the result into a ``ToolObservation`` the
+  agent sees on its next reason round. It stays injectable —
+  ``ToolLayer(find_fn=...)`` lets a test swap in a canned finder so the agent loop
+  runs end-to-end without the ROPgadget CLI (or any binary on disk).
+* ``submit_payload`` / ``run_exploit_script`` — the agent's terminal actions.
+  *Not* dispatched here — the ``propose`` node materializes them and ``validate``
+  executes them. The specs are advertised so the backend knows the actions exist.
+* the **additional MCP servers**. Each exposes a public ``(NAME, DESCRIPTION,
+  SCHEMA)`` trio per tool plus a module-level ``_dispatch(name, arguments) ->
+  dict``; this layer adapts those into agent-facing :class:`~backends.base.ToolSpec`\\
+  s and routes their calls to the owning server. Their names are **namespaced with
+  the server** (``radare2_recon``) so provenance is obvious and names cannot
+  collide. None of these tools execute a payload — gdb is inspect-only — so the
+  single-execution-point guarantee (ADR 0002) is untouched.
 
 The exposed set is **data-driven**: ``ToolLayer(servers=(...))`` selects which
-additional servers are advertised (default: all five), so "which tools the agent
-has" is a configurable experiment variable, never again a silent hardcoded
-constant. ropgadget's ``enumerate_gadgets`` keeps its bare, un-namespaced name:
-it is the canonical gadget enumerator the ``enumerate`` graph node dispatches when
-the agent calls it (Trial 2 removed the automatic baseline dump, so the agent must
-ask), and it stays injectable — ``ToolLayer(enumerate_fn=...)`` lets a test
-swap in a canned enumerator so the agent loop runs end-to-end without the
-ROPgadget CLI (or any binary on disk). This mirrors the MCP-server split: the
-real work sits behind a plain callable, and the orchestration stays testable.
+additional servers are advertised, so "which tools the agent has" is a
+configurable experiment variable. Trial 3's curated default is ``radare2`` (the
+one-call ``recon`` + ``disassemble_at``) and ``gdb`` (inspect-only debugging);
+``ghidra`` is available but **opt-in** (lowest Trial-2 usage, highest schema
+weight), and the pwntools/ropper agent tools were removed — the agent inlines
+``p64()``/``cyclic()`` in its ``exploit.py`` (the sandbox ships pwntools) and
+``find_gadget`` subsumes the ropper gadget finders (ADR 0019).
 """
 
 from __future__ import annotations
@@ -61,21 +59,23 @@ from agent.state import ToolObservation
 from backends.base import ToolSpec
 from mcp_servers.gdb import server as gdb
 from mcp_servers.ghidra import server as ghidra
-from mcp_servers.pwntools import server as pwntools
 from mcp_servers.radare2 import server as radare2
 from mcp_servers.ropgadget import server as ropgadget
-from mcp_servers.ropper import server as ropper
 
-ENUMERATE_GADGETS = ropgadget.TOOL_NAME  # "enumerate_gadgets"
+# The always-on gadget tool is the Trial-3 query-only ``find_gadget`` (ADR 0019),
+# which replaced the three gadget-dump tools (ropgadget/ropper ``enumerate_gadgets``
+# + ropper ``search_gadget``). It keeps a bare, un-namespaced name because the graph
+# ``enumerate`` node dispatches it through the injectable :attr:`ToolLayer.find_fn`.
+FIND_GADGET = ropgadget.FIND_GADGET_NAME  # "find_gadget"
 SUBMIT_PAYLOAD = "submit_payload"
 RUN_SCRIPT = "run_exploit_script"
 
 # Launch catalog: tool-server name -> dotted path of the module whose `serve()`
-# coroutine runs that server over stdio. Every server listed here (except the
-# always-on ropgadget enumerator) is also advertised to and dispatched by the
-# agent via `ToolLayer` — see `_SERVER_TOOLS` / `_SERVER_DISPATCH` below, the live
-# registry this catalog is kept in step with. (Trial 1 shipped with this catalog
-# present but *unconsumed*, so the agent saw only two tools; TRIAL_2_PLAN.md §1.)
+# coroutine runs that server over stdio. All six MCP servers still exist and are
+# launchable standalone; which of them the AGENT sees is a separate, curated
+# decision (`_SERVER_TOOLS` / `ADDITIONAL_SERVERS` below). Trial 3 advertises only
+# a curated subset to the agent (ADR 0019) — ropper/pwntools are not agent tools,
+# ghidra is opt-in — but the stdio servers remain available for ad-hoc use.
 TOOL_SERVERS: dict[str, str] = {
     "ropgadget": "mcp_servers.ropgadget.server",
     "radare2": "mcp_servers.radare2.server",
@@ -152,8 +152,8 @@ RUN_SCRIPT_SCHEMA: dict[str, Any] = {
     },
 }
 
-# A callable shaped like ``mcp_servers.ropgadget.server.enumerate_gadgets``.
-GadgetEnumerator = Callable[..., ropgadget.EnumerateResult]
+# A callable shaped like ``mcp_servers.ropgadget.server.find_gadget``.
+GadgetFinder = Callable[..., ropgadget.FindResult]
 
 
 # --------------------------------------------------------------------------- #
@@ -167,64 +167,28 @@ GadgetEnumerator = Callable[..., ropgadget.EnumerateResult]
 # agent's tool surface — the seam whose absence made all of Trial 1 run with only
 # two tools (see docs/TRIAL_2_PLAN.md §1). Adding a server here is all it takes.
 
-# The additional servers, in the order their tools are advertised.
-ADDITIONAL_SERVERS: tuple[str, ...] = ("radare2", "ropper", "pwntools", "gdb", "ghidra")
+# The curated default additional servers (ADR 0019). radare2 (recon +
+# disassemble_at) and gdb (inspect-only) are the winning-trajectory tools; ghidra
+# is registered but opt-in (enable it with ``ToolLayer(servers=("radare2", "gdb",
+# "ghidra"))``). ropper and pwntools are intentionally NOT registered as agent
+# tools — ``find_gadget`` subsumes the ropper finders and the agent inlines
+# pwntools helpers in its exploit.py — so requesting them raises "unknown server".
+ADDITIONAL_SERVERS: tuple[str, ...] = ("radare2", "gdb")
 
 # server name -> list of that server's (tool_name, description, input_schema).
 # Tool names here are the servers' own (un-namespaced) names; ToolLayer prefixes
-# them with the server name for the agent-facing spec.
+# them with the server name for the agent-facing spec. Curated to the ~8-tool set:
+# radare2 keeps only ``recon`` (the one-call snapshot that folds in
+# analyze/list_functions/list_imports/list_strings) and ``disassemble_at``;
+# ``analyze_binary`` / ``list_functions`` / ``search_pattern`` are subsumed by
+# recon and dropped from the agent surface (still live on the stdio server).
 _SERVER_TOOLS: dict[str, list[tuple[str, str, dict[str, Any]]]] = {
     "radare2": [
-        (
-            radare2.ANALYZE_BINARY_NAME,
-            radare2.ANALYZE_BINARY_DESCRIPTION,
-            radare2.ANALYZE_BINARY_SCHEMA,
-        ),
-        (
-            radare2.LIST_FUNCTIONS_NAME,
-            radare2.LIST_FUNCTIONS_DESCRIPTION,
-            radare2.LIST_FUNCTIONS_SCHEMA,
-        ),
+        (radare2.RECON_NAME, radare2.RECON_DESCRIPTION, radare2.RECON_SCHEMA),
         (
             radare2.DISASSEMBLE_AT_NAME,
             radare2.DISASSEMBLE_AT_DESCRIPTION,
             radare2.DISASSEMBLE_AT_SCHEMA,
-        ),
-        (
-            radare2.SEARCH_PATTERN_NAME,
-            radare2.SEARCH_PATTERN_DESCRIPTION,
-            radare2.SEARCH_PATTERN_SCHEMA,
-        ),
-    ],
-    "ropper": [
-        (
-            ropper.ENUMERATE_GADGETS_NAME,
-            ropper.ENUMERATE_GADGETS_DESCRIPTION,
-            ropper.ENUMERATE_GADGETS_SCHEMA,
-        ),
-        (ropper.SEARCH_GADGET_NAME, ropper.SEARCH_GADGET_DESCRIPTION, ropper.SEARCH_GADGET_SCHEMA),
-        (ropper.GET_STRINGS_NAME, ropper.GET_STRINGS_DESCRIPTION, ropper.GET_STRINGS_SCHEMA),
-    ],
-    "pwntools": [
-        (
-            pwntools.BUILD_PAYLOAD_NAME,
-            pwntools.BUILD_PAYLOAD_DESCRIPTION,
-            pwntools.BUILD_PAYLOAD_SCHEMA,
-        ),
-        (
-            pwntools.PACK_ADDRESS_NAME,
-            pwntools.PACK_ADDRESS_DESCRIPTION,
-            pwntools.PACK_ADDRESS_SCHEMA,
-        ),
-        (
-            pwntools.GENERATE_PATTERN_NAME,
-            pwntools.GENERATE_PATTERN_DESCRIPTION,
-            pwntools.GENERATE_PATTERN_SCHEMA,
-        ),
-        (
-            pwntools.PATTERN_OFFSET_NAME,
-            pwntools.PATTERN_OFFSET_DESCRIPTION,
-            pwntools.PATTERN_OFFSET_SCHEMA,
         ),
     ],
     "gdb": [
@@ -232,6 +196,7 @@ _SERVER_TOOLS: dict[str, list[tuple[str, str, dict[str, Any]]]] = {
         (gdb.SET_BREAKPOINT_NAME, gdb.SET_BREAKPOINT_DESCRIPTION, gdb.SET_BREAKPOINT_SCHEMA),
         (gdb.DISASSEMBLE_NAME, gdb.DISASSEMBLE_DESCRIPTION, gdb.DISASSEMBLE_SCHEMA),
     ],
+    # ghidra: registered (so a config can opt in) but NOT in ADDITIONAL_SERVERS.
     "ghidra": [
         (
             ghidra.DISASSEMBLE_FUNCTION_NAME,
@@ -256,8 +221,6 @@ _SERVER_TOOLS: dict[str, list[tuple[str, str, dict[str, Any]]]] = {
 _ServerDispatch = Callable[[str, dict[str, Any]], dict[str, Any]]
 _SERVER_DISPATCH: dict[str, _ServerDispatch] = {
     "radare2": radare2._dispatch,
-    "ropper": ropper._dispatch,
-    "pwntools": pwntools._dispatch,
     "gdb": gdb._dispatch,
     "ghidra": ghidra._dispatch,
 }
@@ -294,11 +257,11 @@ def _format_tool_result(name: str, result: dict[str, Any]) -> str:
     return f"{name} result:\n{json.dumps(result, indent=2, default=str)}"
 
 
-def _format_gadgets(result: ropgadget.EnumerateResult) -> str:
-    """Render an ``EnumerateResult`` into the text the agent reads."""
+def _format_find(result: ropgadget.FindResult) -> str:
+    """Render a ``FindResult`` (query-only gadget match) into the agent's text."""
     header = (
-        f"ROP gadgets in {result.binary_path}: returned {result.returned} of "
-        f"{result.total_found} (truncated={str(result.truncated).lower()})."
+        f"find_gadget {result.query!r}: returned {result.returned} of "
+        f"{result.total_found} match(es) (truncated={str(result.truncated).lower()})."
     )
     lines = [f"{g.address}: {g.instructions}" for g in result.gadgets]
     return "\n".join([header, *lines])
@@ -352,16 +315,17 @@ def _advertised_schema(schema: dict[str, Any]) -> dict[str, Any]:
 class ToolLayer:
     """Dispatches the agent's tool calls to the underlying tool functions.
 
-    ``enumerate_fn`` defaults to the real ROPgadget wrapper; tests inject a
-    canned callable. ``max_observation_chars`` bounds the text handed back to
-    the agent (full tool output lives in the trace, not in the prompt).
-    ``servers`` selects which *additional* MCP servers (radare2, ropper,
-    pwntools, gdb, ghidra) are advertised alongside the always-present
-    ``enumerate_gadgets`` + ``submit_payload`` — defaulting to all of them, so
-    every run gets the full toolkit unless an experiment deliberately narrows it.
+    ``find_fn`` defaults to the real ROPgadget-backed ``find_gadget`` wrapper;
+    tests inject a canned callable. ``max_observation_chars`` bounds the text
+    handed back to the agent (full tool output lives in the trace, not in the
+    prompt). ``servers`` selects which *additional* MCP servers are advertised
+    alongside the always-present ``find_gadget`` + ``submit_payload`` +
+    ``run_exploit_script`` — defaulting to the Trial-3 curated set (``radare2`` +
+    ``gdb``, ADR 0019); an experiment can widen it (e.g. add ``ghidra``) or narrow
+    it further.
     """
 
-    enumerate_fn: GadgetEnumerator = ropgadget.enumerate_gadgets
+    find_fn: GadgetFinder = ropgadget.find_gadget
     max_observation_chars: int = 8_000
     servers: tuple[str, ...] = ADDITIONAL_SERVERS
     # Namespaced-name -> tool, built in __post_init__ for the enabled servers.
@@ -396,9 +360,9 @@ class ToolLayer:
         """
         specs = [
             ToolSpec(
-                name=ENUMERATE_GADGETS,
-                description=ropgadget.TOOL_DESCRIPTION,
-                input_schema=_advertised_schema(ropgadget.TOOL_INPUT_SCHEMA),
+                name=FIND_GADGET,
+                description=ropgadget.FIND_GADGET_DESCRIPTION,
+                input_schema=_advertised_schema(ropgadget.FIND_GADGET_SCHEMA),
             ),
             ToolSpec(
                 name=SUBMIT_PAYLOAD,
@@ -428,7 +392,7 @@ class ToolLayer:
         open model that writes ``Action: radare2_analyze_binary({...})`` as prose
         still drives the loop.
         """
-        return frozenset({ENUMERATE_GADGETS, SUBMIT_PAYLOAD, RUN_SCRIPT, *self._registry})
+        return frozenset({FIND_GADGET, SUBMIT_PAYLOAD, RUN_SCRIPT, *self._registry})
 
     def dispatch(
         self, name: str, arguments: dict[str, Any], *, binary_path: str | Path
@@ -448,24 +412,24 @@ class ToolLayer:
         ``submit_payload`` is terminal and handled by the propose node, so
         dispatching it here is a programming error and raises.
 
-        ``enumerate_gadgets`` runs the injectable :attr:`enumerate_fn` and gets a
-        gadget-list rendering; every other (namespaced) tool is routed to its
-        owning server's ``_dispatch`` and rendered as JSON.
+        ``find_gadget`` runs the injectable :attr:`find_fn` and gets a terse
+        match rendering; every other (namespaced) tool is routed to its owning
+        server's ``_dispatch`` and rendered as JSON.
         """
         if name in (SUBMIT_PAYLOAD, RUN_SCRIPT):
             raise ValueError(f"{name} is terminal; it is handled by the propose node")
 
-        if name == ENUMERATE_GADGETS:
-            call_args = _inject_binary_path(arguments, ropgadget.TOOL_INPUT_SCHEMA, binary_path)
+        if name == FIND_GADGET:
+            call_args = _inject_binary_path(arguments, ropgadget.FIND_GADGET_SCHEMA, binary_path)
             start = time.monotonic()
             try:
-                result = self.enumerate_fn(**call_args)
+                result = self.find_fn(**call_args)
             except Exception as exc:  # noqa: BLE001 - surface any tool failure to the agent
                 return self._observation(
                     name, call_args, f"ERROR: {type(exc).__name__}: {exc}", time.monotonic() - start
                 )
             return self._observation(
-                name, call_args, _format_gadgets(result), time.monotonic() - start
+                name, call_args, _format_find(result), time.monotonic() - start
             )
 
         tool = self._registry.get(name)
@@ -619,7 +583,7 @@ def parse_text_actions(
     if not text:
         return []
     if known is None:
-        known = {ENUMERATE_GADGETS, SUBMIT_PAYLOAD, RUN_SCRIPT}
+        known = {FIND_GADGET, SUBMIT_PAYLOAD, RUN_SCRIPT}
     calls: list[dict[str, Any]] = []
 
     # Form 1: `Action: name(args)`.
@@ -776,7 +740,7 @@ def _iter_json_objects(text: str) -> list[dict[str, Any]]:
 
 __all__ = [
     "ADDITIONAL_SERVERS",
-    "ENUMERATE_GADGETS",
+    "FIND_GADGET",
     "RUN_SCRIPT",
     "RUN_SCRIPT_DESCRIPTION",
     "RUN_SCRIPT_SCHEMA",
@@ -784,7 +748,7 @@ __all__ = [
     "SUBMIT_PAYLOAD_DESCRIPTION",
     "SUBMIT_PAYLOAD_SCHEMA",
     "TOOL_SERVERS",
-    "GadgetEnumerator",
+    "GadgetFinder",
     "ToolCall",
     "ToolLayer",
     "normalize_tool_call",

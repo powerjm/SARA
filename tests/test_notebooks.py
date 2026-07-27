@@ -44,6 +44,7 @@ EXPECTED = [
     "06_failure_mode_crosstab",
     "07_strategy_effect",
     "08_progress_tier",
+    "09_bonus_score",
 ]
 
 

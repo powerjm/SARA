@@ -99,9 +99,9 @@ backends = ["pricing.yaml"]
 [tool.ruff]
 line-length = 100
 target-version = "py314"
-# The Trial-1 archive is a frozen, write-once record of a completed run; its
+# The per-trial archives are frozen, write-once records of completed runs; their
 # analysis/diagram scripts are not maintained live code, so do not lint them.
-extend-exclude = ["runs_for_record_trial_1"]
+extend-exclude = ["runs_for_record_trial_1", "runs_for_record_trial_2"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "S", "C4", "SIM"]

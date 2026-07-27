@@ -172,6 +172,20 @@ class Backend(ABC):
 
         return pricing.snapshot_for(self.name)
 
+    # --- Context telemetry --------------------------------------------- #
+
+    def n_ctx_loaded(self) -> int | None:
+        """The context window this backend actually loaded for the run (schema v6).
+
+        Telemetry only (ADR 0024), stamped once onto the ``RunRecord``. Hosted /
+        premium backends serve a fixed provider-side context and return ``None``;
+        the LM Studio backend overrides this to report the ``n_ctx`` its local
+        server loaded, so a Trial-2-style silent under-load (a model that loaded
+        far below its pin and truncated) is visible after the fact. Must never
+        raise: a telemetry-probe failure returns ``None``, never aborts a run.
+        """
+        return None
+
     # --- Refusal detection --------------------------------------------- #
     # Policy (Step 4 decision): prefer provider response metadata; fall back
     # to keywords only when the metadata is inconclusive.

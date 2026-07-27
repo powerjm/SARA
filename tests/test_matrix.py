@@ -33,16 +33,17 @@ from harness.matrix import (
 from harness.record import Outcome
 from harness.runner import RunSettings, run_one
 from mcp_servers.ropgadget.parser import Gadget
-from mcp_servers.ropgadget.server import EnumerateResult
+from mcp_servers.ropgadget.server import FindResult
 
 # --------------------------------------------------------------------------- #
 # Helpers                                                                     #
 # --------------------------------------------------------------------------- #
 
 
-def _canned_enumerator(**_: object) -> EnumerateResult:
-    return EnumerateResult(
+def _canned_finder(**_: object) -> FindResult:
+    return FindResult(
         binary_path="b",
+        query="pop rdi; ret",
         total_found=1,
         returned=1,
         truncated=False,
@@ -75,7 +76,7 @@ def _batch_run_one(spec: Any, backend: Any, strategy: str, settings: RunSettings
         backend,
         strategy,
         replace(settings, max_nudges=0),
-        tools=ToolLayer(enumerate_fn=_canned_enumerator),
+        tools=ToolLayer(find_fn=_canned_finder),
         backend_handle=kw.get("backend_handle"),
     )
 
@@ -91,6 +92,8 @@ def _write_config(tmp_path: Path, **over: Any) -> Path:
         "output_dir": str(over.get("output_dir", tmp_path / "runs")),
         "limits": over.get("limits", {"tokens": 200000, "wall_clock_seconds": 1800}),
     }
+    if "tools" in over:
+        data["tools"] = over["tools"]
     tmp_path.mkdir(parents=True, exist_ok=True)
     path = tmp_path / "experiments.yaml"
     path.write_text(yaml.safe_dump(data), encoding="utf-8")
@@ -117,6 +120,56 @@ def test_from_yaml_parses_shape(tmp_path: Path) -> None:
     assert cfg.token_cap == 1000
     assert cfg.cap_for("claude-opus") == 50.0
     assert cfg.cap_for("claude-sonnet") == 0.0  # absent -> unlimited
+
+
+# --------------------------------------------------------------------------- #
+# Config seam (ADR 0019 / 0024): tool surface + per-backend envelope           #
+# --------------------------------------------------------------------------- #
+
+
+def test_tool_layer_defaults_to_curated_set(tmp_path: Path) -> None:
+    cfg = BatchConfig.from_yaml(_write_config(tmp_path))
+    assert cfg.tool_servers is None  # not set -> curated ToolLayer default
+    layer = cfg.tool_layer()
+    names = {s.name for s in layer.specs()}
+    assert "radare2_recon" in names
+    assert not any(n.startswith("ghidra_") for n in names)
+
+
+def test_tools_servers_widen_the_surface(tmp_path: Path) -> None:
+    cfg = BatchConfig.from_yaml(
+        _write_config(tmp_path, tools={"servers": ["radare2", "gdb", "ghidra"]})
+    )
+    assert cfg.tool_servers == ("radare2", "gdb", "ghidra")
+    names = {s.name for s in cfg.tool_layer().specs()}
+    assert "ghidra_decompile_function" in names
+
+
+def test_per_backend_envelope_overrides_settings(tmp_path: Path) -> None:
+    cfg = BatchConfig.from_yaml(
+        _write_config(
+            tmp_path,
+            limits={
+                "tokens": 200000,
+                "wall_clock_seconds": 600,
+                "per_backend": {
+                    "gpt-oss-20b": {"wall_clock_seconds": 1200, "n_ctx": 32768},
+                    "claude-opus": {"tokens": 400000},
+                },
+            },
+        )
+    )
+    # Global default is unchanged for a backend with no envelope.
+    base = cfg.settings_for("claude-sonnet")
+    assert base.wall_clock_cap_seconds == 600
+    assert base.token_cap == 200000
+    # The free local gets a bigger wall-clock; premium gets a bigger token cap.
+    local = cfg.settings_for("gpt-oss-20b")
+    assert local.wall_clock_cap_seconds == 1200
+    opus = cfg.settings_for("claude-opus")
+    assert opus.token_cap == 400000
+    # n_ctx is carried for preflight but not applied to RunSettings here.
+    assert cfg.per_backend["gpt-oss-20b"]["n_ctx"] == 32768
 
 
 def test_example_config_parses() -> None:

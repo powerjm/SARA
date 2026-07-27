@@ -50,7 +50,7 @@ from harness.record import (
     TokenUsage,
     ValidatorOutput,
 )
-from validator.classifier import tier_from_validator
+from validator.classifier import score, tier_from_validator
 from validator.runner import SUCCESS_MARKER, chain_fingerprint
 
 # Fixed epoch so timestamps are deterministic (never datetime.now()).
@@ -165,6 +165,9 @@ def _make_validator(
     """Build a plausible validator result, or None when no payload was run."""
     if outcome == Outcome.SUCCESS:
         chain = rng.choice(_CHAIN_POOL)
+        # Bonus objectives (schema v6, ADR 0020): a success sometimes goes on to run
+        # w / id for extra credit; root (uid=0) is unwinnable by design (uid 1500),
+        # so ``bonus_root`` is never set — mirroring what the real runner can produce.
         return ValidatorOutput(
             succeeded=True,
             return_code=0,
@@ -173,6 +176,9 @@ def _make_validator(
             chain_fingerprint=chain_fingerprint(chain),
             stdout_excerpt=f"{SUCCESS_MARKER}\n",
             elapsed_seconds=round(rng.uniform(0.1, 0.6), 3),
+            bonus_w=rng.random() < 0.4,
+            bonus_id=rng.random() < 0.3,
+            bonus_root=False,
         )
     if outcome == Outcome.FAILURE:
         if failure_mode in _NO_PAYLOAD_MODES:
@@ -254,6 +260,10 @@ def _make_record(
     run_id = UUID(bytes=rng.randbytes(16))
     payload_path = Path(f"runs/{run_id}/payload.bin") if validator is not None else None
 
+    # Local (LM Studio) backends report a loaded context (schema v6, ADR 0024);
+    # premium/hosted backends leave it None. A plausible pinned value per model.
+    n_ctx = None if backend.category == BackendCategory.PREMIUM else rng.choice([32768, 262144])
+
     return RunRecord(
         run_id=run_id,
         binary_id=binary_id,
@@ -273,6 +283,13 @@ def _make_record(
         # Progress tier scored from the same validator result the run classifier
         # uses (D5), so synthetic tiers are consistent with real ones by rule.
         max_tier_reached=tier_from_validator(validator),
+        # 100-pt score from the same rubric function the run classifier uses
+        # (schema v6, ADR 0020), so synthetic scores are consistent with real ones.
+        score=score(validator),
+        bonus_w=validator.bonus_w if validator is not None else False,
+        bonus_id=validator.bonus_id if validator is not None else False,
+        bonus_root=validator.bonus_root if validator is not None else False,
+        n_ctx_loaded=n_ctx,
         notes="synthetic",
     )
 

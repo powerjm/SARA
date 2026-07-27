@@ -210,6 +210,146 @@ def result_to_dict(result: EnumerateResult) -> dict[str, Any]:
     }
 
 
+# --------------------------------------------------------------------------- #
+# find_gadget — the Trial-3 query-only gadget finder (ADR 0019)               #
+# --------------------------------------------------------------------------- #
+#
+# Trial 2 showed the losing trajectory was "enumerate forever" (enumerate_gadgets
+# 266x on failures); the winners hunted narrowly. Trial 3 collapses the three
+# gadget dumps (this server's `enumerate_gadgets` + ropper's two variants) into a
+# single QUERY-ONLY tool: the agent names the instruction shape its chosen
+# technique needs and gets just the matching address(es), never a re-billed dump.
+# Deciding *which* gadgets a chain needs stays the agent's reasoning
+# (capability-parity, ADR 0017); this only resolves a named query server-side,
+# which is exactly what `ROPgadget --binary X | grep` does mechanically.
+
+FIND_GADGET_NAME = "find_gadget"
+FIND_GADGET_DESCRIPTION = (
+    "Resolve a NAMED gadget query to the address(es) where it occurs — a "
+    "query-only finder, not a full dump. Give the instruction shape your chosen "
+    "technique needs (query), e.g. 'pop rdi; ret', 'syscall; ret', 'pop rsi ; pop "
+    "r15 ; ret', 'mov [rdi], rsi ; ret'. Semicolons mean 'followed by'; matching "
+    "is case-insensitive; the bare word 'reg' matches any register. Returns the "
+    "matching gadgets (address + instructions), terse and truncated to "
+    "max_results. Deciding WHICH gadgets your chain needs is your reasoning; this "
+    "only resolves the query — so query narrowly instead of dumping everything."
+)
+DEFAULT_FIND_MAX_RESULTS = 64
+FIND_GADGET_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "required": ["binary_path", "query"],
+    "additionalProperties": False,
+    "properties": {
+        "binary_path": {
+            "type": "string",
+            "description": "Path to the ELF binary to search for the gadget.",
+        },
+        "query": {
+            "type": "string",
+            "description": (
+                "The gadget shape to find, e.g. 'pop rdi; ret'. Semicolons are "
+                "'followed by'; 'reg' matches any register; case-insensitive."
+            ),
+        },
+        "max_length": {
+            "type": "integer",
+            "default": 8,
+            "minimum": 1,
+            "maximum": 20,
+            "description": "Maximum number of instructions per candidate gadget.",
+        },
+        "max_results": {
+            "type": "integer",
+            "default": DEFAULT_FIND_MAX_RESULTS,
+            "minimum": 1,
+            "maximum": 1_000,
+            "description": "Truncate the matches to this many gadgets.",
+        },
+    },
+}
+
+
+@dataclass(slots=True)
+class FindResult:
+    """Typed result from `find_gadget`: the gadgets matching a named query."""
+
+    binary_path: str
+    query: str
+    total_found: int
+    returned: int
+    truncated: bool
+    gadgets: list[Gadget]
+
+
+def _query_to_regex(query: str) -> str:
+    """Translate a named gadget query into an instruction-text regex.
+
+    ``;`` separates ordered steps ("followed by", rendered ``.*?`` so intervening
+    instructions are allowed); whitespace within a step is flexible (``\\s+``); the
+    bare word ``reg`` is a register wildcard (``\\w+``). Everything else is matched
+    literally (``re.escape``). Raises ``ValueError`` on an empty query so a
+    mistyped call surfaces to the agent rather than matching everything.
+    """
+    steps = [step.strip() for step in query.split(";") if step.strip()]
+    if not steps:
+        raise ValueError(f"empty gadget query: {query!r}")
+    step_patterns: list[str] = []
+    for step in steps:
+        escaped = re.escape(step)
+        # Whitespace within a step is flexible (a run of escaped spaces -> \s+),
+        escaped = re.sub(r"(?:\\ )+", r"\\s+", escaped)
+        # and the bare word ``reg`` is a register wildcard. ``reg`` never occurs
+        # inside a real x86-64 register mnemonic, so a plain substring swap is safe.
+        escaped = re.sub(r"reg", r"\\w+", escaped, flags=re.IGNORECASE)
+        step_patterns.append(escaped)
+    return r".*?".join(step_patterns)
+
+
+def find_gadget(
+    binary_path: str,
+    query: str,
+    *,
+    max_length: int = 8,
+    max_results: int = DEFAULT_FIND_MAX_RESULTS,
+    timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
+) -> FindResult:
+    """Resolve a named gadget query to its matching address(es) (query-only).
+
+    Backed by the same ROPgadget engine as :func:`enumerate_gadgets`, but the
+    query is compiled to an instruction-text filter (:func:`_query_to_regex`) so
+    only the matching gadgets are returned — never the full dump. This is the
+    Trial-3 replacement for the three gadget-enumeration tools (ADR 0019).
+    """
+    pattern = _query_to_regex(query)
+    result = enumerate_gadgets(
+        binary_path,
+        filter_regex=pattern,
+        max_length=max_length,
+        max_results=max_results,
+        timeout_seconds=timeout_seconds,
+    )
+    return FindResult(
+        binary_path=result.binary_path,
+        query=query,
+        total_found=result.total_found,
+        returned=result.returned,
+        truncated=result.truncated,
+        gadgets=result.gadgets,
+    )
+
+
+def find_result_to_dict(result: FindResult) -> dict[str, Any]:
+    """Terse plain-dict view of a `FindResult` (address+instructions rows only)."""
+    return {
+        "binary_path": result.binary_path,
+        "query": result.query,
+        "total_found": result.total_found,
+        "returned": result.returned,
+        "truncated": result.truncated,
+        "gadgets": [{"address": g.address, "instructions": g.instructions} for g in result.gadgets],
+    }
+
+
 def _serialize(result: EnumerateResult) -> str:
     """JSON string for the ad-hoc CLI path."""
     return json.dumps(result_to_dict(result))
@@ -280,14 +420,21 @@ if __name__ == "__main__":  # pragma: no cover
 
 
 __all__ = [
+    "DEFAULT_FIND_MAX_RESULTS",
     "DEFAULT_MAX_RESULTS",
     "DEFAULT_TIMEOUT_SECONDS",
+    "FIND_GADGET_DESCRIPTION",
+    "FIND_GADGET_NAME",
+    "FIND_GADGET_SCHEMA",
     "TOOL_DESCRIPTION",
     "TOOL_INPUT_SCHEMA",
     "TOOL_NAME",
     "EnumerateResult",
+    "FindResult",
     "Gadget",
     "enumerate_gadgets",
+    "find_gadget",
+    "find_result_to_dict",
     "result_to_dict",
     "serve",
 ]

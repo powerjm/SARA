@@ -71,19 +71,26 @@ notebooks: bootstrap
 # corpus, so it will fail off-host (as intended — that host is not launch-ready).
 preflight: bootstrap
 	@echo "== SARA pre-flight gate (CONFIG=$(CONFIG)) =="
-	@echo "-- [1/4] lint --------------------------------------------------------"
+	@echo "-- [1/5] lint --------------------------------------------------------"
 	$(VENV)/bin/ruff check .
-	@echo "-- [2/4] test suite (incl. tool-exposure premise + smoke-trace gate) -"
+	@echo "-- [2/5] test suite (incl. tool-exposure premise + smoke-trace gate) -"
 	$(PY) -m pytest -q
-	@echo "-- [3/4] dry-run plan + cost estimate --------------------------------"
+	@echo "-- [3/5] Trial-3 config invariants (tools/arms/schema/caching) -------"
+	$(PY) -m harness.preflight
+	@echo "-- [4/5] dry-run plan + cost estimate --------------------------------"
 	$(PY) -m harness.cli batch --config $(CONFIG) --dry-run
-	@echo "-- [4/4] validator regression: sara verify on >=2 corpus-truth PoCs --"
+	@echo "-- [5/5] validator regression: sara verify on >=2 corpus-truth PoCs --"
 	$(PY) -m harness.cli verify --binary ret2win-baseline
 	$(PY) -m harness.cli verify --binary cgc-cadet-00001
 	@echo
 	@echo "== MANUAL lab-host gates (confirm before launch; not automatable here) =="
+	@echo "  [ ] procps in the image: docker run --rm sara-sandbox:latest which w  (Bonus 1's w)"
 	@echo "  [ ] each backend completes a 1-cell smoke run with no transport/context/credit/moderation error"
-	@echo "  [ ] every LM Studio model advertises n_ctx >= 32768 (GET /v1/models)"
+	@echo "  [ ] a smoke run that pops a shell + runs w/id records the bonus (RunRecord.score > 70)"
+	@echo "  [ ] every LM Studio model reports n_ctx_loaded >= 32768 on its RunRecord (per-run, not once)"
+	@echo "  [ ] measured tok/s per local model >= the drop-or-rehost floor (no 3.5 tok/s arm)"
+	@echo "  [ ] token-delta: median prompt tokens/turn on a smoke is materially below Trial 2"
+	@echo "  [ ] cache-hit-rate: Anthropic prefix cache firing (cache_read_input_tokens > 0 by turn 2)"
 	@echo "  [ ] API credits topped up AND the dry-run estimate above is <= the approved budget"
 	@echo "  No box unchecked -> no launch."
 
