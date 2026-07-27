@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Run-for-record matrix accounting</title>
+  <desc id="desc">Of 2,200 planned runs, 2,096 produced a run directory, 1,755 finalized, 341 remained partial, and 104 produced no run directory.</desc>
+  <style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 18px system-ui, sans-serif; fill: #475569; }
+    .big { font: 700 42px system-ui, sans-serif; fill: #fff; }
+    .label { font: 700 20px system-ui, sans-serif; fill: #fff; }
+    .pct { font: 17px system-ui, sans-serif; fill: #dbeafe; }
+    .darkBig { font: 700 42px system-ui, sans-serif; fill: #172554; }
+    .darkLabel { font: 700 20px system-ui, sans-serif; fill: #172554; }
+    .darkPct { font: 17px system-ui, sans-serif; fill: #475569; }
+    .note { font: 16px system-ui, sans-serif; fill: #475569; }
+    .source { font: 14px system-ui, sans-serif; fill: #64748b; }
+  </style>
+  <rect width="1200" height="720" fill="#f8fafc"/>
+  <text id="title" class="title" x="70" y="68">Run-for-record matrix accounting</text>
+  <text class="sub" x="70" y="102">10 binaries × 11 backends × 4 strategies × 5 replicates</text>
+
+  <rect x="70" y="155" width="250" height="230" rx="18" fill="#172554"/>
+  <text class="big" x="195" y="235" text-anchor="middle">2,200</text>
+  <text class="label" x="195" y="278" text-anchor="middle">planned</text>
+  <text class="pct" x="195" y="318" text-anchor="middle">100% of matrix</text>
+
+  <path d="M330 270 H385" stroke="#94a3b8" stroke-width="5"/>
+  <path d="M385 270 l-14 -10 v20 z" fill="#94a3b8"/>
+
+  <rect x="395" y="155" width="250" height="230" rx="18" fill="#2563eb"/>
+  <text class="big" x="520" y="235" text-anchor="middle">2,096</text>
+  <text class="label" x="520" y="278" text-anchor="middle">attempt directories</text>
+  <text class="pct" x="520" y="318" text-anchor="middle">95.3% of planned</text>
+
+  <path d="M655 270 H710" stroke="#94a3b8" stroke-width="5"/>
+  <path d="M710 270 l-14 -10 v20 z" fill="#94a3b8"/>
+
+  <rect x="720" y="155" width="250" height="230" rx="18" fill="#0f766e"/>
+  <text class="big" x="845" y="235" text-anchor="middle">1,755</text>
+  <text class="label" x="845" y="278" text-anchor="middle">finalized records</text>
+  <text class="pct" x="845" y="318" text-anchor="middle">79.8% of planned</text>
+
+  <path d="M520 395 V448" stroke="#94a3b8" stroke-width="4"/>
+  <path d="M520 448 l-10 -14 h20 z" fill="#94a3b8"/>
+  <rect x="395" y="460" width="250" height="150" rx="16" fill="#f59e0b"/>
+  <text class="big" x="520" y="520" text-anchor="middle">341</text>
+  <text class="label" x="520" y="555" text-anchor="middle">partial runs</text>
+  <text class="pct" x="520" y="586" text-anchor="middle">16.3% of attempts</text>
+
+  <path d="M195 395 V448" stroke="#94a3b8" stroke-width="4"/>
+  <path d="M195 448 l-10 -14 h20 z" fill="#94a3b8"/>
+  <rect x="70" y="460" width="250" height="150" rx="16" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2"/>
+  <text class="darkBig" x="195" y="520" text-anchor="middle">104</text>
+  <text class="darkLabel" x="195" y="555" text-anchor="middle">no directory</text>
+  <text class="darkPct" x="195" y="586" text-anchor="middle">4.7% of planned</text>
+
+  <rect x="720" y="430" width="410" height="180" rx="16" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+  <text class="darkLabel" x="750" y="472">Interpretation</text>
+  <text class="note" x="750" y="510">The finalized dataset covers only four-fifths</text>
+  <text class="note" x="750" y="538">of the intended matrix. Missingness is uneven</text>
+  <text class="note" x="750" y="566">by backend and therefore is not random censoring.</text>
+
+  <text class="source" x="70" y="678">Source: experiments.yaml and archived run directories • July 2026</text>
+</svg>

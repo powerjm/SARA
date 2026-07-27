@@ -57,8 +57,11 @@ def test_strategy_is_well_formed(name: str) -> None:
     task = strategy.task_template("sample-overflow")
     assert isinstance(task, str)
     assert "sample-overflow" in task
-    # Every strategy must point the agent at its terminal action.
-    assert "submit_payload" in strategy.system_prompt + strategy.tool_use_guidance + task
+    # Every strategy must offer the agent both submission paths: the primary
+    # iterate-on-script tool (ADR 0016) and the raw-bytes alternative.
+    composed = strategy.system_prompt + strategy.tool_use_guidance + task
+    assert "run_exploit_script" in composed
+    assert "submit_payload" in composed
 
 
 @pytest.mark.parametrize("name", sorted(prompts.STRATEGIES))
@@ -82,11 +85,14 @@ def test_every_strategy_states_the_success_criterion(name: str) -> None:
 @pytest.mark.parametrize("name", sorted(prompts.STRATEGIES))
 def test_every_strategy_invites_iterative_testing(name: str) -> None:
     """Every strategy must tell the model it can execute candidates repeatedly
-    (ADR 0014); otherwise it tends to enumerate forever and never test a payload,
-    leaving the iterative-validation loop unused."""
-    system = prompts.get(name).system_prompt.lower()
-    assert "submit_payload" in system
-    assert "as many times" in system or "run your payload" in system
+    (ADR 0014/0016); otherwise it tends to enumerate forever and never test an
+    exploit, leaving the iterative-validation loop unused. Trial 2 makes the
+    write-and-run-a-script workflow the primary path, stated neutrally."""
+    # Collapse whitespace so the phrase checks are robust to line wrapping.
+    system = " ".join(prompts.get(name).system_prompt.lower().split())
+    assert "run_exploit_script" in system  # the primary iterate-on-script tool
+    assert "as often as you like" in system  # the affordance: not one-shot
+    assert "submit_payload" in system  # raw-bytes alternative retained
 
 
 def test_get_unknown_strategy_raises() -> None:

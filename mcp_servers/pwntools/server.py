@@ -317,7 +317,10 @@ def pattern_offset(
     if length > 0:
         haystack = generate_pattern(length, alphabet, sub_length)
     else:
-        haystack = bytes(char.encode("ascii") for char in _de_bruijn(alphabet, sub_length))
+        # `_de_bruijn` yields single-char strings; join then encode. (bytes() of an
+        # iterable of bytes objects raises — this default-length branch was never
+        # exercised until the tool was wired to the agent.)
+        haystack = "".join(_de_bruijn(alphabet, sub_length)).encode("ascii")
     index = haystack.find(needle)
     if index < 0:
         raise ValueError(f"subsequence {needle!r} not found in cyclic pattern")

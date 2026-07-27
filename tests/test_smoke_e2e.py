@@ -16,7 +16,8 @@ injected fake Docker client), this exercises the **real** tool and validator
 paths through the production ``run_one`` harness:
 
 * gadget enumeration runs the real ROPgadget CLI against the fixture binary (the
-  graph's baseline enumeration dispatches it on the real binary path),
+  agent's own ``enumerate_gadgets`` call dispatches it on the real binary path —
+  Trial 2 removed the free baseline dump, so the model asks for gadgets itself),
 * the candidate payload is executed in the real, locked-down Docker sandbox,
 * a real ``{record.json, trace.jsonl, payload.bin}`` triple is persisted.
 
@@ -103,6 +104,21 @@ def test_smoke_e2e_success(
 
     backend = FakeBackend(
         script=[
+            # Trial 2: the agent enumerates itself (no free baseline) — this drives
+            # the REAL ROPgadget CLI through the agent path before it submits.
+            ScriptedTurn(
+                text="First, enumerate gadgets.",
+                tool_calls=[
+                    {
+                        "id": "enum_1",
+                        "name": "enumerate_gadgets",
+                        "input": {"binary_path": str(spec.binary_path)},
+                    }
+                ],
+                prompt_tokens=200,
+                completion_tokens=40,
+                cost_usd=0.0,
+            ),
             ScriptedTurn(
                 text="Chain assembled; submitting.",
                 tool_calls=[
@@ -115,7 +131,7 @@ def test_smoke_e2e_success(
                 prompt_tokens=200,
                 completion_tokens=40,
                 cost_usd=0.0,
-            )
+            ),
         ],
         name="fake",
         version="fake-1",

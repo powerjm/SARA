@@ -15,7 +15,9 @@ from __future__ import annotations
 import pytest
 
 from agent.tools import (
+    ADDITIONAL_SERVERS,
     ENUMERATE_GADGETS,
+    RUN_SCRIPT,
     SUBMIT_PAYLOAD,
     ToolCall,
     ToolLayer,
@@ -39,10 +41,84 @@ def _result(**kwargs: object) -> EnumerateResult:
     return EnumerateResult(**base)  # type: ignore[arg-type]
 
 
-def test_specs_advertise_enumerate_and_submit() -> None:
+# --- tool-exposure premise (Trial 2 §7 gate; replaces the stale two-tool lock) --- #
+#
+# Trial 1 shipped with `specs()` hardcoded to exactly {enumerate_gadgets,
+# submit_payload}, and a test asserting that exact equality — so wiring the other
+# five servers would have *broken a green test*. These tests instead assert that
+# the advertised set equals the configured toolset, whatever it is, so the seam
+# can never silently drift from the config again.
+
+
+def test_specs_advertise_core_plus_all_servers_by_default() -> None:
     layer = ToolLayer()
+    names = [spec.name for spec in layer.specs()]
+    # No duplicate names in the flat tool namespace (the ropgadget/ropper
+    # `enumerate_gadgets` collision is resolved by namespacing).
+    assert len(names) == len(set(names))
+    nameset = set(names)
+    # The two always-present tools keep their bare, graph-special names.
+    assert {ENUMERATE_GADGETS, SUBMIT_PAYLOAD} <= nameset
+    # Every additional server contributes at least one namespaced tool.
+    for server in ADDITIONAL_SERVERS:
+        assert any(n.startswith(f"{server}_") for n in nameset), server
+    # A couple of concrete, load-bearing tools are reachable by name.
+    assert "pwntools_build_payload" in nameset
+    assert "ghidra_decompile_function" in nameset
+    # ropper's enumerate_gadgets is namespaced; ropgadget's is not.
+    assert "ropper_enumerate_gadgets" in nameset
+
+
+def test_specs_match_tool_names_exactly() -> None:
+    # The premise the pre-flight gate asserts: advertised specs == enabled toolset.
+    layer = ToolLayer()
+    assert {spec.name for spec in layer.specs()} == layer.tool_names()
+
+
+def test_servers_subset_narrows_the_toolset() -> None:
+    layer = ToolLayer(servers=("pwntools",))
     names = {spec.name for spec in layer.specs()}
-    assert names == {ENUMERATE_GADGETS, SUBMIT_PAYLOAD}
+    assert {ENUMERATE_GADGETS, SUBMIT_PAYLOAD} <= names
+    assert any(n.startswith("pwntools_") for n in names)
+    assert not any(n.startswith("radare2_") for n in names)
+    assert not any(n.startswith("ghidra_") for n in names)
+
+
+def test_unknown_server_is_rejected_loudly() -> None:
+    with pytest.raises(ValueError, match="unknown tool server"):
+        ToolLayer(servers=("bogus",))
+
+
+def test_dispatch_namespaced_tool_routes_to_owning_server() -> None:
+    # pwntools tools are pure (no native dep / subprocess), so this exercises the
+    # real server dispatch end-to-end in CI.
+    layer = ToolLayer()
+    obs = layer.dispatch("pwntools_pack_address", {"address": "0x4011ad", "arch": "amd64"})
+    assert obs.tool_name == "pwntools_pack_address"
+    assert not obs.output.startswith("ERROR")
+    assert "ad11400000000000" in obs.output  # 0x4011ad packed little-endian, 8 bytes
+
+
+def test_dispatch_namespaced_tool_captures_error_instead_of_raising() -> None:
+    layer = ToolLayer()
+    obs = layer.dispatch("pwntools_pack_address", {"address": "not-a-number"})
+    assert obs.output.startswith("ERROR")
+    assert not obs.truncated
+
+
+def test_dispatch_disabled_server_tool_is_unknown() -> None:
+    # A tool whose server is not enabled is not dispatchable.
+    layer = ToolLayer(servers=("pwntools",))
+    obs = layer.dispatch("radare2_analyze_binary", {"binary_path": "/bin/target"})
+    assert "unknown tool" in obs.output
+
+
+def test_tool_names_reflects_enabled_servers() -> None:
+    # With no additional servers, only the three always-present tools remain.
+    assert ToolLayer(servers=()).tool_names() == {ENUMERATE_GADGETS, SUBMIT_PAYLOAD, RUN_SCRIPT}
+    full = ToolLayer().tool_names()
+    assert "radare2_search_pattern" in full
+    assert "gdb_inspect_state" in full
 
 
 def test_submit_spec_requires_payload_hex() -> None:
@@ -91,6 +167,31 @@ def test_dispatch_unknown_tool_returns_error_observation() -> None:
 def test_dispatch_submit_is_terminal_and_raises() -> None:
     with pytest.raises(ValueError, match="terminal"):
         ToolLayer().dispatch(SUBMIT_PAYLOAD, {"payload_hex": "41"})
+
+
+def test_run_exploit_script_is_advertised() -> None:
+    # run_exploit_script (ADR 0016) is a third always-present tool, requiring a
+    # 'script' string, present even with no additional servers.
+    layer = ToolLayer(servers=())
+    names = {s.name for s in layer.specs()}
+    assert RUN_SCRIPT in names
+    spec = next(s for s in layer.specs() if s.name == RUN_SCRIPT)
+    assert spec.input_schema["required"] == ["script"]
+    assert spec.input_schema["additionalProperties"] is False
+
+
+def test_dispatch_run_script_is_terminal_and_raises() -> None:
+    # Like submit_payload, it is committed via the propose node, never dispatched.
+    with pytest.raises(ValueError, match="terminal"):
+        ToolLayer().dispatch(RUN_SCRIPT, {"script": "print(1)"})
+
+
+def test_parse_text_actions_recovers_run_exploit_script_by_default() -> None:
+    # run_exploit_script is in the default known set, so a prose call is recovered.
+    text = 'Action: run_exploit_script({"script": "from pwn import *"})'
+    calls = parse_text_actions(text)
+    assert [c["name"] for c in calls] == [RUN_SCRIPT]
+    assert calls[0]["arguments"] == {"script": "from pwn import *"}
 
 
 @pytest.mark.parametrize(
@@ -231,3 +332,24 @@ def test_parse_text_actions_ignores_non_toolcall_json() -> None:
     # A schema echo or unrelated object (no known tool name) is not a call.
     assert parse_text_actions('{"type": "object", "properties": {"x": {"type": "string"}}}') == []
     assert parse_text_actions('{"name": "ghidra_decompile", "arguments": {}}') == []
+
+
+# --- parse_text_actions: namespaced tools honor the enabled `known` set -------- #
+
+
+def test_parse_text_actions_recovers_namespaced_tool_when_known() -> None:
+    text = 'Action: radare2_analyze_binary({"binary_path": "/work/bin"})'
+    known = ToolLayer().tool_names()
+    calls = parse_text_actions(text, known=known)
+    assert len(calls) == 1
+    assert calls[0]["name"] == "radare2_analyze_binary"
+    assert calls[0]["arguments"] == {"binary_path": "/work/bin"}
+
+
+def test_parse_text_actions_ignores_namespaced_tool_by_default() -> None:
+    # Without the enabled set, only the two core tools are recognized (back-compat).
+    text = 'Action: radare2_analyze_binary({"binary_path": "/work/bin"})'
+    assert parse_text_actions(text) == []
+    # And a tool whose server is disabled is not recovered even with a `known` set.
+    known = ToolLayer(servers=("pwntools",)).tool_names()
+    assert parse_text_actions(text, known=known) == []

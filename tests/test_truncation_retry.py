@@ -174,7 +174,7 @@ def test_truncated_turn_recovers_on_retry(
 def test_all_attempts_truncated_yields_truncated_failure(
     sample_overflow_path: Path, tmp_path: Path
 ) -> None:
-    """Every attempt cut off -> terminate 'truncated' -> FAILURE / OTHER."""
+    """Every attempt cut off -> terminate 'truncated' -> FAILURE / TRUNCATED."""
     backend = FakeBackend(script=[_truncated_turn() for _ in range(5)])
 
     # Default max_truncation_retries=2 -> 1 + 2 = 3 attempts, then give up.
@@ -184,7 +184,7 @@ def test_all_attempts_truncated_yields_truncated_failure(
     assert result.state.truncation_retries == 3
     assert result.state.termination_reason == "truncated"
     assert result.outcome == Outcome.FAILURE
-    assert result.failure_mode == FailureMode.OTHER
+    assert result.failure_mode == FailureMode.TRUNCATED
     # A truncation failure is NOT mislabeled as a malformed tool use.
     assert result.failure_mode != FailureMode.TOOL_USE_MALFORMED
 
@@ -202,7 +202,7 @@ def test_truncation_retries_zero_detects_but_does_not_reprompt(
     assert backend.calls_made == 1  # no re-prompt
     assert result.state.termination_reason == "truncated"
     assert result.outcome == Outcome.FAILURE
-    assert result.failure_mode == FailureMode.OTHER
+    assert result.failure_mode == FailureMode.TRUNCATED
     # No retry nudge was appended.
     assert not any(m.role == "user" and "length limit" in m.content for m in result.state.messages)
 

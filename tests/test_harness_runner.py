@@ -141,14 +141,51 @@ def test_run_one_writes_full_conversation(fixture_corpus: Any, tmp_path: Path) -
 
     messages = [json.loads(line) for line in conversation.read_text().splitlines()]
     roles = [m["role"] for m in messages]
-    # Captures the seeded system prompt, the assistant turn, and the baseline
-    # enumeration presented as user context (ADR 0011).
+    # Captures the seeded system prompt, the assistant turn, and the ingest
+    # task/target context presented as a user turn. (Trial 2 removed the free
+    # baseline gadget dump — the agent enumerates itself — so it no longer appears.)
     assert "system" in roles
     assert "assistant" in roles
-    assert any(
-        m["role"] == "user" and m["content"].startswith("Baseline gadget enumeration")
-        for m in messages
+    assert any(m["role"] == "user" and m["content"].startswith("Target binary:") for m in messages)
+
+
+def test_preflight_smoke_run_reaches_a_non_ropgadget_tool(
+    fixture_corpus: Any, tmp_path: Path
+) -> None:
+    """§7 pre-flight gate: a real run must be able to REACH the newly wired tools
+    end-to-end, not merely have them registered — the direct guard against Trial
+    1's two-tool gap (TRIAL_2_PLAN.md §1). A run whose model calls a non-ROPgadget
+    tool must record it in the schema-v5 telemetry: ``tools_offered`` proves the
+    full toolkit was advertised, and ``tool_call_counts`` proves the agent seam
+    actually dispatched the call (not a KeyError, not silently dropped). Runs with
+    the REAL default ToolLayer (all five extra servers), no baseline hand-out."""
+    spec = corpus.resolve_binary("sample-overflow")
+    settings = RunSettings.from_env(output_dir=tmp_path / "runs")
+    backend = FakeBackend(
+        script=[
+            ScriptedTurn(
+                text="Analyze the target first.",
+                tool_calls=[
+                    {
+                        "id": "r1",
+                        "name": "radare2_analyze_binary",
+                        "input": {"binary_path": str(spec.binary_path)},
+                    }
+                ],
+            ),
+            # End the run on the real token budget (ADR 0015), no submission.
+            ScriptedTurn(text="stopping", completion_tokens=10_000_000),
+        ]
     )
+    # Real ToolLayer() = the full wired toolkit; no injected enumerator, no docker
+    # (the run never submits, so validate never executes a payload).
+    record = run_one(spec, backend, "zero_shot", settings, tools=ToolLayer())
+
+    # The full toolkit was advertised to the model (closes the §1 blind spot)...
+    assert "radare2_analyze_binary" in record.tools_offered
+    assert len(record.tools_offered) >= 6  # core three + the five extra servers' tools
+    # ...and the non-ROPgadget call was actually dispatched through the seam.
+    assert "radare2_analyze_binary" in record.tool_call_counts
 
 
 def test_resume_and_cost_cap_key_on_backend_handle(fixture_corpus: Any, tmp_path: Path) -> None:
@@ -214,7 +251,7 @@ def test_run_one_success(fixture_corpus: Any, documented_exploit: Any, tmp_path:
 # --------------------------------------------------------------------------- #
 
 
-def test_run_one_token_cap_yields_budget_exhausted(fixture_corpus: Any, tmp_path: Path) -> None:
+def test_run_one_token_cap_yields_token_budget(fixture_corpus: Any, tmp_path: Path) -> None:
     spec = corpus.resolve_binary("sample-overflow")
     looping = [
         ScriptedTurn(
@@ -227,12 +264,10 @@ def test_run_one_token_cap_yields_budget_exhausted(fixture_corpus: Any, tmp_path
     settings = RunSettings.from_env(output_dir=tmp_path / "runs", token_cap=1500)
     record = run_one(spec, FakeBackend(script=looping), "zero_shot", settings, tools=_tools())
     assert record.outcome == Outcome.FAILURE
-    assert record.failure_mode == FailureMode.BUDGET_EXHAUSTED
+    assert record.failure_mode == FailureMode.TOKEN_BUDGET  # schema v5 granular mode
 
 
-def test_run_one_wall_clock_cap_yields_budget_exhausted(
-    fixture_corpus: Any, tmp_path: Path
-) -> None:
+def test_run_one_wall_clock_cap_yields_wall_clock(fixture_corpus: Any, tmp_path: Path) -> None:
     class _SleepyBackend(FakeBackend):
         def chat(self, *args: Any, **kwargs: Any) -> Any:
             time.sleep(0.05)
@@ -246,7 +281,7 @@ def test_run_one_wall_clock_cap_yields_budget_exhausted(
     settings = RunSettings.from_env(output_dir=tmp_path / "runs", wall_clock_cap_seconds=0.01)
     record = run_one(spec, _SleepyBackend(script=looping), "zero_shot", settings, tools=_tools())
     assert record.outcome == Outcome.FAILURE
-    assert record.failure_mode == FailureMode.BUDGET_EXHAUSTED
+    assert record.failure_mode == FailureMode.WALL_CLOCK  # schema v5 granular mode
 
 
 # --------------------------------------------------------------------------- #

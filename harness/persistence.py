@@ -43,6 +43,9 @@ RECORD_NAME = "record.json"
 TRACE_NAME = "trace.jsonl"
 CONVERSATION_NAME = "conversation.jsonl"
 PAYLOAD_NAME = "payload.bin"
+# The agent's exploit.py for a script-mode run (ADR 0016); persisted in the run
+# dir for audit/repro alongside the payload. Not referenced by the schema.
+SCRIPT_NAME = "exploit.py"
 
 _PARTIAL_PREFIX = ".partial-"
 
@@ -116,6 +119,7 @@ def _rmtree(path: Path) -> None:
 __all__ = [
     "CONVERSATION_NAME",
     "PAYLOAD_NAME",
+    "SCRIPT_NAME",
     "RECORD_NAME",
     "TRACE_NAME",
     "begin_run",

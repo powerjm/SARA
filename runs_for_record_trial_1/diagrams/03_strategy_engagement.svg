@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Prompt strategy engagement comparison</title>
+  <desc id="desc">Zero-shot had the highest stored executable-candidate rate at 39.7 percent, followed by ReAct, chain of thought, and MAJORCA. All strategies had zero successes.</desc>
+  <style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 18px system-ui, sans-serif; fill: #475569; }
+    .label { font: 700 21px system-ui, sans-serif; fill: #1e293b; }
+    .value { font: 700 19px system-ui, sans-serif; fill: #172554; }
+    .meta { font: 16px system-ui, sans-serif; fill: #475569; }
+    .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .note { font: 16px system-ui, sans-serif; fill: #7f1d1d; }
+    .source { font: 14px system-ui, sans-serif; fill: #64748b; }
+  </style>
+  <rect width="1200" height="720" fill="#f8fafc"/>
+  <text class="title" x="65" y="66">Prompt strategy: engagement, not success</text>
+  <text class="sub" x="65" y="102">Share of finalized runs with a stored executable candidate payload</text>
+
+  <line x1="315" y1="150" x2="315" y2="540" stroke="#cbd5e1"/>
+  <line x1="635" y1="150" x2="635" y2="540" stroke="#e2e8f0"/>
+  <line x1="955" y1="150" x2="955" y2="540" stroke="#cbd5e1"/>
+  <text class="axis" x="305" y="140">0%</text><text class="axis" x="620" y="140">20%</text><text class="axis" x="940" y="140">40%</text>
+
+  <text class="label" x="65" y="210">Zero-shot</text>
+  <rect x="315" y="178" width="635" height="46" rx="8" fill="#2563eb"/>
+  <text class="value" x="970" y="208">39.7% (179/451)</text>
+  <text class="meta" x="315" y="248">5.80 submit calls per run on average</text>
+
+  <text class="label" x="65" y="310">ReAct</text>
+  <rect x="315" y="278" width="549" height="46" rx="8" fill="#0f766e"/>
+  <text class="value" x="884" y="308">34.3% (150/437)</text>
+  <text class="meta" x="315" y="348">4.68 submit calls per run on average</text>
+
+  <text class="label" x="65" y="410">Chain of thought</text>
+  <rect x="315" y="378" width="440" height="46" rx="8" fill="#7c3aed"/>
+  <text class="value" x="775" y="408">27.5% (123/448)</text>
+  <text class="meta" x="315" y="448">2.76 submit calls per run on average</text>
+
+  <text class="label" x="65" y="510">MAJORCA</text>
+  <rect x="315" y="478" width="336" height="46" rx="8" fill="#f59e0b"/>
+  <text class="value" x="671" y="508">21.0% (88/419)</text>
+  <text class="meta" x="315" y="548">1.84 submit calls per run on average</text>
+
+  <rect x="65" y="590" width="1070" height="78" rx="14" fill="#fee2e2"/>
+  <text class="note" x="92" y="622">All four strategies recorded 0 successes. These bars measure willingness/ability to produce a testable payload,</text>
+  <text class="note" x="92" y="648">not exploit quality; uneven backend completion makes the pooled comparison exploratory rather than causal.</text>
+  <text class="source" x="65" y="700">Source: finalized records and reason-node tool calls</text>
+</svg>

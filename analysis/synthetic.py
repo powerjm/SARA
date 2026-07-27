@@ -50,6 +50,7 @@ from harness.record import (
     TokenUsage,
     ValidatorOutput,
 )
+from validator.classifier import tier_from_validator
 from validator.runner import SUCCESS_MARKER, chain_fingerprint
 
 # Fixed epoch so timestamps are deterministic (never datetime.now()).
@@ -185,9 +186,13 @@ def _make_validator(
                 elapsed_seconds=round(rng.uniform(8.0, 10.0), 3),
             )
         # A mechanical failure that produced a payload the validator rejected.
+        # The sandbox is a Docker container, so a SIGSEGV death is exit code 139
+        # (128 + 11), matching validator.runner — NOT the -11 that Python's
+        # subprocess convention would give. This is what tier_from_validator reads
+        # as CONTROL (control-flow hijack), so the ladder scores it correctly.
         return ValidatorOutput(
             succeeded=False,
-            return_code=-11,
+            return_code=139,
             stdout_marker_found=False,
             stderr_excerpt="Segmentation fault",
             elapsed_seconds=round(rng.uniform(0.05, 0.3), 3),
@@ -265,6 +270,9 @@ def _make_record(
         trace_path=Path(f"runs/{run_id}/trace.jsonl"),
         payload_path=payload_path,
         validator=validator,
+        # Progress tier scored from the same validator result the run classifier
+        # uses (D5), so synthetic tiers are consistent with real ones by rule.
+        max_tier_reached=tier_from_validator(validator),
         notes="synthetic",
     )
 

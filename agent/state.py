@@ -83,6 +83,13 @@ class AgentState:
     # The ordered gadget/target addresses the proposer committed to, fed to the
     # validator for chain-fingerprint matching (ADR 0003).
     candidate_chain: list[int] | None = None
+    # Script mode (ADR 0016): set by propose when the agent commits an exploit.py
+    # via run_exploit_script; validate runs it through the sandbox's execute_script
+    # path. ``pending_kind`` records which artifact the pending validation runs
+    # ("payload" or "script"), so a run that mixes hex submits and script runs
+    # across iterations validates the right one each time.
+    candidate_script_path: Path | None = None
+    pending_kind: str | None = None
 
     # Set by the validate node from the sandbox result; read at classification.
     validator_output: ValidatorOutput | None = None
@@ -110,8 +117,10 @@ class AgentState:
     # Terminal state markers (set by graph nodes; harness reads them on exit).
     terminated: bool = False
     termination_reason: str | None = None
-    # one of: "success" | "budget" | "refusal" | "tool_use_malformed"
-    #       | "truncated" | "agent_gave_up"
+    # one of: "success" | "refusal" | "truncated" | "agent_gave_up"
+    #       | "token_budget" | "wall_clock" | "iteration_cap" | "context_overflow"
+    # (schema v5 split the old coarse "budget" into the three resource limits plus
+    #  "context_overflow" for a provider context-window rejection)
 
 
 __all__ = ["AgentState", "BinaryContext", "Message", "ToolObservation"]

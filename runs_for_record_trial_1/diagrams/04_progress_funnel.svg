@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="920" viewBox="0 0 1400 920" role="img" aria-labelledby="title desc">
+  <title id="title">Run progress funnel</title>
+  <desc id="desc">A flow diagram from 1,755 finalized runs through non-refusal, payload submission, executable candidate creation, and zero successes.</desc>
+  <style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 18px system-ui, sans-serif; fill: #475569; }
+    .num { font: 700 31px system-ui, sans-serif; fill: #fff; }
+    .boxlabel { font: 650 17px system-ui, sans-serif; fill: #fff; }
+    .sideNum { font: 700 27px system-ui, sans-serif; fill: #172554; }
+    .sideLabel { font: 600 16px system-ui, sans-serif; fill: #334155; }
+    .small { font: 15px system-ui, sans-serif; fill: #475569; }
+    .call { font: 650 16px system-ui, sans-serif; fill: #92400e; }
+    .source { font: 14px system-ui, sans-serif; fill: #64748b; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+  </defs>
+  <rect width="1400" height="920" fill="#f8fafc"/>
+  <text class="title" x="55" y="58">What progress did finalized runs make?</text>
+  <text class="sub" x="55" y="92">A mutually exclusive flow using terminal refusal status and the final stored payload</text>
+
+  <rect x="470" y="130" width="310" height="90" rx="16" fill="#172554"/>
+  <text class="num" x="625" y="171" text-anchor="middle">1,755</text>
+  <text class="boxlabel" x="625" y="200" text-anchor="middle">finalized runs</text>
+
+  <line x1="625" y1="220" x2="625" y2="276" stroke="#94a3b8" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="780" y1="175" x2="970" y2="175" stroke="#94a3b8" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="985" y="130" width="280" height="90" rx="16" fill="#fee2e2" stroke="#fecaca" stroke-width="2"/>
+  <text class="sideNum" x="1125" y="171" text-anchor="middle">200</text>
+  <text class="sideLabel" x="1125" y="200" text-anchor="middle">safeguard refusals</text>
+
+  <rect x="470" y="290" width="310" height="90" rx="16" fill="#2563eb"/>
+  <text class="num" x="625" y="331" text-anchor="middle">1,555</text>
+  <text class="boxlabel" x="625" y="360" text-anchor="middle">non-refusal runs</text>
+
+  <line x1="625" y1="380" x2="625" y2="436" stroke="#94a3b8" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="780" y1="335" x2="970" y2="335" stroke="#94a3b8" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="985" y="290" width="280" height="90" rx="16" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="2"/>
+  <text class="sideNum" x="1125" y="331" text-anchor="middle">964</text>
+  <text class="sideLabel" x="1125" y="360" text-anchor="middle">never called submit</text>
+
+  <rect x="470" y="450" width="310" height="90" rx="16" fill="#0f766e"/>
+  <text class="num" x="625" y="491" text-anchor="middle">591</text>
+  <text class="boxlabel" x="625" y="520" text-anchor="middle">called submit_payload</text>
+
+  <line x1="625" y1="540" x2="625" y2="596" stroke="#94a3b8" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="780" y1="495" x2="970" y2="495" stroke="#94a3b8" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="985" y="450" width="280" height="90" rx="16" fill="#fef3c7" stroke="#fde68a" stroke-width="2"/>
+  <text class="sideNum" x="1125" y="491" text-anchor="middle">86</text>
+  <text class="sideLabel" x="1125" y="520" text-anchor="middle">no decodable payload</text>
+
+  <rect x="470" y="610" width="310" height="90" rx="16" fill="#7c3aed"/>
+  <text class="num" x="625" y="651" text-anchor="middle">505</text>
+  <text class="boxlabel" x="625" y="680" text-anchor="middle">executable final candidate</text>
+
+  <line x1="625" y1="700" x2="625" y2="756" stroke="#94a3b8" stroke-width="4" marker-end="url(#arrow)"/>
+  <rect x="470" y="770" width="310" height="90" rx="16" fill="#dc2626"/>
+  <text class="num" x="625" y="811" text-anchor="middle">0</text>
+  <text class="boxlabel" x="625" y="840" text-anchor="middle">successful exploits</text>
+
+  <line x1="470" y1="655" x2="350" y2="655" stroke="#94a3b8" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="65" y="605" width="270" height="100" rx="15" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+  <text class="sideNum" x="200" y="645" text-anchor="middle">152</text>
+  <text class="sideLabel" x="200" y="674" text-anchor="middle">final candidate rc=139</text>
+  <text class="small" x="200" y="696" text-anchor="middle">crash; control not proven</text>
+
+  <line x1="780" y1="655" x2="900" y2="655" stroke="#94a3b8" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="915" y="585" width="350" height="140" rx="15" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+  <text class="sideNum" x="1090" y="625" text-anchor="middle">353</text>
+  <text class="sideLabel" x="1090" y="654" text-anchor="middle">other non-success return codes</text>
+  <text class="small" x="1090" y="681" text-anchor="middle">280 returned 0 • 73 returned another code</text>
+  <text class="small" x="1090" y="706" text-anchor="middle">no stdout success marker</text>
+
+  <rect x="65" y="755" width="320" height="105" rx="15" fill="#fffbeb" stroke="#fde68a" stroke-width="2"/>
+  <text class="call" x="90" y="790">BroncoCTF trajectory evidence</text>
+  <text class="small" x="90" y="818">12 runs cleared Gate 1 at least once.</text>
+  <text class="small" x="90" y="842">4 reached the clean Gate 2 refusal path.</text>
+
+  <text class="source" x="55" y="898">Source: finalized records, traces, and tool-feedback messages • refusal-with-payload runs are excluded after the first branch</text>
+</svg>

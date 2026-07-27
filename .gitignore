@@ -31,9 +31,12 @@ env/
 runs/
 corpus/binaries/*
 !corpus/binaries/.gitkeep
-# The active run config (may hold an in-progress matrix / edited caps); the
-# committed template experiments.example.yaml stays tracked.
+# The active run config(s) (may hold an in-progress matrix / edited caps); the
+# committed template experiments.example.yaml stays tracked. The glob also covers
+# the split run-for-record configs (experiments.premium.yaml / experiments.local.yaml).
 experiments.yaml
+experiments.*.yaml
+!experiments.example.yaml
 
 # --- Ghidra project artifacts ---
 # PyGhidra writes a <binary>_ghidra.{gpr,rep} project next to the analysed

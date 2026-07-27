@@ -185,6 +185,7 @@ def run_one(
 
         def sink(event: dict[str, Any]) -> None:
             fh.write(json.dumps(event) + "\n")
+            fh.flush()  # stream live so `tail -f` on the partial dir sees each node in real time
 
         result = run_agent(backend, spec.to_context(), config, trace_sink=sink)
 

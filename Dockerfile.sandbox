@@ -36,11 +36,17 @@ RUN useradd --create-home --shell /bin/bash --uid 1500 sandbox
 USER sandbox
 WORKDIR /home/sandbox
 
-# Minimal Python deps for payload smoke-testing inside the sandbox.
-# pwntools is intentionally NOT installed here; payload construction happens
-# outside the sandbox, only execution happens inside.
+# Python deps for exploit-script execution inside the sandbox.
+# Under ADR 0016 the agent's exploit.py runs *inside* this one sandbox (the
+# validator's single execution point), so the exploitation toolkit lives here:
+# pwntools for ELF()/ROP()/packing/cyclic, pyelftools underneath. (Before Trial 2
+# only pyelftools was installed, on the old assumption that construction happened
+# outside the sandbox — ADR 0016 supersedes that.) pwntools runs offline: the
+# sandbox has no network, and PWNLIB_NOTERM/PWNLIB_SILENT + HOME/XDG_CACHE_HOME
+# on /tmp (set by the runner) keep it from touching the read-only rootfs.
 RUN pip install --user --break-system-packages --no-cache-dir \
-        pyelftools==0.32
+        pyelftools==0.32 \
+        pwntools==4.15.0
 
 # Hard timeout wrapper. The harness also enforces a timeout, but defence in depth.
 ENTRYPOINT ["/usr/bin/timeout", "--kill-after=5", "30"]

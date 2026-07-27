@@ -36,7 +36,13 @@ import pytest
 from agent.state import AgentState, BinaryContext
 from harness.record import FailureMode, Outcome
 from validator.classifier import classify
-from validator.runner import _stage_workdir, chain_fingerprint, execute
+from validator.runner import (
+    SCRIPT_TARGET_PATH,
+    _stage_workdir,
+    chain_fingerprint,
+    execute,
+    execute_script,
+)
 from validator.runner_test_helpers import (
     FakeDockerClient,
     failing_to_start_client,
@@ -348,3 +354,114 @@ def test_execute_marker_echoed_from_payload_is_not_success(tmp_path: Path) -> No
     assert out.marker_in_payload is True
     assert out.succeeded is False
     assert classify(_state(), out) == (Outcome.FAILURE, FailureMode.OTHER)
+
+
+# --------------------------------------------------------------------------- #
+# execute_script — ADR 0016: agent exploit.py through the same sandbox
+# --------------------------------------------------------------------------- #
+
+
+@pytest.fixture
+def binary_and_script(tmp_path: Path) -> tuple[Path, Path]:
+    """A throwaway target + exploit.py pair; the fake client never reads them."""
+    binary = tmp_path / "sample_overflow"
+    script = tmp_path / "exploit.py"
+    binary.write_bytes(b"\x7fELF fake binary")
+    # A script that does NOT contain the marker literal (so the anti-echo guard
+    # does not trip): the marker must come from the target at run time.
+    script.write_text("from pwn import *\nio = process('/work/target')\nio.interactive()\n")
+    return binary, script
+
+
+def test_execute_script_success_shares_hardening_plus_writable_tmp(
+    binary_and_script: tuple[Path, Path],
+) -> None:
+    binary, script = binary_and_script
+    client = succeeding_client(stdout=f"shell says {MARKER}".encode())
+
+    out = execute_script(binary, script, success_marker=MARKER, client=client)
+
+    assert out.succeeded is True
+    assert out.return_code == 0
+    assert out.stdout_marker_found is True
+    assert out.marker_in_payload is False
+    assert out.chain_fingerprint is None  # a script declares no chain up front
+
+    # Identical hardening to the payload path, plus the script-mode additions.
+    assert len(client.containers.run_calls) == 1
+    kwargs = client.containers.run_calls[0]
+    assert kwargs["network_disabled"] is True
+    assert kwargs["read_only"] is True
+    assert kwargs["user"] == "1500:1500"
+    assert kwargs["cap_drop"] == ["ALL"]
+    assert kwargs["security_opt"] == ["no-new-privileges"]
+    assert list(kwargs["volumes"].values()) == [{"bind": "/work", "mode": "ro"}]
+    # Script mode: the command runs exploit.py; /tmp is a writable in-memory mount;
+    # HOME/cache point there so pwntools never writes the read-only rootfs.
+    assert kwargs["command"] == ["python3", "/work/exploit.py"]
+    assert "/tmp" in kwargs["tmpfs"]
+    assert kwargs["environment"]["HOME"] == "/tmp"
+    assert kwargs["working_dir"] == "/tmp"
+    assert SCRIPT_TARGET_PATH == "/work/target"
+
+    assert client.container.removed is True
+
+
+def test_execute_script_anti_echo_marker_in_source_denied(tmp_path: Path) -> None:
+    """A script that just prints the marker literal is denied (ADR 0016)."""
+    binary = tmp_path / "target"
+    script = tmp_path / "exploit.py"
+    binary.write_bytes(b"\x7fELF fake binary")
+    script.write_text(f"print({MARKER!r})\n")  # marker literal in the script source
+    client = succeeding_client(stdout=MARKER.encode())
+
+    out = execute_script(binary, script, success_marker=MARKER, client=client)
+
+    assert out.stdout_marker_found is True
+    assert out.marker_in_payload is True  # marker present in the submitted artifact
+    assert out.succeeded is False
+    assert classify(_state(), out) == (Outcome.FAILURE, FailureMode.OTHER)
+
+
+def test_execute_script_timeout_is_not_success(
+    binary_and_script: tuple[Path, Path],
+) -> None:
+    binary, script = binary_and_script
+    out = execute_script(binary, script, success_marker=MARKER, client=timing_out_client())
+
+    assert out.succeeded is False
+    assert "timeout" in out.stderr_excerpt
+
+
+def test_execute_script_launch_failure_is_reported_not_raised(
+    binary_and_script: tuple[Path, Path],
+) -> None:
+    binary, script = binary_and_script
+    out = execute_script(binary, script, success_marker=MARKER, client=failing_to_start_client())
+
+    assert out.succeeded is False
+    assert "failed to start" in out.stderr_excerpt
+
+
+def test_execute_script_missing_files_raise(tmp_path: Path) -> None:
+    binary = tmp_path / "target"
+    script = tmp_path / "exploit.py"
+    binary.write_bytes(b"\x7fELF fake binary")
+    script.write_text("pass\n")
+    with pytest.raises(FileNotFoundError, match="binary not found"):
+        execute_script(tmp_path / "nope", script, client=succeeding_client(b""))
+    with pytest.raises(FileNotFoundError, match="script not found"):
+        execute_script(binary, tmp_path / "nope.py", client=succeeding_client(b""))
+
+
+def test_execute_does_not_pass_script_only_kwargs(
+    binary_and_payload: tuple[Path, Path],
+) -> None:
+    """The payload path must not gain tmpfs/env/working_dir — its launch kwargs
+    stay exactly as before (regression guard for the shared-helper refactor)."""
+    binary, payload = binary_and_payload
+    execute(binary, payload, success_marker=MARKER, client=(client := succeeding_client(b"")))
+    kwargs = client.containers.run_calls[0]
+    assert "tmpfs" not in kwargs
+    assert "environment" not in kwargs
+    assert "working_dir" not in kwargs

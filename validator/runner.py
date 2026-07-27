@@ -44,6 +44,7 @@ import tempfile
 import time
 from collections.abc import Iterable, Sequence
 from contextlib import suppress
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -70,6 +71,28 @@ _RUN_COMMAND = [
     "-c",
     f"{_WORK_MOUNT}/{_TARGET_NAME} < {_WORK_MOUNT}/{_PAYLOAD_NAME}",
 ]
+
+# Script mode (ADR 0016): the agent's exploit.py runs *inside the same sandbox*,
+# with the target at SCRIPT_TARGET_PATH. The run command is a constant (no
+# host-controlled strings, so no shell-injection surface, exactly like
+# _RUN_COMMAND). The script gets a small in-memory /tmp (rootfs stays read-only)
+# for pwntools' scratch/cache and any staged payload, plus HOME/cache env pointed
+# there so pwntools never tries to write the read-only home dir.
+_SCRIPT_NAME = "exploit.py"
+_SCRIPT_RUN_COMMAND = ["python3", f"{_WORK_MOUNT}/{_SCRIPT_NAME}"]
+SCRIPT_TARGET_PATH = f"{_WORK_MOUNT}/{_TARGET_NAME}"
+# These "/tmp" paths are CONTAINER-INTERNAL — the in-memory tmpfs mount and the
+# env pointing pwntools' cache/home into it (ADR 0016), not host temp files — so
+# S108 (insecure host-temp usage) is a false positive at each. Suppressed per-line
+# so S108 stays active for any real host-temp usage elsewhere in this file.
+_SCRIPT_TMPFS = {"/tmp": "size=64m,mode=1777"}  # noqa: S108
+_SCRIPT_ENV = {
+    "HOME": "/tmp",  # noqa: S108
+    "XDG_CACHE_HOME": "/tmp/.cache",  # noqa: S108
+    "PWNLIB_NOTERM": "1",
+    "PWNLIB_SILENT": "1",
+}
+_SCRIPT_WORKING_DIR = "/tmp"  # noqa: S108
 
 # stdout/stderr are stored as bounded excerpts on the record, not in full; the
 # complete logs are not retained (the marker decision is made on the full text
@@ -119,6 +142,136 @@ def _stage_workdir(binary_path: Path, payload_path: Path) -> Path:
     payload.chmod(0o444)
     workdir.chmod(0o755)
     return workdir
+
+
+def _stage_script_workdir(binary_path: Path, script_path: Path) -> Path:
+    """Copy the target + agent ``exploit.py`` into a private temp dir (ADR 0016).
+
+    Same permission handling as ``_stage_workdir`` — the mount is read-only and the
+    uid-1500 sandbox user must be able to traverse it and read/exec both files.
+    """
+    workdir = Path(tempfile.mkdtemp(prefix="sara-validator-"))
+    target = workdir / _TARGET_NAME
+    script = workdir / _SCRIPT_NAME
+    shutil.copy(binary_path, target)
+    shutil.copy(script_path, script)
+    target.chmod(0o555)
+    script.chmod(0o444)
+    workdir.chmod(0o755)
+    return workdir
+
+
+@dataclass(slots=True)
+class _SandboxRun:
+    """Raw result of one container invocation, before marker/success scoring.
+
+    ``launched`` is ``False`` when the container never started (a Docker/daemon
+    failure); ``error`` is non-empty on a launch or wait failure. ``execute`` and
+    ``execute_script`` both build their ``ValidatorOutput`` from this, so the two
+    entry points share one isolation policy by construction (ADR 0002 / 0016).
+    """
+
+    status_code: int
+    stdout: str
+    stderr: str
+    error: str
+    timed_out: bool
+    elapsed_seconds: float
+    launched: bool
+
+
+def _run_in_sandbox(
+    client: Any,
+    image: str,
+    command: list[str],
+    workdir: Path,
+    *,
+    timeout_seconds: int,
+    tmpfs: dict[str, str] | None = None,
+    environment: dict[str, str] | None = None,
+    working_dir: str | None = None,
+) -> _SandboxRun:
+    """Launch ``command`` in the locked-down sandbox and capture the result.
+
+    The single place the hardening flags live, so ``execute`` (payload) and
+    ``execute_script`` (exploit.py) cannot drift in isolation. ``tmpfs`` /
+    ``environment`` / ``working_dir`` are optional and *only* set for script mode
+    (a writable in-memory ``/tmp``); when omitted, the launch kwargs are identical
+    to the historical payload path. Never raises on a container/daemon failure —
+    it is reported via ``_SandboxRun.error`` / ``launched=False``.
+    """
+    import requests
+    from docker.errors import DockerException
+
+    timeout_exc = (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError)
+
+    extra: dict[str, Any] = {}
+    if tmpfs is not None:
+        extra["tmpfs"] = tmpfs
+    if environment is not None:
+        extra["environment"] = environment
+    if working_dir is not None:
+        extra["working_dir"] = working_dir
+
+    started = time.monotonic()
+    try:
+        container = client.containers.run(
+            image,
+            command=command,
+            volumes={str(workdir): {"bind": _WORK_MOUNT, "mode": "ro"}},
+            network_disabled=True,
+            read_only=True,
+            user="1500:1500",
+            mem_limit="256m",
+            pids_limit=64,
+            cap_drop=["ALL"],
+            security_opt=["no-new-privileges"],
+            detach=True,
+            **extra,
+        )
+    except DockerException as exc:
+        return _SandboxRun(
+            status_code=-1,
+            stdout="",
+            stderr="",
+            error=f"container failed to start: {exc}",
+            timed_out=False,
+            elapsed_seconds=time.monotonic() - started,
+            launched=False,
+        )
+
+    timed_out = False
+    status_code = -1
+    stdout_text = ""
+    stderr_text = ""
+    error_text = ""
+    try:
+        try:
+            result = container.wait(timeout=timeout_seconds)
+            status_code = int(result.get("StatusCode", -1))
+        except timeout_exc:
+            timed_out = True
+            with suppress(Exception):
+                container.kill()
+        except DockerException as exc:
+            error_text = f"wait failed: {exc}"
+        with suppress(Exception):
+            stdout_text = container.logs(stdout=True, stderr=False).decode("utf-8", "replace")
+        with suppress(Exception):
+            stderr_text = container.logs(stdout=False, stderr=True).decode("utf-8", "replace")
+    finally:
+        with suppress(Exception):
+            container.remove(force=True)
+
+    return _SandboxRun(
+        status_code=status_code,
+        stdout=stdout_text,
+        stderr=stderr_text,
+        error=error_text,
+        timed_out=timed_out,
+        elapsed_seconds=time.monotonic() - started,
+        launched=True,
+    )
 
 
 def execute(
@@ -180,11 +333,6 @@ def execute(
     marker_in_payload = success_marker.encode("utf-8") in payload_path.read_bytes()
     candidate_fingerprint = chain_fingerprint(candidate_chain) if candidate_chain else None
 
-    import requests
-    from docker.errors import DockerException
-
-    timeout_exc = (requests.exceptions.ReadTimeout, requests.exceptions.ConnectionError)
-
     if client is None:
         import docker
 
@@ -192,82 +340,138 @@ def execute(
 
     workdir = _stage_workdir(binary_path, payload_path)
     try:
-        started = time.monotonic()
-        try:
-            container = client.containers.run(
-                image,
-                command=_RUN_COMMAND,
-                volumes={str(workdir): {"bind": _WORK_MOUNT, "mode": "ro"}},
-                network_disabled=True,
-                read_only=True,
-                user="1500:1500",
-                mem_limit="256m",
-                pids_limit=64,
-                cap_drop=["ALL"],
-                security_opt=["no-new-privileges"],
-                detach=True,
-            )
-        except DockerException as exc:
-            return ValidatorOutput(
-                succeeded=False,
-                return_code=-1,
-                stdout_marker_found=False,
-                marker_in_payload=marker_in_payload,
-                chain_fingerprint=candidate_fingerprint,
-                stderr_excerpt=_excerpt(f"container failed to start: {exc}"),
-                elapsed_seconds=time.monotonic() - started,
-            )
+        run = _run_in_sandbox(client, image, _RUN_COMMAND, workdir, timeout_seconds=timeout_seconds)
+    finally:
+        shutil.rmtree(workdir, ignore_errors=True)
 
-        timed_out = False
-        status_code = -1
-        stdout_text = ""
-        stderr_text = ""
-        error_text = ""
-        try:
-            try:
-                result = container.wait(timeout=timeout_seconds)
-                status_code = int(result.get("StatusCode", -1))
-            except timeout_exc:
-                timed_out = True
-                with suppress(Exception):
-                    container.kill()
-            except DockerException as exc:
-                error_text = f"wait failed: {exc}"
-            with suppress(Exception):
-                stdout_text = container.logs(stdout=True, stderr=False).decode("utf-8", "replace")
-            with suppress(Exception):
-                stderr_text = container.logs(stdout=False, stderr=True).decode("utf-8", "replace")
-        finally:
-            with suppress(Exception):
-                container.remove(force=True)
+    return _score(
+        run,
+        success_marker=success_marker,
+        marker_in_artifact=marker_in_payload,
+        candidate_fingerprint=candidate_fingerprint,
+    )
 
-        elapsed = time.monotonic() - started
-        marker_found = success_marker in stdout_text
-        # ADR 0009: a marker echoed straight from the payload is not a shell.
-        succeeded = (
-            (not timed_out)
-            and (not error_text)
-            and status_code == 0
-            and marker_found
-            and not marker_in_payload
+
+def _score(
+    run: _SandboxRun,
+    *,
+    success_marker: str,
+    marker_in_artifact: bool,
+    candidate_fingerprint: str | None,
+) -> ValidatorOutput:
+    """Turn a raw ``_SandboxRun`` into the scored ``ValidatorOutput`` (ADR 0009).
+
+    Shared by ``execute`` and ``execute_script`` so a payload run and a script run
+    are scored by one rule: the marker must appear on stdout, the process must
+    exit 0 without timing out, and the marker must **not** be present in the
+    agent's artifact (``marker_in_artifact`` — payload bytes for ``execute``,
+    script source for ``execute_script``) so an echo/print cannot be a success.
+    """
+    if not run.launched:
+        return ValidatorOutput(
+            succeeded=False,
+            return_code=run.status_code,
+            stdout_marker_found=False,
+            marker_in_payload=marker_in_artifact,
+            chain_fingerprint=candidate_fingerprint,
+            stderr_excerpt=_excerpt(run.error),
+            elapsed_seconds=run.elapsed_seconds,
         )
 
-        stderr_parts = [part for part in (stderr_text, error_text) if part]
-        if timed_out:
-            stderr_parts.append("timeout")
+    marker_found = success_marker in run.stdout
+    succeeded = (
+        (not run.timed_out)
+        and (not run.error)
+        and run.status_code == 0
+        and marker_found
+        and not marker_in_artifact
+    )
+    stderr_parts = [part for part in (run.stderr, run.error) if part]
+    if run.timed_out:
+        stderr_parts.append("timeout")
 
-        return ValidatorOutput(
-            succeeded=succeeded,
-            return_code=status_code,
-            stdout_marker_found=marker_found,
-            marker_in_payload=marker_in_payload,
-            chain_fingerprint=candidate_fingerprint,
-            stdout_excerpt=_excerpt(stdout_text),
-            stderr_excerpt=_excerpt("\n".join(stderr_parts)),
-            elapsed_seconds=elapsed,
+    return ValidatorOutput(
+        succeeded=succeeded,
+        return_code=run.status_code,
+        stdout_marker_found=marker_found,
+        marker_in_payload=marker_in_artifact,
+        chain_fingerprint=candidate_fingerprint,
+        stdout_excerpt=_excerpt(run.stdout),
+        stderr_excerpt=_excerpt("\n".join(stderr_parts)),
+        elapsed_seconds=run.elapsed_seconds,
+    )
+
+
+def execute_script(
+    binary_path: Path,
+    script_path: Path,
+    *,
+    success_marker: str = SUCCESS_MARKER,
+    image: str | None = None,
+    timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
+    client: Any = None,
+) -> ValidatorOutput:
+    """Run the agent's ``exploit.py`` against ``binary_path`` in the sandbox (ADR 0016).
+
+    The script is mounted read-only at ``/work/exploit.py`` and the target at
+    :data:`SCRIPT_TARGET_PATH` (``/work/target``); the run command is the constant
+    ``python3 /work/exploit.py``. Isolation is **identical** to :func:`execute`
+    (same ``_run_in_sandbox`` helper) plus a small in-memory ``/tmp`` so the script
+    has scratch/cache space without a writable rootfs.
+
+    Success is the same rule as the payload path (:func:`_score`, ADR 0009): the
+    marker on stdout, a clean exit, no timeout — and the **anti-echo guard extends
+    to the script source**, so a script that merely prints the marker literal is
+    denied (``marker_in_payload`` is set). The marker must be produced at run time
+    by the target's spawned shell, as the reference PoCs do. Never raises on a
+    container/daemon failure; only a missing binary/script (a caller bug) raises.
+    """
+    image = image or os.environ.get("VALIDATOR_IMAGE", "sara-sandbox:latest")
+
+    if not binary_path.is_file():
+        raise FileNotFoundError(f"binary not found: {binary_path}")
+    if not script_path.is_file():
+        raise FileNotFoundError(f"script not found: {script_path}")
+
+    # Anti-echo guard on the script source (ADR 0016): a marker literal in the
+    # agent's script cannot be scored a success, exactly as a marker in payload
+    # bytes cannot.
+    marker_in_script = success_marker.encode("utf-8") in script_path.read_bytes()
+
+    if client is None:
+        import docker
+
+        client = docker.from_env()
+
+    workdir = _stage_script_workdir(binary_path, script_path)
+    try:
+        run = _run_in_sandbox(
+            client,
+            image,
+            _SCRIPT_RUN_COMMAND,
+            workdir,
+            timeout_seconds=timeout_seconds,
+            tmpfs=_SCRIPT_TMPFS,
+            environment=_SCRIPT_ENV,
+            working_dir=_SCRIPT_WORKING_DIR,
         )
     finally:
         shutil.rmtree(workdir, ignore_errors=True)
 
+    # A script declares no gadget chain up front, so there is no fingerprint.
+    return _score(
+        run,
+        success_marker=success_marker,
+        marker_in_artifact=marker_in_script,
+        candidate_fingerprint=None,
+    )
 
-__all__ = ["DEFAULT_TIMEOUT_SECONDS", "SUCCESS_MARKER", "chain_fingerprint", "execute"]
+
+__all__ = [
+    "DEFAULT_TIMEOUT_SECONDS",
+    "SCRIPT_TARGET_PATH",
+    "SUCCESS_MARKER",
+    "chain_fingerprint",
+    "execute",
+    "execute_script",
+]

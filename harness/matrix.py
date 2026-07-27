@@ -30,6 +30,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 import yaml
 
@@ -256,12 +257,24 @@ def run_batch(
                     break
                 spec = resolve_binary(cell.binary_id)
                 backend = backend_resolver(cell.backend)
+                # Pre-generate the run id so we can announce it (and its live
+                # folder) BEFORE the run executes: the operator can then tail
+                # <output_dir>/.partial-<run_id>/trace.jsonl in real time. run_one
+                # writes there and atomically renames it to <output_dir>/<run_id>/
+                # on finish.
+                run_id = uuid4()
+                emit(
+                    f"START {cell.binary_id} / {cell.backend} / {cell.strategy} "
+                    f"[{replicate + 1}/{config.replicates}] run={run_id} "
+                    f"-> {config.output_dir}/.partial-{run_id}/"
+                )
                 try:
                     record = run_one_fn(
                         spec,
                         backend,
                         cell.strategy,
                         settings,
+                        run_id=run_id,
                         validator_client=validator_client,
                         backend_handle=cell.backend,
                     )
@@ -275,15 +288,16 @@ def run_batch(
                     result.errored += 1
                     emit(
                         f"ERROR {cell.binary_id} / {cell.backend} / {cell.strategy} "
-                        f"[{replicate + 1}/{config.replicates}]: {type(exc).__name__}: {exc} "
-                        "— skipped; re-run to retry"
+                        f"[{replicate + 1}/{config.replicates}] run={run_id}: "
+                        f"{type(exc).__name__}: {exc} — skipped; re-run to retry"
                     )
                     continue
                 result.executed.append(record)
                 spend[cell.backend] = spend.get(cell.backend, 0.0) + record.cost.usd
                 emit(
-                    f"RUN   {cell.binary_id} / {cell.backend} / {cell.strategy} "
-                    f"[{replicate + 1}/{config.replicates}] -> {record.outcome.value}"
+                    f"DONE  {cell.binary_id} / {cell.backend} / {cell.strategy} "
+                    f"[{replicate + 1}/{config.replicates}] -> {record.outcome.value} "
+                    f"({config.output_dir}/{run_id}/)"
                 )
             result.skipped_existing += min(already, config.replicates)
     except KeyboardInterrupt:  # pragma: no cover - exercised via injected raise

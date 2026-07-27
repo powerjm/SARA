@@ -28,6 +28,7 @@ from harness.record import (
     BackendInfo,
     CostRecord,
     FailureMode,
+    MaxTier,
     Outcome,
     PricingSnapshot,
     PromptingStrategy,
@@ -122,10 +123,65 @@ def test_valid_failure_record_roundtrips() -> None:
     assert restored.failure_mode == FailureMode.HALLUCINATED_GADGET
 
 
-def test_new_records_default_to_schema_v4() -> None:
+def test_new_records_default_to_schema_v5() -> None:
     kwargs = _base_kwargs()
     kwargs["outcome"] = Outcome.SUCCESS
-    assert RunRecord(**kwargs).schema_version == "4"
+    assert RunRecord(**kwargs).schema_version == "5"
+
+
+# --- schema v5 fields: partial-credit tier + tool telemetry ---------------- #
+
+
+def test_v5_fields_default_and_round_trip() -> None:
+    kwargs = _base_kwargs()
+    kwargs["outcome"] = Outcome.SUCCESS
+    rec = RunRecord(**kwargs)
+    # Additive defaults.
+    assert rec.max_tier_reached == MaxTier.NONE
+    assert rec.tools_offered == []
+    assert rec.tool_call_counts == {}
+    # Settable + round-trips through the JSON contract the analysis reads.
+    rec2 = RunRecord(
+        **kwargs,
+        max_tier_reached=MaxTier.CONTROL,
+        tools_offered=["enumerate_gadgets", "submit_payload", "radare2_analyze_binary"],
+        tool_call_counts={"enumerate_gadgets": 4, "submit_payload": 1},
+    )
+    loaded = RunRecord.model_validate_json(rec2.model_dump_json())
+    assert loaded.max_tier_reached == MaxTier.CONTROL
+    assert loaded.tools_offered == ["enumerate_gadgets", "submit_payload", "radare2_analyze_binary"]
+    assert loaded.tool_call_counts == {"enumerate_gadgets": 4, "submit_payload": 1}
+
+
+def test_pre_v5_record_loads_with_v5_defaults() -> None:
+    # A pre-v5 record has no max_tier_reached / tools_offered / tool_call_counts;
+    # they must default so old runs stay loadable/comparable.
+    kwargs = _base_kwargs()
+    kwargs["outcome"] = Outcome.SUCCESS
+    payload = RunRecord(**kwargs).model_dump()
+    payload["schema_version"] = "4"
+    for dropped in ("max_tier_reached", "tools_offered", "tool_call_counts"):
+        payload.pop(dropped, None)
+    loaded = RunRecord.model_validate(payload)
+    assert loaded.schema_version == "4"
+    assert loaded.max_tier_reached == MaxTier.NONE
+    assert loaded.tools_offered == []
+    assert loaded.tool_call_counts == {}
+
+
+def test_v5_granular_budget_modes_are_valid_failure_modes() -> None:
+    # The split resource modes are all constructible on a FAILURE record.
+    for mode in (
+        FailureMode.TOKEN_BUDGET,
+        FailureMode.WALL_CLOCK,
+        FailureMode.ITERATION_CAP,
+        FailureMode.CONTEXT_OVERFLOW,
+        FailureMode.TRUNCATED,
+    ):
+        kwargs = _base_kwargs()
+        kwargs["outcome"] = Outcome.FAILURE
+        kwargs["failure_mode"] = mode
+        assert RunRecord(**kwargs).failure_mode == mode
 
 
 def test_conversation_path_optional_and_pre_v4_loads() -> None:

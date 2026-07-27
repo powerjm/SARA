@@ -122,3 +122,47 @@ those older runs were keyed anyway.
 
 **No back-fill.** Existing v1–v3 records are left as-is (they remain valid). Their
 runs have no `conversation.jsonl`; only the `trace.jsonl` is available.
+
+## v4 → v5 — resource-failure split, partial-credit tier, tool telemetry (2026-07-26)
+
+**What changed (Trial 2).**
+
+1. **`FailureMode` split.** The single `BUDGET_EXHAUSTED` is replaced for new
+   records by four granular resource modes — `TOKEN_BUDGET`, `WALL_CLOCK`,
+   `ITERATION_CAP`, `CONTEXT_OVERFLOW` — plus a first-class `TRUNCATED` (previously
+   folded into `OTHER`). `BUDGET_EXHAUSTED` remains a **valid legacy value** (pre-v5
+   records still carry it); `harness.record.BUDGET_FAILURE_MODES` groups the new
+   modes plus the legacy value for analysis. `node_reason` now records which limit
+   tripped; a provider context-window error is caught in the loop and recorded as
+   `CONTEXT_OVERFLOW` instead of crashing the run (35 Trial-1 runs died uncaught).
+2. **`max_tier_reached: MaxTier`** (default `NONE`) — the partial-credit ladder
+   (`NONE < RAN < CONTROL < MARKER`), scored by `validator.classifier.score_tier`
+   from the validator output. Ordinal via `harness.record.MAX_TIER_ORDER` /
+   `max_tier_rank`.
+3. **Tool telemetry.** `tools_offered: list[str]` (the toolset advertised to the
+   model this run — the exact Trial-1 blind spot) and `tool_call_counts:
+   dict[str, int]` (name → number of agent tool calls).
+
+**Why.** Trial 1's `BUDGET_EXHAUSTED` conflated "ran out of tokens/time/iterations"
+and its context-overflow deaths were uncaught; the split makes "couldn't afford it"
+separable from "couldn't do it." The tier turns a 0/N headline into a graded
+distribution (8.7% of Trial-1 runs hijacked control flow). `tools_offered` records
+what the agent could actually use, so the run-with-two-tools failure can never
+recur silently.
+
+**Compatibility.**
+
+- `schema_version` is `Literal["1", "2", "3", "4", "5"]`, default `"5"`. New
+  records are `"5"`; v1–v4 records still validate.
+- All three new fields are additive with defaults (`max_tier_reached=NONE`, empty
+  `tools_offered` / `tool_call_counts`), so a pre-v5 record (missing those keys)
+  deserialises unchanged.
+- No existing field changed shape. New `FailureMode` values are additive; existing
+  values (incl. `BUDGET_EXHAUSTED`) remain valid.
+
+**Reader guidance.** For a pre-v5 record, `max_tier_reached == NONE` and the tool
+telemetry are empty because they were not recorded — not because nothing happened
+(reconstruct from the trace if needed). Treat legacy `BUDGET_EXHAUSTED` as
+"resource-exhausted, sub-cause unknown"; new records give the sub-cause.
+
+**No back-fill.** Existing v1–v4 records are left as-is.
