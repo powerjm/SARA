@@ -103,6 +103,7 @@ target-version = "py314"
 # analysis/diagram scripts are not maintained live code, so do not lint them.
 extend-exclude = ["runs_for_record_trial_1", "runs_for_record_trial_2", "runs_for_record_trial_3", "compare_trial_1_to_2", "compare_trial_2_to_3", "compare_all_trials"]
 
+
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "S", "C4", "SIM"]
 ignore = ["S101"]  # assert is fine in tests
