@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1011" viewBox="0 0 1600 1011" role="img">
+<title>Median total tokens by backend</title>
+<style>
+ .title{font:700 34px system-ui,sans-serif;fill:#172554}
+ .sub{font:17px system-ui,sans-serif;fill:#475569}
+ .label{font:650 17px system-ui,sans-serif;fill:#1e293b}
+ .small{font:15px system-ui,sans-serif;fill:#64748b}
+ .value{font:700 15px system-ui,sans-serif;fill:#172554}
+ .legend{font:15px system-ui,sans-serif;fill:#334155}
+ .axis{font:14px system-ui,sans-serif;fill:#64748b}
+ .white{font:700 15px system-ui,sans-serif;fill:#fff}
+ .source{font:14px system-ui,sans-serif;fill:#64748b}
+ </style>
+<rect width="1600" height="1011" fill="#f8fafc"/>
+<text class="title" x="60" y="57">Median total tokens by backend</text>
+<text class="sub" x="60" y="103">Within-trial finalized records; grey denotes no representation</text>
+<g transform="translate(0,0)">
+<text class="label" x="747.5" y="165" text-anchor="middle">Trial 1</text>
+<text class="label" x="1032.5" y="165" text-anchor="middle">Trial 2</text>
+<text class="label" x="1317.5" y="165" text-anchor="middle">Trial 3</text>
+<text class="label" x="60.0" y="236.0" text-anchor="start"><tspan x="60.0" dy="0">Claude Opus</tspan></text>
+<rect x="610" y="200" width="275" height="59" rx="8" fill="rgb(237,201,204)"/>
+<text class="value" x="747.5" y="227" text-anchor="middle">206.7k</text>
+<text class="value" x="747.5" y="248" text-anchor="middle">n=75</text>
+<rect x="895" y="200" width="275" height="59" rx="8" fill="#e2e8f0"/>
+<text class="small" x="1032.5" y="236" text-anchor="middle">not represented</text>
+<rect x="1180" y="200" width="275" height="59" rx="8" fill="rgb(237,201,204)"/>
+<text class="value" x="1317.5" y="227" text-anchor="middle">205.7k</text>
+<text class="value" x="1317.5" y="248" text-anchor="middle">n=36</text>
+<text class="label" x="60.0" y="302.0" text-anchor="start"><tspan x="60.0" dy="0">Claude Sonnet</tspan></text>
+<rect x="610" y="266" width="275" height="59" rx="8" fill="rgb(236,200,203)"/>
+<text class="value" x="747.5" y="293" text-anchor="middle">213.2k</text>
+<text class="value" x="747.5" y="314" text-anchor="middle">n=95</text>
+<rect x="895" y="266" width="275" height="59" rx="8" fill="rgb(235,187,190)"/>
+<text class="value" x="1032.5" y="293" text-anchor="middle">271.2k</text>
+<text class="value" x="1032.5" y="314" text-anchor="middle">n=23</text>
+<rect x="1180" y="266" width="275" height="59" rx="8" fill="rgb(234,177,179)"/>
+<text class="value" x="1317.5" y="293" text-anchor="middle">321.5k</text>
+<text class="value" x="1317.5" y="314" text-anchor="middle">n=36</text>
+<text class="label" x="60.0" y="368.0" text-anchor="start"><tspan x="60.0" dy="0">Devstral Small</tspan></text>
+<rect x="610" y="332" width="275" height="59" rx="8" fill="rgb(237,202,205)"/>
+<text class="value" x="747.5" y="359" text-anchor="middle">202.5k</text>
+<text class="value" x="747.5" y="380" text-anchor="middle">n=147</text>
+<rect x="895" y="332" width="275" height="59" rx="8" fill="#e2e8f0"/>
+<text class="small" x="1032.5" y="368" text-anchor="middle">not represented</text>
+<rect x="1180" y="332" width="275" height="59" rx="8" fill="#e2e8f0"/>
+<text class="small" x="1317.5" y="368" text-anchor="middle">not represented</text>
+<text class="label" x="60.0" y="434.0" text-anchor="start"><tspan x="60.0" dy="0">Dolphin Mistral 24B</tspan></text>
+<rect x="610" y="398" width="275" height="59" rx="8" fill="rgb(237,202,206)"/>
+<text class="value" x="747.5" y="425" text-anchor="middle">200.3k</text>
+<text class="value" x="747.5" y="446" text-anchor="middle">n=180</text>
+<rect x="895" y="398" width="275" height="59" rx="8" fill="#e2e8f0"/>
+<text class="small" x="1032.5" y="434" text-anchor="middle">not represented</text>
+<rect x="1180" y="398" width="275" height="59" rx="8" fill="#e2e8f0"/>
+<text class="small" x="1317.5" y="434" text-anchor="middle">not represented</text>
+<text class="label" x="60.0" y="500.0" text-anchor="start"><tspan x="60.0" dy="0">GPT-5</tspan></text>
+<rect x="610" y="464" width="275" height="59" rx="8" fill="rgb(240,230,234)"/>
+<text class="value" x="747.5" y="491" text-anchor="middle">69.3k</text>
+<text class="value" x="747.5" y="512" text-anchor="middle">n=188</text>
+<rect x="895" y="464" width="275" height="59" rx="8" fill="rgb(237,206,209)"/>
+<text class="value" x="1032.5" y="491" text-anchor="middle">182.8k</text>
+<text class="value" x="1032.5" y="512" text-anchor="middle">n=23</text>
+<rect x="1180" y="464" width="275" height="59" rx="8" fill="rgb(239,222,226)"/>
+<text class="value" x="1317.5" y="491" text-anchor="middle">105.8k</text>
+<text class="value" x="1317.5" y="512" text-anchor="middle">n=36</text>
+<text class="label" x="60.0" y="566.0" text-anchor="start"><tspan x="60.0" dy="0">GPT-OSS 20B</tspan></text>
+<rect x="610" y="530" width="275" height="59" rx="8" fill="rgb(239,230,233)"/>
+<text class="value" x="747.5" y="557" text-anchor="middle">72.3k</text>
+<text class="value" x="747.5" y="578" text-anchor="middle">n=174</text>
+<rect x="895" y="530" width="275" height="59" rx="8" fill="rgb(230,136,138)"/>
+<text class="white" x="1032.5" y="557" text-anchor="middle">512.6k</text>
+<text class="white" x="1032.5" y="578" text-anchor="middle">n=24</text>
+<rect x="1180" y="530" width="275" height="59" rx="8" fill="rgb(220,38,38)"/>
+<text class="white" x="1317.5" y="557" text-anchor="middle">971.6k</text>
+<text class="white" x="1317.5" y="578" text-anchor="middle">n=14</text>
+<text class="label" x="60.0" y="632.0" text-anchor="start"><tspan x="60.0" dy="0">Gemini Pro</tspan></text>
+<rect x="610" y="596" width="275" height="59" rx="8" fill="rgb(241,244,248)"/>
+<text class="value" x="747.5" y="623" text-anchor="middle">6.5k</text>
+<text class="value" x="747.5" y="644" text-anchor="middle">n=195</text>
+<rect x="895" y="596" width="275" height="59" rx="8" fill="#e2e8f0"/>
+<text class="small" x="1032.5" y="632" text-anchor="middle">not represented</text>
+<rect x="1180" y="596" width="275" height="59" rx="8" fill="#e2e8f0"/>
+<text class="small" x="1317.5" y="632" text-anchor="middle">not represented</text>
+<text class="label" x="60.0" y="698.0" text-anchor="start"><tspan x="60.0" dy="0">Qwen2.5 Coder 32B</tspan></text>
+<rect x="610" y="662" width="275" height="59" rx="8" fill="rgb(240,240,244)"/>
+<text class="value" x="747.5" y="689" text-anchor="middle">24.6k</text>
+<text class="value" x="747.5" y="710" text-anchor="middle">n=180</text>
+<rect x="895" y="662" width="275" height="59" rx="8" fill="#e2e8f0"/>
+<text class="small" x="1032.5" y="698" text-anchor="middle">not represented</text>
+<rect x="1180" y="662" width="275" height="59" rx="8" fill="#e2e8f0"/>
+<text class="small" x="1317.5" y="698" text-anchor="middle">not represented</text>
+<text class="label" x="60.0" y="764.0" text-anchor="start"><tspan x="60.0" dy="0">Qwen3 Abliterated</tspan></text>
+<rect x="610" y="728" width="275" height="59" rx="8" fill="rgb(238,215,218)"/>
+<text class="value" x="747.5" y="755" text-anchor="middle">141.1k</text>
+<text class="value" x="747.5" y="776" text-anchor="middle">n=180</text>
+<rect x="895" y="728" width="275" height="59" rx="8" fill="rgb(233,165,167)"/>
+<text class="value" x="1032.5" y="755" text-anchor="middle">377.3k</text>
+<text class="value" x="1032.5" y="776" text-anchor="middle">n=6</text>
+<rect x="1180" y="728" width="275" height="59" rx="8" fill="rgb(224,76,76)"/>
+<text class="white" x="1317.5" y="755" text-anchor="middle">794.5k</text>
+<text class="white" x="1317.5" y="776" text-anchor="middle">n=12</text>
+<text class="label" x="60.0" y="830.0" text-anchor="start"><tspan x="60.0" dy="0">Qwen3 Coder 30B</tspan></text>
+<rect x="610" y="794" width="275" height="59" rx="8" fill="rgb(237,202,205)"/>
+<text class="value" x="747.5" y="821" text-anchor="middle">202.2k</text>
+<text class="value" x="747.5" y="842" text-anchor="middle">n=161</text>
+<rect x="895" y="794" width="275" height="59" rx="8" fill="rgb(237,206,209)"/>
+<text class="value" x="1032.5" y="821" text-anchor="middle">185.0k</text>
+<text class="value" x="1032.5" y="842" text-anchor="middle">n=10</text>
+<rect x="1180" y="794" width="275" height="59" rx="8" fill="#e2e8f0"/>
+<text class="small" x="1317.5" y="830" text-anchor="middle">not represented</text>
+<text class="label" x="60.0" y="896.0" text-anchor="start"><tspan x="60.0" dy="0">WhiteRabbitNeo 7B</tspan></text>
+<rect x="610" y="860" width="275" height="59" rx="8" fill="rgb(237,202,205)"/>
+<text class="value" x="747.5" y="887" text-anchor="middle">202.0k</text>
+<text class="value" x="747.5" y="908" text-anchor="middle">n=180</text>
+<rect x="895" y="860" width="275" height="59" rx="8" fill="rgb(230,136,138)"/>
+<text class="white" x="1032.5" y="887" text-anchor="middle">512.1k</text>
+<text class="white" x="1032.5" y="908" text-anchor="middle">n=6</text>
+<rect x="1180" y="860" width="275" height="59" rx="8" fill="rgb(229,131,132)"/>
+<text class="white" x="1317.5" y="887" text-anchor="middle">537.2k</text>
+<text class="white" x="1317.5" y="908" text-anchor="middle">n=12</text>
+<text class="source" x="60" y="989">Source: finalized record.json total-token metadata</text>
+</g>
+</svg>

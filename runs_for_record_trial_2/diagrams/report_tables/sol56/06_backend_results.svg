@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="604" viewBox="0 0 1600 604" role="img" aria-labelledby="title desc">
+<title id="title">4. Backend results</title>
+<desc id="desc">Table 6 from RUN_FOR_RECORD_ANALYSIS.Sol56.md, source line 199.</desc>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .head { font: 700 17px system-ui, sans-serif; fill: #fff; }
+    .cell { font: 17px system-ui, sans-serif; fill: #1e293b; }
+    .cellStrong { font: 700 17px system-ui, sans-serif; fill: #172554; }
+    .source { font: 14px system-ui, sans-serif; fill: #64748b; }
+  </style>
+<rect width="1600" height="604" fill="#f8fafc"/>
+<text id="title" class="title" x="60" y="88">4. Backend results</text>
+<text class="sub" x="60" y="114">RUN_FOR_RECORD_ANALYSIS.Sol56.md • Table 06 • source line 199</text>
+<rect x="60" y="156" width="1480" height="376" rx="16" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+<path d="M76 156 H1524 Q1540 156 1540 172 V232 H60 V172 Q60 156 76 156 Z" fill="#172554"/>
+<text class="head" x="75.0" y="207.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">Backend</tspan></text>
+<line x1="370.6" y1="156" x2="370.6" y2="532" stroke="#cbd5e1"/>
+<text class="head" x="423.9" y="207.0" text-anchor="middle" xml:space="preserve"><tspan x="423.9" dy="0">n</tspan></text>
+<line x1="477.3" y1="156" x2="477.3" y2="532" stroke="#cbd5e1"/>
+<text class="head" x="536.6" y="207.0" text-anchor="middle" xml:space="preserve"><tspan x="536.6" dy="0">Success</tspan></text>
+<line x1="595.9" y1="156" x2="595.9" y2="532" stroke="#cbd5e1"/>
+<text class="head" x="649.3" y="207.0" text-anchor="middle" xml:space="preserve"><tspan x="649.3" dy="0">Rate</tspan></text>
+<line x1="702.7" y1="156" x2="702.7" y2="532" stroke="#cbd5e1"/>
+<text class="head" x="912.0" y="207.0" text-anchor="middle" xml:space="preserve"><tspan x="912.0" dy="0">Descriptive Wilson 95% interval</tspan></text>
+<line x1="1121.3" y1="156" x2="1121.3" y2="532" stroke="#cbd5e1"/>
+<text class="head" x="1330.7" y="195.0" text-anchor="middle" xml:space="preserve"><tspan x="1330.7" dy="0">Tier distribution</tspan><tspan x="1330.7" dy="24">(none/ran/control/marker)</tspan></text>
+<rect x="60" y="232" width="1480" height="50" fill="#ffffff"/>
+<line x1="60" y1="232" x2="1540" y2="232" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="266.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">gpt-5</tspan></text>
+<text class="cell" x="423.9" y="266.0" text-anchor="middle" xml:space="preserve"><tspan x="423.9" dy="0">23</tspan></text>
+<text class="cell" x="536.6" y="266.0" text-anchor="middle" xml:space="preserve"><tspan x="536.6" dy="0">16</tspan></text>
+<text class="cell" x="649.3" y="266.0" text-anchor="middle" xml:space="preserve"><tspan x="649.3" dy="0">69.6%</tspan></text>
+<text class="cell" x="912.0" y="266.0" text-anchor="middle" xml:space="preserve"><tspan x="912.0" dy="0">49.1%–84.4%</tspan></text>
+<text class="cell" x="1330.7" y="266.0" text-anchor="middle" xml:space="preserve"><tspan x="1330.7" dy="0">2 / 5 / 0 / 16</tspan></text>
+<rect x="60" y="282" width="1480" height="50" fill="#f1f5f9"/>
+<line x1="60" y1="282" x2="1540" y2="282" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="316.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">claude-sonnet</tspan></text>
+<text class="cell" x="423.9" y="316.0" text-anchor="middle" xml:space="preserve"><tspan x="423.9" dy="0">23</tspan></text>
+<text class="cell" x="536.6" y="316.0" text-anchor="middle" xml:space="preserve"><tspan x="536.6" dy="0">15</tspan></text>
+<text class="cell" x="649.3" y="316.0" text-anchor="middle" xml:space="preserve"><tspan x="649.3" dy="0">65.2%</tspan></text>
+<text class="cell" x="912.0" y="316.0" text-anchor="middle" xml:space="preserve"><tspan x="912.0" dy="0">44.9%–81.2%</tspan></text>
+<text class="cell" x="1330.7" y="316.0" text-anchor="middle" xml:space="preserve"><tspan x="1330.7" dy="0">1 / 6 / 1 / 15</tspan></text>
+<rect x="60" y="332" width="1480" height="50" fill="#ffffff"/>
+<line x1="60" y1="332" x2="1540" y2="332" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="366.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">gpt-oss-20b</tspan></text>
+<text class="cell" x="423.9" y="366.0" text-anchor="middle" xml:space="preserve"><tspan x="423.9" dy="0">24</tspan></text>
+<text class="cell" x="536.6" y="366.0" text-anchor="middle" xml:space="preserve"><tspan x="536.6" dy="0">3</tspan></text>
+<text class="cell" x="649.3" y="366.0" text-anchor="middle" xml:space="preserve"><tspan x="649.3" dy="0">12.5%</tspan></text>
+<text class="cell" x="912.0" y="366.0" text-anchor="middle" xml:space="preserve"><tspan x="912.0" dy="0">4.3%–31.0%</tspan></text>
+<text class="cell" x="1330.7" y="366.0" text-anchor="middle" xml:space="preserve"><tspan x="1330.7" dy="0">3 / 18 / 0 / 3</tspan></text>
+<rect x="60" y="382" width="1480" height="50" fill="#f1f5f9"/>
+<line x1="60" y1="382" x2="1540" y2="382" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="416.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">qwen3-coder-30b</tspan></text>
+<text class="cell" x="423.9" y="416.0" text-anchor="middle" xml:space="preserve"><tspan x="423.9" dy="0">10</tspan></text>
+<text class="cell" x="536.6" y="416.0" text-anchor="middle" xml:space="preserve"><tspan x="536.6" dy="0">0</tspan></text>
+<text class="cell" x="649.3" y="416.0" text-anchor="middle" xml:space="preserve"><tspan x="649.3" dy="0">0%</tspan></text>
+<text class="cell" x="912.0" y="416.0" text-anchor="middle" xml:space="preserve"><tspan x="912.0" dy="0">0%–27.8%</tspan></text>
+<text class="cell" x="1330.7" y="416.0" text-anchor="middle" xml:space="preserve"><tspan x="1330.7" dy="0">8 / 2 / 0 / 0</tspan></text>
+<rect x="60" y="432" width="1480" height="50" fill="#ffffff"/>
+<line x1="60" y1="432" x2="1540" y2="432" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="466.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">whiterabbitneo-v3-7b</tspan></text>
+<text class="cell" x="423.9" y="466.0" text-anchor="middle" xml:space="preserve"><tspan x="423.9" dy="0">6</tspan></text>
+<text class="cell" x="536.6" y="466.0" text-anchor="middle" xml:space="preserve"><tspan x="536.6" dy="0">0</tspan></text>
+<text class="cell" x="649.3" y="466.0" text-anchor="middle" xml:space="preserve"><tspan x="649.3" dy="0">0%</tspan></text>
+<text class="cell" x="912.0" y="466.0" text-anchor="middle" xml:space="preserve"><tspan x="912.0" dy="0">0%–39.0%</tspan></text>
+<text class="cell" x="1330.7" y="466.0" text-anchor="middle" xml:space="preserve"><tspan x="1330.7" dy="0">6 / 0 / 0 / 0</tspan></text>
+<rect x="60" y="482" width="1480" height="50" fill="#f1f5f9"/>
+<line x1="60" y1="482" x2="1540" y2="482" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="516.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">qwen3-30b-abliterated</tspan></text>
+<text class="cell" x="423.9" y="516.0" text-anchor="middle" xml:space="preserve"><tspan x="423.9" dy="0">6</tspan></text>
+<text class="cell" x="536.6" y="516.0" text-anchor="middle" xml:space="preserve"><tspan x="536.6" dy="0">0</tspan></text>
+<text class="cell" x="649.3" y="516.0" text-anchor="middle" xml:space="preserve"><tspan x="649.3" dy="0">0%</tspan></text>
+<text class="cell" x="912.0" y="516.0" text-anchor="middle" xml:space="preserve"><tspan x="912.0" dy="0">0%–39.0%</tspan></text>
+<text class="cell" x="1330.7" y="516.0" text-anchor="middle" xml:space="preserve"><tspan x="1330.7" dy="0">3 / 3 / 0 / 0</tspan></text>
+<text class="source" x="60" y="577">Source: RUN_FOR_RECORD_ANALYSIS.Sol56.md, Markdown table beginning at line 199</text>
+</svg>

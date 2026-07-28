@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="630" viewBox="0 0 1600 630" role="img" aria-labelledby="title desc">
+<title id="title">Cell = success / n (parenthetical = runs that reached the sandbox, i.e. RAN+)</title>
+<desc id="desc">Table 6 from RUN_FOR_RECORD_ANALYSIS.Opus5.md, source line 143.</desc>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .head { font: 700 17px system-ui, sans-serif; fill: #fff; }
+    .cell { font: 17px system-ui, sans-serif; fill: #1e293b; }
+    .cellStrong { font: 700 17px system-ui, sans-serif; fill: #172554; }
+    .source { font: 14px system-ui, sans-serif; fill: #64748b; }
+  </style>
+<rect width="1600" height="630" fill="#f8fafc"/>
+<text id="title" class="title" x="60" y="88">Cell = success / n (parenthetical = runs that reached the sandbox, i.e.</text>
+<text id="" class="title" x="60" y="132">RAN+)</text>
+<text class="sub" x="60" y="158">RUN_FOR_RECORD_ANALYSIS.Opus5.md • Table 06 • source line 143</text>
+<rect x="60" y="200" width="1480" height="358" rx="16" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+<path d="M76 200 H1524 Q1540 200 1540 216 V258 H60 V216 Q60 200 76 200 Z" fill="#172554"/>
+<text class="head" x="75.0" y="242.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">Backend</tspan></text>
+<line x1="485.6" y1="200" x2="485.6" y2="558" stroke="#cbd5e1"/>
+<text class="head" x="601.2" y="242.0" text-anchor="middle" xml:space="preserve"><tspan x="601.2" dy="0">zero_shot</tspan></text>
+<line x1="716.7" y1="200" x2="716.7" y2="558" stroke="#cbd5e1"/>
+<text class="head" x="1008.7" y="242.0" text-anchor="middle" xml:space="preserve"><tspan x="1008.7" dy="0">chain_of_thought</tspan></text>
+<line x1="1300.7" y1="200" x2="1300.7" y2="558" stroke="#cbd5e1"/>
+<text class="head" x="1365.9" y="242.0" text-anchor="middle" xml:space="preserve"><tspan x="1365.9" dy="0">react</tspan></text>
+<line x1="1431.0" y1="200" x2="1431.0" y2="558" stroke="#cbd5e1"/>
+<text class="head" x="1485.5" y="242.0" text-anchor="middle" xml:space="preserve"><tspan x="1485.5" dy="0">ALL</tspan></text>
+<rect x="60" y="258" width="1480" height="50" fill="#ffffff"/>
+<line x1="60" y1="258" x2="1540" y2="258" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="292.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">claude-sonnet</tspan></text>
+<text class="cell" x="601.2" y="292.0" text-anchor="middle" xml:space="preserve"><tspan x="601.2" dy="0">5/8 (7)</tspan></text>
+<text class="cell" x="1008.7" y="292.0" text-anchor="middle" xml:space="preserve"><tspan x="1008.7" dy="0">4/8 (8)</tspan></text>
+<text class="cell" x="1365.9" y="292.0" text-anchor="middle" xml:space="preserve"><tspan x="1365.9" dy="0">6/7 (7)</tspan></text>
+<text class="cell" x="1485.5" y="292.0" text-anchor="middle" xml:space="preserve"><tspan x="1485.5" dy="0">15/23</tspan></text>
+<rect x="60" y="308" width="1480" height="50" fill="#f1f5f9"/>
+<line x1="60" y1="308" x2="1540" y2="308" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="342.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">gpt-5</tspan></text>
+<text class="cell" x="601.2" y="342.0" text-anchor="middle" xml:space="preserve"><tspan x="601.2" dy="0">5/8 (7)</tspan></text>
+<text class="cell" x="1008.7" y="342.0" text-anchor="middle" xml:space="preserve"><tspan x="1008.7" dy="0">5/7 (7)</tspan></text>
+<text class="cell" x="1365.9" y="342.0" text-anchor="middle" xml:space="preserve"><tspan x="1365.9" dy="0">6/8 (7)</tspan></text>
+<text class="cell" x="1485.5" y="342.0" text-anchor="middle" xml:space="preserve"><tspan x="1485.5" dy="0">16/23</tspan></text>
+<rect x="60" y="358" width="1480" height="50" fill="#ffffff"/>
+<line x1="60" y1="358" x2="1540" y2="358" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="392.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">gpt-oss-20b</tspan></text>
+<text class="cell" x="601.2" y="392.0" text-anchor="middle" xml:space="preserve"><tspan x="601.2" dy="0">1/8 (6)</tspan></text>
+<text class="cell" x="1008.7" y="392.0" text-anchor="middle" xml:space="preserve"><tspan x="1008.7" dy="0">2/8 (7)</tspan></text>
+<text class="cell" x="1365.9" y="392.0" text-anchor="middle" xml:space="preserve"><tspan x="1365.9" dy="0">0/8 (8)</tspan></text>
+<text class="cell" x="1485.5" y="392.0" text-anchor="middle" xml:space="preserve"><tspan x="1485.5" dy="0">3/24</tspan></text>
+<rect x="60" y="408" width="1480" height="50" fill="#f1f5f9"/>
+<line x1="60" y1="408" x2="1540" y2="408" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="442.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">qwen3-coder-30b</tspan></text>
+<text class="cell" x="601.2" y="442.0" text-anchor="middle" xml:space="preserve"><tspan x="601.2" dy="0">0/4 (1)</tspan></text>
+<text class="cell" x="1008.7" y="442.0" text-anchor="middle" xml:space="preserve"><tspan x="1008.7" dy="0">0/4 (0)</tspan></text>
+<text class="cell" x="1365.9" y="442.0" text-anchor="middle" xml:space="preserve"><tspan x="1365.9" dy="0">0/2 (1)</tspan></text>
+<text class="cell" x="1485.5" y="442.0" text-anchor="middle" xml:space="preserve"><tspan x="1485.5" dy="0">0/10</tspan></text>
+<rect x="60" y="458" width="1480" height="50" fill="#ffffff"/>
+<line x1="60" y1="458" x2="1540" y2="458" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="492.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">whiterabbitneo-v3-7b</tspan></text>
+<text class="cell" x="601.2" y="492.0" text-anchor="middle" xml:space="preserve"><tspan x="601.2" dy="0">0/2 (0)</tspan></text>
+<text class="cell" x="1008.7" y="492.0" text-anchor="middle" xml:space="preserve"><tspan x="1008.7" dy="0">0/2 (0)</tspan></text>
+<text class="cell" x="1365.9" y="492.0" text-anchor="middle" xml:space="preserve"><tspan x="1365.9" dy="0">0/2 (0)</tspan></text>
+<text class="cell" x="1485.5" y="492.0" text-anchor="middle" xml:space="preserve"><tspan x="1485.5" dy="0">0/6</tspan></text>
+<rect x="60" y="508" width="1480" height="50" fill="#f1f5f9"/>
+<line x1="60" y1="508" x2="1540" y2="508" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="542.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">qwen3-30b-abliterated</tspan></text>
+<text class="cell" x="601.2" y="542.0" text-anchor="middle" xml:space="preserve"><tspan x="601.2" dy="0">0/2 (1)</tspan></text>
+<text class="cell" x="1008.7" y="542.0" text-anchor="middle" xml:space="preserve"><tspan x="1008.7" dy="0">0/2 (1)</tspan></text>
+<text class="cell" x="1365.9" y="542.0" text-anchor="middle" xml:space="preserve"><tspan x="1365.9" dy="0">0/2 (1)</tspan></text>
+<text class="cell" x="1485.5" y="542.0" text-anchor="middle" xml:space="preserve"><tspan x="1485.5" dy="0">0/6</tspan></text>
+<text class="source" x="60" y="603">Source: RUN_FOR_RECORD_ANALYSIS.Opus5.md, Markdown table beginning at line 143</text>
+</svg>

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="735" viewBox="0 0 1600 735" role="img">
+<title>Tool-surface and recorded-call evolution</title>
+<style>
+ .title{font:700 34px system-ui,sans-serif;fill:#172554}
+ .sub{font:17px system-ui,sans-serif;fill:#475569}
+ .label{font:650 17px system-ui,sans-serif;fill:#1e293b}
+ .small{font:15px system-ui,sans-serif;fill:#64748b}
+ .value{font:700 15px system-ui,sans-serif;fill:#172554}
+ .legend{font:15px system-ui,sans-serif;fill:#334155}
+ .axis{font:14px system-ui,sans-serif;fill:#64748b}
+ .white{font:700 15px system-ui,sans-serif;fill:#fff}
+ .source{font:14px system-ui,sans-serif;fill:#64748b}
+ </style>
+<rect width="1600" height="735" fill="#f8fafc"/>
+<text class="title" x="60" y="57">Tool-surface and recorded-call evolution</text>
+<text class="sub" x="60" y="103">Normalized composition and aggregate call intensity</text>
+<g transform="translate(0,0)">
+<text class="label" x="60" y="250">Trial 1</text>
+<rect x="330.0" y="220" width="871.4" height="56" fill="#2563eb"/>
+<text class="white" x="765.7" y="245" text-anchor="middle">enumerate</text>
+<text class="white" x="765.7" y="266" text-anchor="middle">79.2%</text>
+<rect x="1201.4" y="220" width="228.6" height="56" fill="#f59e0b"/>
+<text class="white" x="1315.7" y="245" text-anchor="middle">submit</text>
+<text class="white" x="1315.7" y="266" text-anchor="middle">20.8%</text>
+<text class="small" x="330" y="302">32,070 calls · 18.3 per finalized record</text>
+<text class="label" x="60" y="380">Trial 2</text>
+<rect x="330.0" y="350" width="402.2" height="56" fill="#0f766e"/>
+<text class="white" x="531.1" y="375" text-anchor="middle">disassembly / analysis</text>
+<text class="white" x="531.1" y="396" text-anchor="middle">36.6%</text>
+<rect x="732.2" y="350" width="332.0" height="56" fill="#7c3aed"/>
+<text class="white" x="898.2" y="375" text-anchor="middle">debug / frameworks</text>
+<text class="white" x="898.2" y="396" text-anchor="middle">30.2%</text>
+<rect x="1064.2" y="350" width="210.7" height="56" fill="#2563eb"/>
+<text class="white" x="1169.6" y="375" text-anchor="middle">search / enumerate</text>
+<text class="white" x="1169.6" y="396" text-anchor="middle">19.2%</text>
+<rect x="1274.9" y="350" width="144.9" height="56" fill="#16a34a"/>
+<rect x="1419.8" y="350" width="10.2" height="56" fill="#f59e0b"/>
+<text class="small" x="330" y="432">2,475 calls · 26.9 per finalized record</text>
+<text class="label" x="60" y="510">Trial 3</text>
+<rect x="330.0" y="480" width="367.8" height="56" fill="#2563eb"/>
+<text class="white" x="513.9" y="505" text-anchor="middle">search / enumerate</text>
+<text class="white" x="513.9" y="526" text-anchor="middle">33.4%</text>
+<rect x="697.8" y="480" width="316.4" height="56" fill="#16a34a"/>
+<text class="white" x="856.0" y="505" text-anchor="middle">execute</text>
+<text class="white" x="856.0" y="526" text-anchor="middle">28.8%</text>
+<rect x="1014.2" y="480" width="314.0" height="56" fill="#0f766e"/>
+<text class="white" x="1171.2" y="505" text-anchor="middle">disassembly / analysis</text>
+<text class="white" x="1171.2" y="526" text-anchor="middle">28.5%</text>
+<rect x="1328.2" y="480" width="92.5" height="56" fill="#7c3aed"/>
+<rect x="1420.8" y="480" width="9.2" height="56" fill="#f59e0b"/>
+<text class="small" x="330" y="562">6,074 calls · 41.6 per finalized record</text>
+<rect x="60" y="605" width="1420" height="72" rx="12" fill="#e0f2fe"/>
+<text class="small" x="84" y="635">Trial 1 exposed two tools; Trial 2 expanded to 22; Trial 3 curated eight. Call intensity rose across trials, but tool identity,</text>
+<text class="small" x="84" y="661">record schema, target/model composition, and resource limits also changed.</text>
+<text class="source" x="60" y="713">Source: Trial 1 log-derived aggregate report; Trial 2/3 record.json tool_call_counts</text>
+</g>
+</svg>

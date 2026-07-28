@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="590" viewBox="0 0 1600 590" role="img">
+<title>1.2 Four attempted runs without final records</title>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .label { font: 650 17px system-ui, sans-serif; fill: #1e293b; }
+    .small { font: 15px system-ui, sans-serif; fill: #64748b; }
+    .value { font: 700 15px system-ui, sans-serif; fill: #172554; }
+    .legend { font: 15px system-ui, sans-serif; fill: #334155; }
+    .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .cell { font: 650 16px system-ui, sans-serif; fill: #172554; }
+    .white { font: 700 15px system-ui, sans-serif; fill: #fff; }
+  </style>
+<rect width="1600" height="590" fill="#f8fafc"/>
+<text class="title" x="60" y="56">1.2 Four attempted runs without final records</text>
+<text class="sub" x="60" y="103">SOL56 report • source table 02, line 120</text>
+<g transform="translate(0,0)">
+<line x1="520" y1="190" x2="1260" y2="190" stroke="#cbd5e1" stroke-width="5"/>
+<circle cx="520" cy="190" r="12" fill="#172554"/>
+<text class="label" x="520" y="160" text-anchor="middle">initialization</text>
+<circle cx="890" cy="190" r="12" fill="#172554"/>
+<text class="label" x="890" y="160" text-anchor="middle">enumeration</text>
+<circle cx="1260" cy="190" r="12" fill="#172554"/>
+<text class="label" x="1260" y="160" text-anchor="middle">validation</text>
+<text class="label" x="60.0" y="259.0" text-anchor="start"><tspan x="60.0" dy="0">Sonnet, CGC, ReAct replicate 2</tspan></text>
+<line x1="500" y1="255" x2="1280" y2="255" stroke="#e2e8f0"/>
+<circle cx="1260" cy="255" r="17.8" fill="#f59e0b" opacity="0.9"/>
+<text class="value" x="1230.2" y="260" text-anchor="end">113,721 tokens; $0.3769</text>
+<text class="small" x="1310.0" y="248.0" text-anchor="start"><tspan x="1310.0" dy="0">provider rejected</tspan><tspan x="1310.0" dy="22">malformed tool-use/result</tspan><tspan x="1310.0" dy="22">sequence</tspan></text>
+<text class="label" x="60.0" y="335.0" text-anchor="start"><tspan x="60.0" dy="0">GPT-5, CGC, chain-of-thought replicate 2</tspan></text>
+<line x1="500" y1="331" x2="1280" y2="331" stroke="#e2e8f0"/>
+<circle cx="890" cy="331" r="21.9" fill="#f59e0b" opacity="0.9"/>
+<text class="value" x="923.9" y="336" text-anchor="start">247,771 tokens; $0.4349</text>
+<text class="small" x="1310.0" y="324.0" text-anchor="start"><tspan x="1310.0" dy="0">provider rejected a</tspan><tspan x="1310.0" dy="22">policy-flagged prompt</tspan></text>
+<text class="label" x="60.0" y="411.0" text-anchor="start"><tspan x="60.0" dy="0">Qwen3 Coder, CGC, ReAct replicate 1</tspan></text>
+<line x1="500" y1="407" x2="1280" y2="407" stroke="#e2e8f0"/>
+<circle cx="520" cy="407" r="9.0" fill="#f59e0b" opacity="0.9"/>
+<text class="value" x="541.0" y="412" text-anchor="start">0 tokens</text>
+<text class="small" x="1310.0" y="400.0" text-anchor="start"><tspan x="1310.0" dy="0">API timeout</tspan></text>
+<text class="label" x="60.0" y="487.0" text-anchor="start"><tspan x="60.0" dy="0">Qwen3 Coder, CGC, ReAct replicate 2</tspan></text>
+<line x1="500" y1="483" x2="1280" y2="483" stroke="#e2e8f0"/>
+<circle cx="520" cy="483" r="9.0" fill="#f59e0b" opacity="0.9"/>
+<text class="value" x="541.0" y="488" text-anchor="start">0 tokens</text>
+<text class="small" x="1310.0" y="476.0" text-anchor="start"><tspan x="1310.0" dy="0">log ends during the run</tspan></text>
+<text class="small" x="520" y="565">Circle area scales with recorded token usage; zero-token attempts remain at initialization.</text>
+</g>
+</svg>

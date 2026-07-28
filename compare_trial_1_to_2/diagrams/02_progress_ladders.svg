@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img">
+<title>Side-by-side progress ladders</title>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .label { font: 650 17px system-ui, sans-serif; fill: #1e293b; }
+    .small { font: 15px system-ui, sans-serif; fill: #64748b; }
+    .value { font: 700 15px system-ui, sans-serif; fill: #172554; }
+    .legend { font: 15px system-ui, sans-serif; fill: #334155; }
+    .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .white { font: 700 15px system-ui, sans-serif; fill: #fff; }
+    .source { font: 14px system-ui, sans-serif; fill: #64748b; }
+  </style>
+<rect width="1600" height="900" fill="#f8fafc"/>
+<text class="title" x="60" y="57">Side-by-side progress ladders</text>
+<text class="sub" x="60" y="103">Within-trial mutually exclusive terminal classifications; middle stages are not identical constructs</text>
+<g transform="translate(0,0)">
+<rect x="100" y="160" width="665" height="650" rx="18" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+<text class="label" x="128" y="202">Trial 1 · schema v4</text>
+<text class="label" x="128" y="257">Refused</text>
+<rect x="290" y="235" width="93.4" height="32" rx="5" fill="#dc2626"/>
+<text class="value" x="398.4" y="257">200 · 11.4%</text>
+<text class="label" x="128" y="327">Never submitted</text>
+<rect x="290" y="305" width="450.0" height="32" rx="5" fill="#e2e8f0"/>
+<text class="value" x="755.0" y="327">964 · 54.9%</text>
+<text class="label" x="128" y="397">Undecodable</text>
+<rect x="290" y="375" width="40.1" height="32" rx="5" fill="#94a3b8"/>
+<text class="value" x="345.1" y="397">86 · 4.9%</text>
+<text class="label" x="128" y="467">Ran, no win</text>
+<rect x="290" y="445" width="161.0" height="32" rx="5" fill="#2563eb"/>
+<text class="value" x="466.0" y="467">345 · 19.7%</text>
+<text class="label" x="128" y="537">Crash proxy</text>
+<rect x="290" y="515" width="71.4" height="32" rx="5" fill="#f59e0b"/>
+<text class="value" x="376.4" y="537">153 · 8.7%</text>
+<text class="label" x="128" y="607">Progress gate</text>
+<rect x="290" y="585" width="3.3" height="32" rx="5" fill="#7c3aed"/>
+<text class="value" x="308.3" y="607">7 · 0.4%</text>
+<text class="label" x="128" y="677">MARKER</text>
+<rect x="290" y="655" width="0.0" height="32" rx="5" fill="#16a34a"/>
+<text class="value" x="305.0" y="677">0 · 0.0%</text>
+<rect x="835" y="160" width="665" height="650" rx="18" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+<text class="label" x="863" y="202">Trial 2 · schema v5</text>
+<text class="label" x="863" y="257">NONE</text>
+<rect x="1025" y="235" width="304.4" height="32" rx="5" fill="#e2e8f0"/>
+<text class="value" x="1344.4" y="257">23 · 25.0%</text>
+<text class="label" x="863" y="362">RAN</text>
+<rect x="1025" y="340" width="450.0" height="32" rx="5" fill="#2563eb"/>
+<text class="value" x="1490.0" y="362">34 · 37.0%</text>
+<text class="label" x="863" y="467">CONTROL</text>
+<rect x="1025" y="445" width="13.2" height="32" rx="5" fill="#f59e0b"/>
+<text class="value" x="1053.2" y="467">1 · 1.1%</text>
+<text class="label" x="863" y="572">MARKER</text>
+<rect x="1025" y="550" width="450.0" height="32" rx="5" fill="#16a34a"/>
+<text class="value" x="1490.0" y="572">34 · 37.0%</text>
+<line x1="775" y1="160" x2="825" y2="810" stroke="#dc2626" stroke-width="2" stroke-dasharray="8 8"/>
+<text class="small" x="800" y="842" text-anchor="middle">Dashed boundary: the intermediate-stage constructs and scoring schema changed.</text>
+<text class="source" x="60" y="878">Source: Trial 1 progress-ladder report and Trial 2 max_tier_reached metadata</text>
+</g>
+</svg>

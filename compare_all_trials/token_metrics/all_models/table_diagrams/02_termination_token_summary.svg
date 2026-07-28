@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="931" viewBox="0 0 1600 931" role="img">
+<title>Termination-mode token summary</title>
+<style>
+ .title{font:700 34px system-ui,sans-serif;fill:#172554}
+ .sub{font:17px system-ui,sans-serif;fill:#475569}
+ .label{font:650 17px system-ui,sans-serif;fill:#1e293b}
+ .small{font:15px system-ui,sans-serif;fill:#64748b}
+ .value{font:700 15px system-ui,sans-serif;fill:#172554}
+ .legend{font:15px system-ui,sans-serif;fill:#334155}
+ .axis{font:14px system-ui,sans-serif;fill:#64748b}
+ .white{font:700 15px system-ui,sans-serif;fill:#fff}
+ .source{font:14px system-ui,sans-serif;fill:#64748b}
+ </style>
+<rect width="1600" height="931" fill="#f8fafc"/>
+<text class="title" x="60" y="57">Termination-mode token summary</text>
+<text class="sub" x="60" y="103">Publication-ready table derived from finalized record metadata</text>
+<g transform="translate(0,0)">
+<rect x="60" y="175" width="1480" height="52" rx="10" fill="#172554"/>
+<text class="white" x="183.3" y="206.0" text-anchor="middle"><tspan x="183.3" dy="0">Trial</tspan></text>
+<text class="white" x="430.0" y="206.0" text-anchor="middle"><tspan x="430.0" dy="0">Termination</tspan></text>
+<text class="white" x="676.7" y="206.0" text-anchor="middle"><tspan x="676.7" dy="0">n</tspan></text>
+<text class="white" x="923.3" y="206.0" text-anchor="middle"><tspan x="923.3" dy="0">Median</tspan></text>
+<text class="white" x="1170.0" y="206.0" text-anchor="middle"><tspan x="1170.0" dy="0">IQR</tspan></text>
+<text class="white" x="1416.7" y="206.0" text-anchor="middle"><tspan x="1416.7" dy="0">Aggregate</tspan></text>
+<rect x="60" y="227" width="1480" height="52" fill="#fff"/>
+<text class="label" x="183.3" y="258.0" text-anchor="middle"><tspan x="183.3" dy="0">T1</tspan></text>
+<text class="small" x="430.0" y="258.0" text-anchor="middle"><tspan x="430.0" dy="0">budget exhausted</tspan></text>
+<text class="small" x="676.7" y="258.0" text-anchor="middle"><tspan x="676.7" dy="0">1079</tspan></text>
+<text class="small" x="923.3" y="258.0" text-anchor="middle"><tspan x="923.3" dy="0">201.9k</tspan></text>
+<text class="small" x="1170.0" y="258.0" text-anchor="middle"><tspan x="1170.0" dy="0">179.5k–203.7k</tspan></text>
+<text class="small" x="1416.7" y="258.0" text-anchor="middle"><tspan x="1416.7" dy="0">187.04M</tspan></text>
+<rect x="60" y="279" width="1480" height="52" fill="#f1f5f9"/>
+<text class="label" x="183.3" y="310.0" text-anchor="middle"><tspan x="183.3" dy="0">T1</tspan></text>
+<text class="small" x="430.0" y="310.0" text-anchor="middle"><tspan x="430.0" dy="0">other</tspan></text>
+<text class="small" x="676.7" y="310.0" text-anchor="middle"><tspan x="676.7" dy="0">476</tspan></text>
+<text class="small" x="923.3" y="310.0" text-anchor="middle"><tspan x="923.3" dy="0">48.7k</tspan></text>
+<text class="small" x="1170.0" y="310.0" text-anchor="middle"><tspan x="1170.0" dy="0">24.6k–88.8k</tspan></text>
+<text class="small" x="1416.7" y="310.0" text-anchor="middle"><tspan x="1416.7" dy="0">33.22M</tspan></text>
+<rect x="60" y="331" width="1480" height="52" fill="#fff"/>
+<text class="label" x="183.3" y="362.0" text-anchor="middle"><tspan x="183.3" dy="0">T1</tspan></text>
+<text class="small" x="430.0" y="362.0" text-anchor="middle"><tspan x="430.0" dy="0">safeguard refusal</tspan></text>
+<text class="small" x="676.7" y="362.0" text-anchor="middle"><tspan x="676.7" dy="0">200</tspan></text>
+<text class="small" x="923.3" y="362.0" text-anchor="middle"><tspan x="923.3" dy="0">6.5k</tspan></text>
+<text class="small" x="1170.0" y="362.0" text-anchor="middle"><tspan x="1170.0" dy="0">3.1k–7.5k</tspan></text>
+<text class="small" x="1416.7" y="362.0" text-anchor="middle"><tspan x="1416.7" dy="0">2.64M</tspan></text>
+<rect x="60" y="383" width="1480" height="52" fill="#f1f5f9"/>
+<text class="label" x="183.3" y="414.0" text-anchor="middle"><tspan x="183.3" dy="0">T2</tspan></text>
+<text class="small" x="430.0" y="414.0" text-anchor="middle"><tspan x="430.0" dy="0">success</tspan></text>
+<text class="small" x="676.7" y="414.0" text-anchor="middle"><tspan x="676.7" dy="0">34</tspan></text>
+<text class="small" x="923.3" y="414.0" text-anchor="middle"><tspan x="923.3" dy="0">155.7k</tspan></text>
+<text class="small" x="1170.0" y="414.0" text-anchor="middle"><tspan x="1170.0" dy="0">68.7k–270.0k</tspan></text>
+<text class="small" x="1416.7" y="414.0" text-anchor="middle"><tspan x="1416.7" dy="0">6.59M</tspan></text>
+<rect x="60" y="435" width="1480" height="52" fill="#fff"/>
+<text class="label" x="183.3" y="466.0" text-anchor="middle"><tspan x="183.3" dy="0">T2</tspan></text>
+<text class="small" x="430.0" y="466.0" text-anchor="middle"><tspan x="430.0" dy="0">token budget</tspan></text>
+<text class="small" x="676.7" y="466.0" text-anchor="middle"><tspan x="676.7" dy="0">40</tspan></text>
+<text class="small" x="923.3" y="466.0" text-anchor="middle"><tspan x="923.3" dy="0">514.0k</tspan></text>
+<text class="small" x="1170.0" y="466.0" text-anchor="middle"><tspan x="1170.0" dy="0">507.7k–522.1k</tspan></text>
+<text class="small" x="1416.7" y="466.0" text-anchor="middle"><tspan x="1416.7" dy="0">20.61M</tspan></text>
+<rect x="60" y="487" width="1480" height="52" fill="#f1f5f9"/>
+<text class="label" x="183.3" y="518.0" text-anchor="middle"><tspan x="183.3" dy="0">T2</tspan></text>
+<text class="small" x="430.0" y="518.0" text-anchor="middle"><tspan x="430.0" dy="0">truncated</tspan></text>
+<text class="small" x="676.7" y="518.0" text-anchor="middle"><tspan x="676.7" dy="0">6</tspan></text>
+<text class="small" x="923.3" y="518.0" text-anchor="middle"><tspan x="923.3" dy="0">377.3k</tspan></text>
+<text class="small" x="1170.0" y="518.0" text-anchor="middle"><tspan x="1170.0" dy="0">213.5k–547.7k</tspan></text>
+<text class="small" x="1416.7" y="518.0" text-anchor="middle"><tspan x="1416.7" dy="0">2.29M</tspan></text>
+<rect x="60" y="539" width="1480" height="52" fill="#fff"/>
+<text class="label" x="183.3" y="570.0" text-anchor="middle"><tspan x="183.3" dy="0">T2</tspan></text>
+<text class="small" x="430.0" y="570.0" text-anchor="middle"><tspan x="430.0" dy="0">wall clock</tspan></text>
+<text class="small" x="676.7" y="570.0" text-anchor="middle"><tspan x="676.7" dy="0">12</tspan></text>
+<text class="small" x="923.3" y="570.0" text-anchor="middle"><tspan x="923.3" dy="0">203.1k</tspan></text>
+<text class="small" x="1170.0" y="570.0" text-anchor="middle"><tspan x="1170.0" dy="0">169.3k–220.5k</tspan></text>
+<text class="small" x="1416.7" y="570.0" text-anchor="middle"><tspan x="1416.7" dy="0">2.81M</tspan></text>
+<rect x="60" y="591" width="1480" height="52" fill="#f1f5f9"/>
+<text class="label" x="183.3" y="622.0" text-anchor="middle"><tspan x="183.3" dy="0">T3</tspan></text>
+<text class="small" x="430.0" y="622.0" text-anchor="middle"><tspan x="430.0" dy="0">iteration cap</tspan></text>
+<text class="small" x="676.7" y="622.0" text-anchor="middle"><tspan x="676.7" dy="0">10</tspan></text>
+<text class="small" x="923.3" y="622.0" text-anchor="middle"><tspan x="923.3" dy="0">487.2k</tspan></text>
+<text class="small" x="1170.0" y="622.0" text-anchor="middle"><tspan x="1170.0" dy="0">417.9k–576.9k</tspan></text>
+<text class="small" x="1416.7" y="622.0" text-anchor="middle"><tspan x="1416.7" dy="0">5.64M</tspan></text>
+<rect x="60" y="643" width="1480" height="52" fill="#fff"/>
+<text class="label" x="183.3" y="674.0" text-anchor="middle"><tspan x="183.3" dy="0">T3</tspan></text>
+<text class="small" x="430.0" y="674.0" text-anchor="middle"><tspan x="430.0" dy="0">safeguard refusal</tspan></text>
+<text class="small" x="676.7" y="674.0" text-anchor="middle"><tspan x="676.7" dy="0">4</tspan></text>
+<text class="small" x="923.3" y="674.0" text-anchor="middle"><tspan x="923.3" dy="0">68.7k</tspan></text>
+<text class="small" x="1170.0" y="674.0" text-anchor="middle"><tspan x="1170.0" dy="0">54.5k–129.5k</tspan></text>
+<text class="small" x="1416.7" y="674.0" text-anchor="middle"><tspan x="1416.7" dy="0">461.2k</tspan></text>
+<rect x="60" y="695" width="1480" height="52" fill="#f1f5f9"/>
+<text class="label" x="183.3" y="726.0" text-anchor="middle"><tspan x="183.3" dy="0">T3</tspan></text>
+<text class="small" x="430.0" y="726.0" text-anchor="middle"><tspan x="430.0" dy="0">success</tspan></text>
+<text class="small" x="676.7" y="726.0" text-anchor="middle"><tspan x="676.7" dy="0">43</tspan></text>
+<text class="small" x="923.3" y="726.0" text-anchor="middle"><tspan x="923.3" dy="0">112.6k</tspan></text>
+<text class="small" x="1170.0" y="726.0" text-anchor="middle"><tspan x="1170.0" dy="0">62.6k–205.7k</tspan></text>
+<text class="small" x="1416.7" y="726.0" text-anchor="middle"><tspan x="1416.7" dy="0">6.92M</tspan></text>
+<rect x="60" y="747" width="1480" height="52" fill="#fff"/>
+<text class="label" x="183.3" y="778.0" text-anchor="middle"><tspan x="183.3" dy="0">T3</tspan></text>
+<text class="small" x="430.0" y="778.0" text-anchor="middle"><tspan x="430.0" dy="0">token budget</tspan></text>
+<text class="small" x="676.7" y="778.0" text-anchor="middle"><tspan x="676.7" dy="0">10</tspan></text>
+<text class="small" x="923.3" y="778.0" text-anchor="middle"><tspan x="923.3" dy="0">1.01M</tspan></text>
+<text class="small" x="1170.0" y="778.0" text-anchor="middle"><tspan x="1170.0" dy="0">1.00M–1.01M</tspan></text>
+<text class="small" x="1416.7" y="778.0" text-anchor="middle"><tspan x="1416.7" dy="0">10.08M</tspan></text>
+<rect x="60" y="799" width="1480" height="52" fill="#f1f5f9"/>
+<text class="label" x="183.3" y="830.0" text-anchor="middle"><tspan x="183.3" dy="0">T3</tspan></text>
+<text class="small" x="430.0" y="830.0" text-anchor="middle"><tspan x="430.0" dy="0">wall clock</tspan></text>
+<text class="small" x="676.7" y="830.0" text-anchor="middle"><tspan x="676.7" dy="0">79</tspan></text>
+<text class="small" x="923.3" y="830.0" text-anchor="middle"><tspan x="923.3" dy="0">311.9k</tspan></text>
+<text class="small" x="1170.0" y="830.0" text-anchor="middle"><tspan x="1170.0" dy="0">115.9k–412.5k</tspan></text>
+<text class="small" x="1416.7" y="830.0" text-anchor="middle"><tspan x="1416.7" dy="0">24.70M</tspan></text>
+<text class="source" x="60" y="909">Source: generated cohort token-metric tables</text>
+</g>
+</svg>

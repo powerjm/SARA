@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="852" viewBox="0 0 1600 852" role="img">
+<title>11. Wall-clock &amp; cost envelope — the dominant Trial-3 confound</title>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .label { font: 650 17px system-ui, sans-serif; fill: #1e293b; }
+    .small { font: 15px system-ui, sans-serif; fill: #64748b; }
+    .value { font: 700 15px system-ui, sans-serif; fill: #172554; }
+    .legend { font: 15px system-ui, sans-serif; fill: #334155; }
+    .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .cell { font: 650 16px system-ui, sans-serif; fill: #172554; }
+    .white { font: 700 15px system-ui, sans-serif; fill: #fff; }
+  </style>
+<rect width="1600" height="852" fill="#f8fafc"/>
+<text class="title" x="60" y="56">11. Wall-clock &amp; cost envelope — the dominant Trial-3 confound</text>
+<text class="sub" x="60" y="103">OPUS5 report • source table 13, line 348</text>
+<g transform="translate(0,0)">
+<rect x="650" y="122" width="18" height="18" rx="3" fill="#e2e8f0"/>
+<text class="legend" x="677" y="137">cap</text>
+<rect x="725" y="122" width="18" height="18" rx="3" fill="#2563eb"/>
+<text class="legend" x="752" y="137">median wall</text>
+<rect x="872" y="122" width="18" height="18" rx="3" fill="#f59e0b"/>
+<text class="legend" x="899" y="137">failure median</text>
+<rect x="1046" y="122" width="18" height="18" rx="3" fill="#16a34a"/>
+<text class="legend" x="1073" y="137">success median</text>
+<line x1="400.0" y1="175" x2="400.0" y2="729" stroke="#e2e8f0"/>
+<text class="axis" x="400.0" y="166" text-anchor="middle">0 s</text>
+<line x1="670.0" y1="175" x2="670.0" y2="729" stroke="#e2e8f0"/>
+<text class="axis" x="670.0" y="166" text-anchor="middle">425 s</text>
+<line x1="940.0" y1="175" x2="940.0" y2="729" stroke="#e2e8f0"/>
+<text class="axis" x="940.0" y="166" text-anchor="middle">850 s</text>
+<line x1="1210.0" y1="175" x2="1210.0" y2="729" stroke="#e2e8f0"/>
+<text class="axis" x="1210.0" y="166" text-anchor="middle">1275 s</text>
+<line x1="1480.0" y1="175" x2="1480.0" y2="729" stroke="#e2e8f0"/>
+<text class="axis" x="1480.0" y="166" text-anchor="middle">1700 s</text>
+<text class="label" x="60.0" y="208.0" text-anchor="start"><tspan x="60.0" dy="0">Claude Opus</tspan></text>
+<rect x="400" y="184.0" width="190.6" height="8.5" rx="4" fill="#e2e8f0"/>
+<text class="value" x="600.6" y="188.5">300 s</text>
+<rect x="400" y="194.5" width="140.4" height="8.5" rx="4" fill="#2563eb"/>
+<text class="value" x="550.4" y="199.0">221 s</text>
+<rect x="400" y="205.0" width="193.1" height="8.5" rx="4" fill="#f59e0b"/>
+<text class="value" x="603.1" y="209.5">304 s</text>
+<rect x="400" y="215.5" width="89.6" height="8.5" rx="4" fill="#16a34a"/>
+<text class="value" x="499.6" y="220.0">141 s</text>
+<text class="label" x="60.0" y="300.0" text-anchor="start"><tspan x="60.0" dy="0">Claude Sonnet</tspan></text>
+<rect x="400" y="276.0" width="190.6" height="8.5" rx="4" fill="#e2e8f0"/>
+<text class="value" x="600.6" y="280.5">300 s</text>
+<rect x="400" y="286.5" width="194.4" height="8.5" rx="4" fill="#2563eb"/>
+<text class="value" x="604.4" y="291.0">306 s</text>
+<rect x="400" y="297.0" width="196.9" height="8.5" rx="4" fill="#f59e0b"/>
+<text class="value" x="606.9" y="301.5">310 s</text>
+<rect x="400" y="307.5" width="37.5" height="8.5" rx="4" fill="#16a34a"/>
+<text class="value" x="447.5" y="312.0">59 s</text>
+<text class="label" x="60.0" y="392.0" text-anchor="start"><tspan x="60.0" dy="0">GPT-5</tspan></text>
+<rect x="400" y="368.0" width="190.6" height="8.5" rx="4" fill="#e2e8f0"/>
+<text class="value" x="600.6" y="372.5">300 s</text>
+<rect x="400" y="378.5" width="197.6" height="8.5" rx="4" fill="#2563eb"/>
+<text class="value" x="607.6" y="383.0">311 s</text>
+<rect x="400" y="389.0" width="204.6" height="8.5" rx="4" fill="#f59e0b"/>
+<text class="value" x="614.6" y="393.5">322 s</text>
+<rect x="400" y="399.5" width="170.3" height="8.5" rx="4" fill="#16a34a"/>
+<text class="value" x="580.3" y="404.0">268 s</text>
+<text class="label" x="60.0" y="484.0" text-anchor="start"><tspan x="60.0" dy="0">GPT-OSS 20B</tspan></text>
+<rect x="400" y="460.0" width="762.4" height="8.5" rx="4" fill="#e2e8f0"/>
+<text class="value" x="1172.4" y="464.5">1200 s</text>
+<rect x="400" y="470.5" width="663.2" height="8.5" rx="4" fill="#2563eb"/>
+<text class="value" x="1073.2" y="475.0">1044 s</text>
+<rect x="400" y="481.0" width="0.0" height="8.5" rx="4" fill="#f59e0b"/>
+<text class="value" x="410.0" y="485.5">—</text>
+<rect x="400" y="491.5" width="0.0" height="8.5" rx="4" fill="#16a34a"/>
+<text class="value" x="410.0" y="496.0">—</text>
+<text class="label" x="60.0" y="576.0" text-anchor="start"><tspan x="60.0" dy="0">Qwen3 Abliterated</tspan></text>
+<rect x="400" y="552.0" width="762.4" height="8.5" rx="4" fill="#e2e8f0"/>
+<text class="value" x="1172.4" y="556.5">1200 s</text>
+<rect x="400" y="562.5" width="763.6" height="8.5" rx="4" fill="#2563eb"/>
+<text class="value" x="1173.6" y="567.0">1202 s</text>
+<rect x="400" y="573.0" width="0.0" height="8.5" rx="4" fill="#f59e0b"/>
+<text class="value" x="410.0" y="577.5">—</text>
+<rect x="400" y="583.5" width="0.0" height="8.5" rx="4" fill="#16a34a"/>
+<text class="value" x="410.0" y="588.0">—</text>
+<text class="label" x="60.0" y="668.0" text-anchor="start"><tspan x="60.0" dy="0">WhiteRabbitNeo 7B</tspan></text>
+<rect x="400" y="644.0" width="762.4" height="8.5" rx="4" fill="#e2e8f0"/>
+<text class="value" x="1172.4" y="648.5">1200 s</text>
+<rect x="400" y="654.5" width="99.1" height="8.5" rx="4" fill="#2563eb"/>
+<text class="value" x="509.1" y="659.0">156 s</text>
+<rect x="400" y="665.0" width="0.0" height="8.5" rx="4" fill="#f59e0b"/>
+<text class="value" x="410.0" y="669.5">—</text>
+<rect x="400" y="675.5" width="0.0" height="8.5" rx="4" fill="#16a34a"/>
+<text class="value" x="410.0" y="680.0">—</text>
+<rect x="60" y="769" width="1420" height="54" rx="12" fill="#e0f2fe"/>
+<text class="small" x="84" y="802">Caps are checkpointed thresholds; observed wall times can exceed them.</text>
+</g>
+</svg>

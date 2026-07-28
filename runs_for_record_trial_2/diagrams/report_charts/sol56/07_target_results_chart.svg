@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="628" viewBox="0 0 1600 628" role="img">
+<title>5. Target results</title>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .label { font: 650 17px system-ui, sans-serif; fill: #1e293b; }
+    .small { font: 15px system-ui, sans-serif; fill: #64748b; }
+    .value { font: 700 15px system-ui, sans-serif; fill: #172554; }
+    .legend { font: 15px system-ui, sans-serif; fill: #334155; }
+    .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .cell { font: 650 16px system-ui, sans-serif; fill: #172554; }
+    .white { font: 700 15px system-ui, sans-serif; fill: #fff; }
+  </style>
+<rect width="1600" height="628" fill="#f8fafc"/>
+<text class="title" x="60" y="56">5. Target results</text>
+<text class="sub" x="60" y="103">SOL56 report • source table 07, line 236</text>
+<g transform="translate(0,0)">
+<rect x="650" y="122" width="18" height="18" rx="3" fill="#2563eb"/>
+<text class="legend" x="677" y="137">RAN+</text>
+<rect x="734" y="122" width="18" height="18" rx="3" fill="#f59e0b"/>
+<text class="legend" x="761" y="137">CONTROL+</text>
+<rect x="854" y="122" width="18" height="18" rx="3" fill="#16a34a"/>
+<text class="legend" x="881" y="137">MARKER</text>
+<line x1="400.0" y1="175" x2="400.0" y2="545" stroke="#e2e8f0"/>
+<text class="axis" x="400.0" y="166" text-anchor="middle">0%</text>
+<line x1="670.0" y1="175" x2="670.0" y2="545" stroke="#e2e8f0"/>
+<text class="axis" x="670.0" y="166" text-anchor="middle">25%</text>
+<line x1="940.0" y1="175" x2="940.0" y2="545" stroke="#e2e8f0"/>
+<text class="axis" x="940.0" y="166" text-anchor="middle">50%</text>
+<line x1="1210.0" y1="175" x2="1210.0" y2="545" stroke="#e2e8f0"/>
+<text class="axis" x="1210.0" y="166" text-anchor="middle">75%</text>
+<line x1="1480.0" y1="175" x2="1480.0" y2="545" stroke="#e2e8f0"/>
+<text class="axis" x="1480.0" y="166" text-anchor="middle">100%</text>
+<text class="label" x="60.0" y="208.0" text-anchor="start"><tspan x="60.0" dy="0">ROPBench ex005</tspan></text>
+<rect x="400" y="184.0" width="1080.0" height="12.0" rx="4" fill="#2563eb"/>
+<text class="value" x="1490.0" y="192.0">100%</text>
+<rect x="400" y="198.0" width="780.0" height="12.0" rx="4" fill="#f59e0b"/>
+<text class="value" x="1190.0" y="206.0">72.2222%</text>
+<rect x="400" y="212.0" width="720.0" height="12.0" rx="4" fill="#16a34a"/>
+<text class="value" x="1130.0" y="220.0">66.6667%</text>
+<text class="label" x="60.0" y="300.0" text-anchor="start"><tspan x="60.0" dy="0">BroncoCTF 2026</tspan></text>
+<rect x="400" y="276.0" width="960.0" height="12.0" rx="4" fill="#2563eb"/>
+<text class="value" x="1370.0" y="284.0">88.8889%</text>
+<rect x="400" y="290.0" width="480.0" height="12.0" rx="4" fill="#f59e0b"/>
+<text class="value" x="890.0" y="298.0">44.4444%</text>
+<rect x="400" y="304.0" width="480.0" height="12.0" rx="4" fill="#16a34a"/>
+<text class="value" x="890.0" y="312.0">44.4444%</text>
+<text class="label" x="60.0" y="392.0" text-anchor="start"><tspan x="60.0" dy="0">ret2win baseline</tspan></text>
+<rect x="400" y="368.0" width="690.0" height="12.0" rx="4" fill="#2563eb"/>
+<text class="value" x="1100.0" y="376.0">63.8889%</text>
+<rect x="400" y="382.0" width="420.0" height="12.0" rx="4" fill="#f59e0b"/>
+<text class="value" x="830.0" y="390.0">38.8889%</text>
+<rect x="400" y="396.0" width="420.0" height="12.0" rx="4" fill="#16a34a"/>
+<text class="value" x="830.0" y="404.0">38.8889%</text>
+<text class="label" x="60.0" y="484.0" text-anchor="start"><tspan x="60.0" dy="0">CGC CADET 00001</tspan></text>
+<rect x="400" y="460.0" width="648.0" height="12.0" rx="4" fill="#2563eb"/>
+<text class="value" x="1058.0" y="468.0">60%</text>
+<rect x="400" y="474.0" width="0.0" height="12.0" rx="4" fill="#f59e0b"/>
+<text class="value" x="410.0" y="482.0">0%</text>
+<rect x="400" y="488.0" width="0.0" height="12.0" rx="4" fill="#16a34a"/>
+<text class="value" x="410.0" y="496.0">0%</text>
+</g>
+</svg>

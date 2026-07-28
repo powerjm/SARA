@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="690" viewBox="0 0 1600 690" role="img">
+<title>3. The progress ladder — the central result</title>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .label { font: 650 17px system-ui, sans-serif; fill: #1e293b; }
+    .small { font: 15px system-ui, sans-serif; fill: #64748b; }
+    .value { font: 700 15px system-ui, sans-serif; fill: #172554; }
+    .legend { font: 15px system-ui, sans-serif; fill: #334155; }
+    .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .cell { font: 650 16px system-ui, sans-serif; fill: #172554; }
+    .white { font: 700 15px system-ui, sans-serif; fill: #fff; }
+  </style>
+<rect width="1600" height="690" fill="#f8fafc"/>
+<text class="title" x="60" y="56">3. The progress ladder — the central result</text>
+<text class="sub" x="60" y="103">OPUS5 report • source table 02, line 69</text>
+<g transform="translate(0,0)">
+<rect x="650" y="122" width="18" height="18" rx="3" fill="#2563eb"/>
+<text class="legend" x="677" y="137">runs</text>
+<line x1="400.0" y1="175" x2="400.0" y2="567" stroke="#e2e8f0"/>
+<text class="axis" x="400.0" y="166" text-anchor="middle">0</text>
+<line x1="670.0" y1="175" x2="670.0" y2="567" stroke="#e2e8f0"/>
+<text class="axis" x="670.0" y="166" text-anchor="middle">10</text>
+<line x1="940.0" y1="175" x2="940.0" y2="567" stroke="#e2e8f0"/>
+<text class="axis" x="940.0" y="166" text-anchor="middle">20</text>
+<line x1="1210.0" y1="175" x2="1210.0" y2="567" stroke="#e2e8f0"/>
+<text class="axis" x="1210.0" y="166" text-anchor="middle">30</text>
+<line x1="1480.0" y1="175" x2="1480.0" y2="567" stroke="#e2e8f0"/>
+<text class="axis" x="1480.0" y="166" text-anchor="middle">40</text>
+<text class="label" x="60.0" y="208.0" text-anchor="start"><tspan x="60.0" dy="0">NONE</tspan></text>
+<rect x="400" y="184.0" width="621.0" height="20.0" rx="4" fill="#2563eb"/>
+<text class="value" x="1031.0" y="200.0">23</text>
+<text class="label" x="60.0" y="286.0" text-anchor="start"><tspan x="60.0" dy="0">RAN</tspan></text>
+<rect x="400" y="262.0" width="918.0" height="20.0" rx="4" fill="#2563eb"/>
+<text class="value" x="1328.0" y="278.0">34</text>
+<text class="label" x="60.0" y="364.0" text-anchor="start"><tspan x="60.0" dy="0">CONTROL</tspan></text>
+<rect x="400" y="340.0" width="27.0" height="20.0" rx="4" fill="#2563eb"/>
+<text class="value" x="437.0" y="356.0">1</text>
+<text class="label" x="60.0" y="442.0" text-anchor="start"><tspan x="60.0" dy="0">MARKER</tspan></text>
+<rect x="400" y="418.0" width="918.0" height="20.0" rx="4" fill="#2563eb"/>
+<text class="value" x="1328.0" y="434.0">34</text>
+<text class="label" x="60.0" y="520.0" text-anchor="start"><tspan x="60.0" dy="0">Refused</tspan></text>
+<rect x="400" y="496.0" width="0.0" height="20.0" rx="4" fill="#2563eb"/>
+<text class="value" x="410.0" y="512.0">0</text>
+<rect x="60" y="607" width="1420" height="54" rx="12" fill="#e0f2fe"/>
+<text class="small" x="84" y="640">MARKER and RAN each contain 34 runs; only one finalized run stopped at CONTROL.</text>
+</g>
+</svg>

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="650" viewBox="0 0 1600 650" role="img">
+<title>Backend × strategy change in validator engagement</title>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .label { font: 650 17px system-ui, sans-serif; fill: #1e293b; }
+    .small { font: 15px system-ui, sans-serif; fill: #64748b; }
+    .value { font: 700 15px system-ui, sans-serif; fill: #172554; }
+    .legend { font: 15px system-ui, sans-serif; fill: #334155; }
+    .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .white { font: 700 15px system-ui, sans-serif; fill: #fff; }
+    .source { font: 14px system-ui, sans-serif; fill: #64748b; }
+  </style>
+<rect width="1600" height="650" fill="#f8fafc"/>
+<text class="title" x="60" y="57">Backend × strategy change in validator engagement</text>
+<text class="sub" x="60" y="103">Cell color is Trial 2 minus Trial 1 validator-reaching rate; annotation gives Trial 2 success</text>
+<g transform="translate(0,0)">
+<text class="label" x="565.0" y="195" text-anchor="middle">Zero-shot</text>
+<text class="label" x="895.0" y="195" text-anchor="middle">Chain of thought</text>
+<text class="label" x="1225.0" y="195" text-anchor="middle">ReAct</text>
+<text class="label" x="60" y="285">Claude Sonnet</text>
+<rect x="405" y="230" width="320" height="95" rx="12" fill="rgb(173,219,195)"/>
+<text class="value" x="565.0" y="272" text-anchor="middle">+23.3 pp validator reach</text>
+<text class="small" x="565.0" y="300" text-anchor="middle">Trial 2 success 50.0%</text>
+<rect x="735" y="230" width="320" height="95" rx="12" fill="rgb(212,234,226)"/>
+<text class="value" x="895.0" y="272" text-anchor="middle">+10.0 pp validator reach</text>
+<text class="small" x="895.0" y="300" text-anchor="middle">Trial 2 success 33.3%</text>
+<rect x="1065" y="230" width="320" height="95" rx="12" fill="rgb(153,212,179)"/>
+<text class="value" x="1225.0" y="272" text-anchor="middle">+30.0 pp validator reach</text>
+<text class="small" x="1225.0" y="300" text-anchor="middle">Trial 2 success 80.0%</text>
+<text class="label" x="60" y="390">GPT-5</text>
+<rect x="405" y="335" width="320" height="95" rx="12" fill="rgb(212,234,226)"/>
+<text class="value" x="565.0" y="377" text-anchor="middle">+10.0 pp validator reach</text>
+<text class="small" x="565.0" y="405" text-anchor="middle">Trial 2 success 50.0%</text>
+<rect x="735" y="335" width="320" height="95" rx="12" fill="rgb(95,190,132)"/>
+<text class="white" x="895.0" y="377" text-anchor="middle">+50.0 pp validator reach</text>
+<text class="white" x="895.0" y="405" text-anchor="middle">Trial 2 success 60.0%</text>
+<rect x="1065" y="335" width="320" height="95" rx="12" fill="rgb(153,212,179)"/>
+<text class="value" x="1225.0" y="377" text-anchor="middle">+30.0 pp validator reach</text>
+<text class="small" x="1225.0" y="405" text-anchor="middle">Trial 2 success 66.7%</text>
+<text class="label" x="60" y="495">GPT-OSS 20B</text>
+<rect x="405" y="440" width="320" height="95" rx="12" fill="rgb(144,209,171)"/>
+<text class="value" x="565.0" y="482" text-anchor="middle">+33.3 pp validator reach</text>
+<text class="small" x="565.0" y="510" text-anchor="middle">Trial 2 success 0.0%</text>
+<rect x="735" y="440" width="320" height="95" rx="12" fill="rgb(22,163,74)"/>
+<text class="white" x="895.0" y="482" text-anchor="middle">+76.2 pp validator reach</text>
+<text class="white" x="895.0" y="510" text-anchor="middle">Trial 2 success 16.7%</text>
+<rect x="1065" y="440" width="320" height="95" rx="12" fill="rgb(22,163,74)"/>
+<text class="white" x="1225.0" y="482" text-anchor="middle">+80.0 pp validator reach</text>
+<text class="white" x="1225.0" y="510" text-anchor="middle">Trial 2 success 0.0%</text>
+<rect x="405" y="565" width="18" height="18" rx="3" fill="#dc2626"/><text class="small" x="433" y="580">−50 pp</text>
+<rect x="520" y="565" width="18" height="18" rx="3" fill="#f1f5f9"/><text class="small" x="548" y="580">no change</text>
+<rect x="665" y="565" width="18" height="18" rx="3" fill="#16a34a"/><text class="small" x="693" y="580">+75 pp or more</text>
+<text class="source" x="60" y="628">Source: common-coverage record.json metadata aggregated across three shared targets</text>
+</g>
+</svg>

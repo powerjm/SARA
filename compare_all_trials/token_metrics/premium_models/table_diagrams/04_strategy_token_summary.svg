@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="775" viewBox="0 0 1600 775" role="img">
+<title>Prompting-strategy token summary</title>
+<style>
+ .title{font:700 34px system-ui,sans-serif;fill:#172554}
+ .sub{font:17px system-ui,sans-serif;fill:#475569}
+ .label{font:650 17px system-ui,sans-serif;fill:#1e293b}
+ .small{font:15px system-ui,sans-serif;fill:#64748b}
+ .value{font:700 15px system-ui,sans-serif;fill:#172554}
+ .legend{font:15px system-ui,sans-serif;fill:#334155}
+ .axis{font:14px system-ui,sans-serif;fill:#64748b}
+ .white{font:700 15px system-ui,sans-serif;fill:#fff}
+ .source{font:14px system-ui,sans-serif;fill:#64748b}
+ </style>
+<rect width="1600" height="775" fill="#f8fafc"/>
+<text class="title" x="60" y="57">Prompting-strategy token summary</text>
+<text class="sub" x="60" y="103">Publication-ready table derived from finalized record metadata</text>
+<g transform="translate(0,0)">
+<rect x="60" y="175" width="1480" height="52" rx="10" fill="#172554"/>
+<text class="white" x="165.7" y="206.0" text-anchor="middle"><tspan x="165.7" dy="0">Trial</tspan></text>
+<text class="white" x="377.1" y="206.0" text-anchor="middle"><tspan x="377.1" dy="0">Strategy</tspan></text>
+<text class="white" x="588.6" y="206.0" text-anchor="middle"><tspan x="588.6" dy="0">n</tspan></text>
+<text class="white" x="800.0" y="206.0" text-anchor="middle"><tspan x="800.0" dy="0">Success</tspan></text>
+<text class="white" x="1011.4" y="206.0" text-anchor="middle"><tspan x="1011.4" dy="0">Median</tspan></text>
+<text class="white" x="1222.9" y="206.0" text-anchor="middle"><tspan x="1222.9" dy="0">IQR</tspan></text>
+<text class="white" x="1434.3" y="206.0" text-anchor="middle"><tspan x="1434.3" dy="0">Tokens / success</tspan></text>
+<rect x="60" y="227" width="1480" height="52" fill="#fff"/>
+<text class="label" x="165.7" y="258.0" text-anchor="middle"><tspan x="165.7" dy="0">T1</tspan></text>
+<text class="small" x="377.1" y="258.0" text-anchor="middle"><tspan x="377.1" dy="0">Chain of thought</tspan></text>
+<text class="small" x="588.6" y="258.0" text-anchor="middle"><tspan x="588.6" dy="0">139</tspan></text>
+<text class="small" x="800.0" y="258.0" text-anchor="middle"><tspan x="800.0" dy="0">0</tspan></text>
+<text class="small" x="1011.4" y="258.0" text-anchor="middle"><tspan x="1011.4" dy="0">62.6k</tspan></text>
+<text class="small" x="1222.9" y="258.0" text-anchor="middle"><tspan x="1222.9" dy="0">6.7k–200.8k</tspan></text>
+<text class="small" x="1434.3" y="258.0" text-anchor="middle"><tspan x="1434.3" dy="0">undefined</tspan></text>
+<rect x="60" y="279" width="1480" height="52" fill="#f1f5f9"/>
+<text class="label" x="165.7" y="310.0" text-anchor="middle"><tspan x="165.7" dy="0">T1</tspan></text>
+<text class="small" x="377.1" y="310.0" text-anchor="middle"><tspan x="377.1" dy="0">MAJORCA</tspan></text>
+<text class="small" x="588.6" y="310.0" text-anchor="middle"><tspan x="588.6" dy="0">130</tspan></text>
+<text class="small" x="800.0" y="310.0" text-anchor="middle"><tspan x="800.0" dy="0">0</tspan></text>
+<text class="small" x="1011.4" y="310.0" text-anchor="middle"><tspan x="1011.4" dy="0">63.7k</tspan></text>
+<text class="small" x="1222.9" y="310.0" text-anchor="middle"><tspan x="1222.9" dy="0">8.0k–206.6k</tspan></text>
+<text class="small" x="1434.3" y="310.0" text-anchor="middle"><tspan x="1434.3" dy="0">undefined</tspan></text>
+<rect x="60" y="331" width="1480" height="52" fill="#fff"/>
+<text class="label" x="165.7" y="362.0" text-anchor="middle"><tspan x="165.7" dy="0">T1</tspan></text>
+<text class="small" x="377.1" y="362.0" text-anchor="middle"><tspan x="377.1" dy="0">ReAct</tspan></text>
+<text class="small" x="588.6" y="362.0" text-anchor="middle"><tspan x="588.6" dy="0">139</tspan></text>
+<text class="small" x="800.0" y="362.0" text-anchor="middle"><tspan x="800.0" dy="0">0</tspan></text>
+<text class="small" x="1011.4" y="362.0" text-anchor="middle"><tspan x="1011.4" dy="0">69.8k</tspan></text>
+<text class="small" x="1222.9" y="362.0" text-anchor="middle"><tspan x="1222.9" dy="0">6.7k–201.0k</tspan></text>
+<text class="small" x="1434.3" y="362.0" text-anchor="middle"><tspan x="1434.3" dy="0">undefined</tspan></text>
+<rect x="60" y="383" width="1480" height="52" fill="#f1f5f9"/>
+<text class="label" x="165.7" y="414.0" text-anchor="middle"><tspan x="165.7" dy="0">T1</tspan></text>
+<text class="small" x="377.1" y="414.0" text-anchor="middle"><tspan x="377.1" dy="0">Zero-shot</tspan></text>
+<text class="small" x="588.6" y="414.0" text-anchor="middle"><tspan x="588.6" dy="0">145</tspan></text>
+<text class="small" x="800.0" y="414.0" text-anchor="middle"><tspan x="800.0" dy="0">0</tspan></text>
+<text class="small" x="1011.4" y="414.0" text-anchor="middle"><tspan x="1011.4" dy="0">67.5k</tspan></text>
+<text class="small" x="1222.9" y="414.0" text-anchor="middle"><tspan x="1222.9" dy="0">6.7k–204.4k</tspan></text>
+<text class="small" x="1434.3" y="414.0" text-anchor="middle"><tspan x="1434.3" dy="0">undefined</tspan></text>
+<rect x="60" y="435" width="1480" height="52" fill="#fff"/>
+<text class="label" x="165.7" y="466.0" text-anchor="middle"><tspan x="165.7" dy="0">T2</tspan></text>
+<text class="small" x="377.1" y="466.0" text-anchor="middle"><tspan x="377.1" dy="0">Chain of thought</tspan></text>
+<text class="small" x="588.6" y="466.0" text-anchor="middle"><tspan x="588.6" dy="0">15</tspan></text>
+<text class="small" x="800.0" y="466.0" text-anchor="middle"><tspan x="800.0" dy="0">9</tspan></text>
+<text class="small" x="1011.4" y="466.0" text-anchor="middle"><tspan x="1011.4" dy="0">356.9k</tspan></text>
+<text class="small" x="1222.9" y="466.0" text-anchor="middle"><tspan x="1222.9" dy="0">113.3k–511.1k</tspan></text>
+<text class="small" x="1434.3" y="466.0" text-anchor="middle"><tspan x="1434.3" dy="0">522.6k</tspan></text>
+<rect x="60" y="487" width="1480" height="52" fill="#f1f5f9"/>
+<text class="label" x="165.7" y="518.0" text-anchor="middle"><tspan x="165.7" dy="0">T2</tspan></text>
+<text class="small" x="377.1" y="518.0" text-anchor="middle"><tspan x="377.1" dy="0">ReAct</tspan></text>
+<text class="small" x="588.6" y="518.0" text-anchor="middle"><tspan x="588.6" dy="0">15</tspan></text>
+<text class="small" x="800.0" y="518.0" text-anchor="middle"><tspan x="800.0" dy="0">12</tspan></text>
+<text class="small" x="1011.4" y="518.0" text-anchor="middle"><tspan x="1011.4" dy="0">266.5k</tspan></text>
+<text class="small" x="1222.9" y="518.0" text-anchor="middle"><tspan x="1222.9" dy="0">141.0k–437.2k</tspan></text>
+<text class="small" x="1434.3" y="518.0" text-anchor="middle"><tspan x="1434.3" dy="0">347.0k</tspan></text>
+<rect x="60" y="539" width="1480" height="52" fill="#fff"/>
+<text class="label" x="165.7" y="570.0" text-anchor="middle"><tspan x="165.7" dy="0">T2</tspan></text>
+<text class="small" x="377.1" y="570.0" text-anchor="middle"><tspan x="377.1" dy="0">Zero-shot</tspan></text>
+<text class="small" x="588.6" y="570.0" text-anchor="middle"><tspan x="588.6" dy="0">16</tspan></text>
+<text class="small" x="800.0" y="570.0" text-anchor="middle"><tspan x="800.0" dy="0">10</tspan></text>
+<text class="small" x="1011.4" y="570.0" text-anchor="middle"><tspan x="1011.4" dy="0">206.3k</tspan></text>
+<text class="small" x="1222.9" y="570.0" text-anchor="middle"><tspan x="1222.9" dy="0">89.3k–504.2k</tspan></text>
+<text class="small" x="1434.3" y="570.0" text-anchor="middle"><tspan x="1434.3" dy="0">450.9k</tspan></text>
+<rect x="60" y="591" width="1480" height="52" fill="#f1f5f9"/>
+<text class="label" x="165.7" y="622.0" text-anchor="middle"><tspan x="165.7" dy="0">T3</tspan></text>
+<text class="small" x="377.1" y="622.0" text-anchor="middle"><tspan x="377.1" dy="0">Recon first</tspan></text>
+<text class="small" x="588.6" y="622.0" text-anchor="middle"><tspan x="588.6" dy="0">54</tspan></text>
+<text class="small" x="800.0" y="622.0" text-anchor="middle"><tspan x="800.0" dy="0">23</tspan></text>
+<text class="small" x="1011.4" y="622.0" text-anchor="middle"><tspan x="1011.4" dy="0">164.5k</tspan></text>
+<text class="small" x="1222.9" y="622.0" text-anchor="middle"><tspan x="1222.9" dy="0">60.3k–331.5k</tspan></text>
+<text class="small" x="1434.3" y="622.0" text-anchor="middle"><tspan x="1434.3" dy="0">470.4k</tspan></text>
+<rect x="60" y="643" width="1480" height="52" fill="#fff"/>
+<text class="label" x="165.7" y="674.0" text-anchor="middle"><tspan x="165.7" dy="0">T3</tspan></text>
+<text class="small" x="377.1" y="674.0" text-anchor="middle"><tspan x="377.1" dy="0">Template backward</tspan></text>
+<text class="small" x="588.6" y="674.0" text-anchor="middle"><tspan x="588.6" dy="0">54</tspan></text>
+<text class="small" x="800.0" y="674.0" text-anchor="middle"><tspan x="800.0" dy="0">18</tspan></text>
+<text class="small" x="1011.4" y="674.0" text-anchor="middle"><tspan x="1011.4" dy="0">150.2k</tspan></text>
+<text class="small" x="1222.9" y="674.0" text-anchor="middle"><tspan x="1222.9" dy="0">81.6k–326.7k</tspan></text>
+<text class="small" x="1434.3" y="674.0" text-anchor="middle"><tspan x="1434.3" dy="0">600.9k</tspan></text>
+<text class="source" x="60" y="753">Source: generated cohort token-metric tables</text>
+</g>
+</svg>

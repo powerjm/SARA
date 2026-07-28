@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="567" viewBox="0 0 1600 567" role="img">
+<title>Success and nonsuccess token profiles</title>
+<style>
+ .title{font:700 34px system-ui,sans-serif;fill:#172554}
+ .sub{font:17px system-ui,sans-serif;fill:#475569}
+ .label{font:650 17px system-ui,sans-serif;fill:#1e293b}
+ .small{font:15px system-ui,sans-serif;fill:#64748b}
+ .value{font:700 15px system-ui,sans-serif;fill:#172554}
+ .legend{font:15px system-ui,sans-serif;fill:#334155}
+ .axis{font:14px system-ui,sans-serif;fill:#64748b}
+ .white{font:700 15px system-ui,sans-serif;fill:#fff}
+ .source{font:14px system-ui,sans-serif;fill:#64748b}
+ </style>
+<rect width="1600" height="567" fill="#f8fafc"/>
+<text class="title" x="60" y="57">Success and nonsuccess token profiles</text>
+<text class="sub" x="60" y="103">Publication-ready table derived from finalized record metadata</text>
+<g transform="translate(0,0)">
+<rect x="60" y="175" width="1480" height="52" rx="10" fill="#172554"/>
+<text class="white" x="165.7" y="206.0" text-anchor="middle"><tspan x="165.7" dy="0">Trial</tspan></text>
+<text class="white" x="377.1" y="206.0" text-anchor="middle"><tspan x="377.1" dy="0">Outcome</tspan></text>
+<text class="white" x="588.6" y="206.0" text-anchor="middle"><tspan x="588.6" dy="0">n</tspan></text>
+<text class="white" x="800.0" y="206.0" text-anchor="middle"><tspan x="800.0" dy="0">Median prompt</tspan></text>
+<text class="white" x="1011.4" y="206.0" text-anchor="middle"><tspan x="1011.4" dy="0">Median completion</tspan></text>
+<text class="white" x="1222.9" y="206.0" text-anchor="middle"><tspan x="1222.9" dy="0">Median total</tspan></text>
+<text class="white" x="1434.3" y="206.0" text-anchor="middle"><tspan x="1434.3" dy="0">Aggregate</tspan></text>
+<rect x="60" y="227" width="1480" height="52" fill="#fff"/>
+<text class="label" x="165.7" y="258.0" text-anchor="middle"><tspan x="165.7" dy="0">T1</tspan></text>
+<text class="small" x="377.1" y="258.0" text-anchor="middle"><tspan x="377.1" dy="0">Nonsuccess</tspan></text>
+<text class="small" x="588.6" y="258.0" text-anchor="middle"><tspan x="588.6" dy="0">1755</tspan></text>
+<text class="small" x="800.0" y="258.0" text-anchor="middle"><tspan x="800.0" dy="0">136.8k</tspan></text>
+<text class="small" x="1011.4" y="258.0" text-anchor="middle"><tspan x="1011.4" dy="0">7.3k</tspan></text>
+<text class="small" x="1222.9" y="258.0" text-anchor="middle"><tspan x="1222.9" dy="0">159.1k</tspan></text>
+<text class="small" x="1434.3" y="258.0" text-anchor="middle"><tspan x="1434.3" dy="0">222.91M</tspan></text>
+<rect x="60" y="279" width="1480" height="52" fill="#f1f5f9"/>
+<text class="label" x="165.7" y="310.0" text-anchor="middle"><tspan x="165.7" dy="0">T2</tspan></text>
+<text class="small" x="377.1" y="310.0" text-anchor="middle"><tspan x="377.1" dy="0">Success</tspan></text>
+<text class="small" x="588.6" y="310.0" text-anchor="middle"><tspan x="588.6" dy="0">34</tspan></text>
+<text class="small" x="800.0" y="310.0" text-anchor="middle"><tspan x="800.0" dy="0">141.3k</tspan></text>
+<text class="small" x="1011.4" y="310.0" text-anchor="middle"><tspan x="1011.4" dy="0">8.2k</tspan></text>
+<text class="small" x="1222.9" y="310.0" text-anchor="middle"><tspan x="1222.9" dy="0">155.7k</tspan></text>
+<text class="small" x="1434.3" y="310.0" text-anchor="middle"><tspan x="1434.3" dy="0">6.59M</tspan></text>
+<rect x="60" y="331" width="1480" height="52" fill="#fff"/>
+<text class="label" x="165.7" y="362.0" text-anchor="middle"><tspan x="165.7" dy="0">T2</tspan></text>
+<text class="small" x="377.1" y="362.0" text-anchor="middle"><tspan x="377.1" dy="0">Nonsuccess</tspan></text>
+<text class="small" x="588.6" y="362.0" text-anchor="middle"><tspan x="588.6" dy="0">58</tspan></text>
+<text class="small" x="800.0" y="362.0" text-anchor="middle"><tspan x="800.0" dy="0">492.2k</tspan></text>
+<text class="small" x="1011.4" y="362.0" text-anchor="middle"><tspan x="1011.4" dy="0">13.6k</tspan></text>
+<text class="small" x="1222.9" y="362.0" text-anchor="middle"><tspan x="1222.9" dy="0">508.5k</tspan></text>
+<text class="small" x="1434.3" y="362.0" text-anchor="middle"><tspan x="1434.3" dy="0">25.71M</tspan></text>
+<rect x="60" y="383" width="1480" height="52" fill="#f1f5f9"/>
+<text class="label" x="165.7" y="414.0" text-anchor="middle"><tspan x="165.7" dy="0">T3</tspan></text>
+<text class="small" x="377.1" y="414.0" text-anchor="middle"><tspan x="377.1" dy="0">Success</tspan></text>
+<text class="small" x="588.6" y="414.0" text-anchor="middle"><tspan x="588.6" dy="0">43</tspan></text>
+<text class="small" x="800.0" y="414.0" text-anchor="middle"><tspan x="800.0" dy="0">96.9k</tspan></text>
+<text class="small" x="1011.4" y="414.0" text-anchor="middle"><tspan x="1011.4" dy="0">9.9k</tspan></text>
+<text class="small" x="1222.9" y="414.0" text-anchor="middle"><tspan x="1222.9" dy="0">112.6k</tspan></text>
+<text class="small" x="1434.3" y="414.0" text-anchor="middle"><tspan x="1434.3" dy="0">6.92M</tspan></text>
+<rect x="60" y="435" width="1480" height="52" fill="#fff"/>
+<text class="label" x="165.7" y="466.0" text-anchor="middle"><tspan x="165.7" dy="0">T3</tspan></text>
+<text class="small" x="377.1" y="466.0" text-anchor="middle"><tspan x="377.1" dy="0">Nonsuccess</tspan></text>
+<text class="small" x="588.6" y="466.0" text-anchor="middle"><tspan x="588.6" dy="0">103</tspan></text>
+<text class="small" x="800.0" y="466.0" text-anchor="middle"><tspan x="800.0" dy="0">320.0k</tspan></text>
+<text class="small" x="1011.4" y="466.0" text-anchor="middle"><tspan x="1011.4" dy="0">14.9k</tspan></text>
+<text class="small" x="1222.9" y="466.0" text-anchor="middle"><tspan x="1222.9" dy="0">339.8k</tspan></text>
+<text class="small" x="1434.3" y="466.0" text-anchor="middle"><tspan x="1434.3" dy="0">40.87M</tspan></text>
+<text class="source" x="60" y="545">Source: generated cohort token-metric tables</text>
+</g>
+</svg>

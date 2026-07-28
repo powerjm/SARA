@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1140" viewBox="0 0 1600 1140" role="img">
+<title>Total-token distributions by termination mode</title>
+<style>
+ .title{font:700 34px system-ui,sans-serif;fill:#172554}
+ .sub{font:17px system-ui,sans-serif;fill:#475569}
+ .label{font:650 17px system-ui,sans-serif;fill:#1e293b}
+ .small{font:15px system-ui,sans-serif;fill:#64748b}
+ .value{font:700 15px system-ui,sans-serif;fill:#172554}
+ .legend{font:15px system-ui,sans-serif;fill:#334155}
+ .axis{font:14px system-ui,sans-serif;fill:#64748b}
+ .white{font:700 15px system-ui,sans-serif;fill:#fff}
+ .source{font:14px system-ui,sans-serif;fill:#64748b}
+ </style>
+<rect width="1600" height="1140" fill="#f8fafc"/>
+<text class="title" x="60" y="57">Total-token distributions by termination mode</text>
+<text class="sub" x="60" y="103">Whisker = observed range; box = interquartile range; dark line = median</text>
+<g transform="translate(0,0)">
+<line x1="470.0" y1="165" x2="470.0" y2="1065" stroke="#e2e8f0"/>
+<text class="axis" x="470.0" y="153" text-anchor="middle">0.0k</text>
+<line x1="662.0" y1="165" x2="662.0" y2="1065" stroke="#e2e8f0"/>
+<text class="axis" x="662.0" y="153" text-anchor="middle">220.0k</text>
+<line x1="854.0" y1="165" x2="854.0" y2="1065" stroke="#e2e8f0"/>
+<text class="axis" x="854.0" y="153" text-anchor="middle">440.0k</text>
+<line x1="1046.0" y1="165" x2="1046.0" y2="1065" stroke="#e2e8f0"/>
+<text class="axis" x="1046.0" y="153" text-anchor="middle">660.0k</text>
+<line x1="1238.0" y1="165" x2="1238.0" y2="1065" stroke="#e2e8f0"/>
+<text class="axis" x="1238.0" y="153" text-anchor="middle">880.0k</text>
+<line x1="1430.0" y1="165" x2="1430.0" y2="1065" stroke="#e2e8f0"/>
+<text class="axis" x="1430.0" y="153" text-anchor="middle">1.10M</text>
+<text class="label" x="60" y="208">Trial 1</text>
+<line x1="480.3" y1="200" x2="708.3" y2="200" stroke="#94a3b8" stroke-width="3"/>
+<rect x="626.7" y="187" width="21.0" height="26" rx="5" fill="#dc2626" opacity="0.72"/>
+<line x1="646.2" y1="183" x2="646.2" y2="217" stroke="#172554" stroke-width="4"/>
+<text class="small" x="150.0" y="205.0" text-anchor="start"><tspan x="150.0" dy="0">budget exhausted</tspan></text>
+<text class="small" x="470" y="228">n=1079 · median 201.9k</text>
+<line x1="491.4" y1="263" x2="725.8" y2="263" stroke="#94a3b8" stroke-width="3"/>
+<rect x="491.4" y="250" width="56.1" height="26" rx="5" fill="#94a3b8" opacity="0.72"/>
+<line x1="512.5" y1="246" x2="512.5" y2="280" stroke="#172554" stroke-width="4"/>
+<text class="small" x="150.0" y="268.0" text-anchor="start"><tspan x="150.0" dy="0">other</tspan></text>
+<text class="small" x="470" y="291">n=476 · median 48.7k</text>
+<line x1="471.8" y1="326" x2="651.6" y2="326" stroke="#94a3b8" stroke-width="3"/>
+<rect x="472.7" y="313" width="3.9" height="26" rx="5" fill="#7c3aed" opacity="0.72"/>
+<line x1="475.7" y1="309" x2="475.7" y2="343" stroke="#172554" stroke-width="4"/>
+<text class="small" x="150.0" y="331.0" text-anchor="start"><tspan x="150.0" dy="0">safeguard refusal</tspan></text>
+<text class="small" x="470" y="354">n=200 · median 6.5k</text>
+<text class="label" x="60" y="432">Trial 2</text>
+<line x1="505.3" y1="424" x2="901.1" y2="424" stroke="#94a3b8" stroke-width="3"/>
+<rect x="530.0" y="411" width="175.7" height="26" rx="5" fill="#16a34a" opacity="0.72"/>
+<line x1="605.9" y1="407" x2="605.9" y2="441" stroke="#172554" stroke-width="4"/>
+<text class="small" x="150.0" y="429.0" text-anchor="start"><tspan x="150.0" dy="0">success</tspan></text>
+<text class="small" x="470" y="452">n=34 · median 155.7k</text>
+<line x1="907.5" y1="487" x2="943.0" y2="487" stroke="#94a3b8" stroke-width="3"/>
+<rect x="913.1" y="474" width="12.5" height="26" rx="5" fill="#dc2626" opacity="0.72"/>
+<line x1="918.6" y1="470" x2="918.6" y2="504" stroke="#172554" stroke-width="4"/>
+<text class="small" x="150.0" y="492.0" text-anchor="start"><tspan x="150.0" dy="0">token budget</tspan></text>
+<text class="small" x="470" y="515">n=40 · median 514.0k</text>
+<line x1="614.1" y1="550" x2="903.0" y2="550" stroke="#94a3b8" stroke-width="3"/>
+<rect x="617.8" y="537" width="44.7" height="26" rx="5" fill="#f59e0b" opacity="0.72"/>
+<line x1="647.2" y1="533" x2="647.2" y2="567" stroke="#172554" stroke-width="4"/>
+<text class="small" x="150.0" y="555.0" text-anchor="start"><tspan x="150.0" dy="0">wall clock</tspan></text>
+<text class="small" x="470" y="578">n=12 · median 203.1k</text>
+<line x1="597.3" y1="613" x2="1018.9" y2="613" stroke="#94a3b8" stroke-width="3"/>
+<rect x="656.3" y="600" width="291.7" height="26" rx="5" fill="#7c3aed" opacity="0.72"/>
+<line x1="799.3" y1="596" x2="799.3" y2="630" stroke="#172554" stroke-width="4"/>
+<text class="small" x="150.0" y="618.0" text-anchor="start"><tspan x="150.0" dy="0">truncated</tspan></text>
+<text class="small" x="470" y="641">n=6 · median 377.3k</text>
+<text class="label" x="60" y="719">Trial 3</text>
+<line x1="481.7" y1="711" x2="1055.7" y2="711" stroke="#94a3b8" stroke-width="3"/>
+<rect x="524.7" y="698" width="124.8" height="26" rx="5" fill="#16a34a" opacity="0.72"/>
+<line x1="568.3" y1="694" x2="568.3" y2="728" stroke="#172554" stroke-width="4"/>
+<text class="small" x="150.0" y="716.0" text-anchor="start"><tspan x="150.0" dy="0">success</tspan></text>
+<text class="small" x="470" y="739">n=43 · median 112.6k</text>
+<line x1="470.6" y1="774" x2="1334.3" y2="774" stroke="#94a3b8" stroke-width="3"/>
+<rect x="571.1" y="761" width="258.9" height="26" rx="5" fill="#f59e0b" opacity="0.72"/>
+<line x1="742.2" y1="757" x2="742.2" y2="791" stroke="#172554" stroke-width="4"/>
+<text class="small" x="150.0" y="779.0" text-anchor="start"><tspan x="150.0" dy="0">wall clock</tspan></text>
+<text class="small" x="470" y="802">n=79 · median 311.9k</text>
+<line x1="816.8" y1="837" x2="1326.4" y2="837" stroke="#94a3b8" stroke-width="3"/>
+<rect x="834.7" y="824" width="138.8" height="26" rx="5" fill="#0f766e" opacity="0.72"/>
+<line x1="895.2" y1="820" x2="895.2" y2="854" stroke="#172554" stroke-width="4"/>
+<text class="small" x="150.0" y="842.0" text-anchor="start"><tspan x="150.0" dy="0">iteration cap</tspan></text>
+<text class="small" x="470" y="865">n=10 · median 487.2k</text>
+<line x1="1343.4" y1="900" x2="1358.9" y2="900" stroke="#94a3b8" stroke-width="3"/>
+<rect x="1346.4" y="887" width="5.2" height="26" rx="5" fill="#dc2626" opacity="0.72"/>
+<line x1="1348.2" y1="883" x2="1348.2" y2="917" stroke="#172554" stroke-width="4"/>
+<text class="small" x="150.0" y="905.0" text-anchor="start"><tspan x="150.0" dy="0">token budget</tspan></text>
+<text class="small" x="470" y="928">n=10 · median 1.01M</text>
+<line x1="511.0" y1="963" x2="711.5" y2="963" stroke="#94a3b8" stroke-width="3"/>
+<rect x="517.6" y="950" width="65.4" height="26" rx="5" fill="#7c3aed" opacity="0.72"/>
+<line x1="530.0" y1="946" x2="530.0" y2="980" stroke="#172554" stroke-width="4"/>
+<text class="small" x="150.0" y="968.0" text-anchor="start"><tspan x="150.0" dy="0">safeguard refusal</tspan></text>
+<text class="small" x="470" y="991">n=4 · median 68.7k</text>
+<text class="source" x="60" y="1118">Source: finalized record.json token and termination metadata</text>
+</g>
+</svg>

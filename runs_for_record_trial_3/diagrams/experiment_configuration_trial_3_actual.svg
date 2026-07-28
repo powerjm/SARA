@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="1024" viewBox="0 0 1536 1024" role="img" aria-labelledby="title desc">
+  <title id="title">SARA Trial 3 configuration and execution</title>
+  <desc id="desc">Reconstructed Trial 3 experiment matrix, limits, completion, and endpoint.</desc>
+  <style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .headline { font: 800 31px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 18px system-ui, sans-serif; fill: #475569; }
+    .section { font: 700 15px system-ui, sans-serif; fill: #64748b; letter-spacing: 1.5px; }
+    .label { font: 650 18px system-ui, sans-serif; fill: #1e293b; }
+    .small { font: 15px system-ui, sans-serif; fill: #475569; }
+    .smalllight { font: 15px system-ui, sans-serif; fill: #dbeafe; }
+    .tiny { font: 13px system-ui, sans-serif; fill: #64748b; }
+    .value { font: 700 18px system-ui, sans-serif; fill: #172554; }
+    .big { font: 800 42px system-ui, sans-serif; fill: #fff; }
+    .bigdark { font: 800 42px system-ui, sans-serif; fill: #172554; }
+    .white { font: 700 16px system-ui, sans-serif; fill: #fff; }
+    .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .source { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .mono { font: 17px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fill: #123b4a; }
+    .panel { fill: #fff; stroke: #cbd5e1; stroke-width: 2; }
+  </style>
+  <rect width="1536" height="1024" fill="#f8fafc"/>
+<text class="headline" x="768" y="52" text-anchor="middle">SARA TRIAL 3 — CONFIGURATION &amp; EXECUTION</text>
+<text class="title" x="768" y="99" text-anchor="middle">9 BINARIES × 6 BACKENDS × 2 STRATEGIES = 108 CELLS</text>
+<text class="sub" x="768" y="137" text-anchor="middle">2 REPLICATES PER CELL → 216 PLANNED RUNS</text>
+<text class="sub" x="768" y="169" text-anchor="middle">149 ATTEMPT DIRECTORIES → 146 FINALIZED + 3 INCOMPLETE</text>
+<text class="sub" x="768" y="201" text-anchor="middle">67 PLANNED RUNS NEVER STARTED</text>
+<rect class="panel" x="45" y="230" width="475" height="485" rx="12"/>
+<text class="label" x="282" y="268" text-anchor="middle">BINARIES · FINALIZED RECORDS</text>
+<text class="tiny" x="78" y="305">BASELINE</text>
+<text class="mono" x="215" y="305">ret2win-baseline · 23</text>
+<text class="tiny" x="78" y="347">LOW · CTF</text>
+<text class="mono" x="215" y="347">broncoctf-proper-pwning · 12</text>
+<text class="tiny" x="78" y="389">MEDIUM · SYNTHETIC</text>
+<text class="mono" x="215" y="389">ropbench-synth-ex002 · 12</text>
+<text class="tiny" x="78" y="431">MEDIUM · SYNTHETIC</text>
+<text class="mono" x="215" y="431">ropbench-synth-ex005 · 12</text>
+<text class="tiny" x="78" y="473">MEDIUM · SYNTHETIC</text>
+<text class="mono" x="215" y="473">ropbench-synth-ex020 · 12</text>
+<text class="tiny" x="78" y="515">MEDIUM · SYNTHETIC</text>
+<text class="mono" x="215" y="515">ropbench-synth-ex101 · 12</text>
+<text class="tiny" x="78" y="557">HIGH · CGC</text>
+<text class="mono" x="215" y="557">cgc-cromu-00004 · 23</text>
+<text class="tiny" x="78" y="599">HIGH · CGC</text>
+<text class="mono" x="215" y="599">cgc-eagle-00005 · 24</text>
+<text class="tiny" x="78" y="641">HIGH · CGC</text>
+<text class="mono" x="215" y="641">cgc-nrfin-00056 · 16</text>
+<rect class="panel" x="535" y="230" width="475" height="485" rx="12"/>
+<text class="label" x="772" y="268" text-anchor="middle">BACKENDS · FINALIZED RECORDS</text>
+<text class="tiny" x="570" y="315">PREMIUM</text>
+<text class="mono" x="700" y="315">claude-sonnet · 36</text>
+<text class="tiny" x="570" y="374">PREMIUM</text>
+<text class="mono" x="700" y="374">claude-opus · 36</text>
+<text class="tiny" x="570" y="433">PREMIUM</text>
+<text class="mono" x="700" y="433">gpt-5 · 36</text>
+<text class="tiny" x="570" y="492">OPEN WEIGHT</text>
+<text class="mono" x="700" y="492">gpt-oss-20b · 14</text>
+<text class="tiny" x="570" y="551">UNRESTRICTED</text>
+<text class="mono" x="700" y="551">qwen3-30b-abliterated · 12</text>
+<text class="tiny" x="570" y="610">UNRESTRICTED</text>
+<text class="mono" x="700" y="610">whiterabbitneo-v3-7b · 12</text>
+<rect class="panel" x="1025" y="230" width="466" height="485" rx="12"/>
+<text class="label" x="1258" y="268" text-anchor="middle">STRATEGIES · FINALIZED RECORDS</text>
+<rect x="1050" y="305" width="416" height="120" rx="10" fill="#f5f3ff" stroke="#c4b5fd" stroke-width="2"/>
+<text class="mono" x="1258" y="360" text-anchor="middle">template_backward · 74</text>
+<text class="small" x="1258" y="395" text-anchor="middle">20 successes overall · 18 premium</text>
+<rect x="1050" y="460" width="416" height="120" rx="10" fill="#ecfdf5" stroke="#99f6e4" stroke-width="2"/>
+<text class="mono" x="1258" y="515" text-anchor="middle">recon_first · 72</text>
+<text class="small" x="1258" y="550" text-anchor="middle">23 successes overall · 23 premium</text>
+<text class="small" x="1258" y="635" text-anchor="middle">Two replicates per complete cell</text>
+<text class="small" x="1258" y="663" text-anchor="middle">Local matrix curtailed in target order</text>
+<rect class="panel" x="45" y="735" width="1446" height="93" rx="10"/>
+<text class="label" x="768" y="765" text-anchor="middle">RUN LIMITS OBSERVED IN LOGS / RECORDS</text>
+<rect class="panel" x="65" y="782" width="335" height="32" rx="6"/><text class="mono" x="232" y="805" text-anchor="middle">1,000,000 tokens</text>
+<rect class="panel" x="415" y="782" width="335" height="32" rx="6"/><text class="mono" x="582" y="805" text-anchor="middle">premium · 300 s nominal</text>
+<rect class="panel" x="765" y="782" width="335" height="32" rx="6"/><text class="mono" x="932" y="805" text-anchor="middle">local · 1,200 s nominal</text>
+<rect class="panel" x="1115" y="782" width="355" height="32" rx="6"/><text class="mono" x="1292" y="805" text-anchor="middle">100-iteration backstop</text>
+<rect class="panel" x="45" y="845" width="1446" height="90" rx="10"/>
+<text class="label" x="768" y="875" text-anchor="middle">RECORDED PREMIUM COST CAPS FROM LAUNCHER LOG</text>
+<text class="mono" x="310" y="910" text-anchor="middle">claude-sonnet · $90</text>
+<text class="mono" x="768" y="910" text-anchor="middle">claude-opus · $180</text>
+<text class="mono" x="1225" y="910" text-anchor="middle">gpt-5 · $130</text>
+<text class="label" x="260" y="975" text-anchor="middle">PREMIUM: 108/108 FINALIZED</text>
+<text class="label" x="768" y="975" text-anchor="middle">LOCAL: 38/108 FINALIZED</text>
+<text class="label" x="1260" y="975" text-anchor="middle">PRIMARY ENDPOINT: 43/146</text>
+<text class="source" x="768" y="1008" text-anchor="middle">Reconstructed from premium.log, local.log, and finalized record metadata; governing YAML files were not archived</text>
+</svg>

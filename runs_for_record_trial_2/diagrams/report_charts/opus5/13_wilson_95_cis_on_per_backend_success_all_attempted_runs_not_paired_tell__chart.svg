@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="744" viewBox="0 0 1600 744" role="img">
+<title>Wilson 95% CIs on per-backend success (all attempted runs; not paired) tell the real story</title>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .label { font: 650 17px system-ui, sans-serif; fill: #1e293b; }
+    .small { font: 15px system-ui, sans-serif; fill: #64748b; }
+    .value { font: 700 15px system-ui, sans-serif; fill: #172554; }
+    .legend { font: 15px system-ui, sans-serif; fill: #334155; }
+    .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .cell { font: 650 16px system-ui, sans-serif; fill: #172554; }
+    .white { font: 700 15px system-ui, sans-serif; fill: #fff; }
+  </style>
+<rect width="1600" height="744" fill="#f8fafc"/>
+<text class="title" x="60" y="56">Wilson 95% CIs on per-backend success (all attempted runs; not paired)</text>
+<text class="title" x="60" y="98">tell the real story</text>
+<text class="sub" x="60" y="145">OPUS5 report • source table 13, line 276</text>
+<g transform="translate(0,42)">
+<line x1="390.0" y1="170" x2="390.0" y2="617" stroke="#e2e8f0"/>
+<text class="axis" x="390.0" y="161" text-anchor="middle">0%</text>
+<line x1="647.5" y1="170" x2="647.5" y2="617" stroke="#e2e8f0"/>
+<text class="axis" x="647.5" y="161" text-anchor="middle">25%</text>
+<line x1="905.0" y1="170" x2="905.0" y2="617" stroke="#e2e8f0"/>
+<text class="axis" x="905.0" y="161" text-anchor="middle">50%</text>
+<line x1="1162.5" y1="170" x2="1162.5" y2="617" stroke="#e2e8f0"/>
+<text class="axis" x="1162.5" y="161" text-anchor="middle">75%</text>
+<line x1="1420.0" y1="170" x2="1420.0" y2="617" stroke="#e2e8f0"/>
+<text class="axis" x="1420.0" y="161" text-anchor="middle">100%</text>
+<text class="label" x="60.0" y="214.0" text-anchor="start"><tspan x="60.0" dy="0">GPT-5</tspan></text>
+<line x1="895.7" y1="210" x2="1259.3" y2="210" stroke="#2563eb" stroke-width="5"/>
+<circle cx="1106.9" cy="210" r="9" fill="#172554"/>
+<text class="value" x="1271.3" y="215">69.6%</text>
+<text class="label" x="60.0" y="286.0" text-anchor="start"><tspan x="60.0" dy="0">Claude Sonnet</tspan></text>
+<line x1="852.5" y1="282" x2="1226.4" y2="282" stroke="#2563eb" stroke-width="5"/>
+<circle cx="1061.6" cy="282" r="9" fill="#172554"/>
+<text class="value" x="1238.4" y="287">65.2%</text>
+<text class="label" x="60.0" y="358.0" text-anchor="start"><tspan x="60.0" dy="0">GPT-OSS 20B</tspan></text>
+<line x1="434.3" y1="354" x2="709.3" y2="354" stroke="#2563eb" stroke-width="5"/>
+<circle cx="518.8" cy="354" r="9" fill="#172554"/>
+<text class="value" x="721.3" y="359">12.5%</text>
+<text class="label" x="60.0" y="430.0" text-anchor="start"><tspan x="60.0" dy="0">Qwen3 Coder 30B</tspan></text>
+<line x1="390.0" y1="426" x2="676.3" y2="426" stroke="#2563eb" stroke-width="5"/>
+<circle cx="390.0" cy="426" r="9" fill="#172554"/>
+<text class="value" x="688.3" y="431">0%</text>
+<text class="label" x="60.0" y="502.0" text-anchor="start"><tspan x="60.0" dy="0">WhiteRabbitNeo 7B</tspan></text>
+<line x1="390.0" y1="498" x2="791.7" y2="498" stroke="#2563eb" stroke-width="5"/>
+<circle cx="390.0" cy="498" r="9" fill="#172554"/>
+<text class="value" x="803.7" y="503">0%</text>
+<text class="label" x="60.0" y="574.0" text-anchor="start"><tspan x="60.0" dy="0">Qwen3 Abliterated</tspan></text>
+<line x1="390.0" y1="570" x2="791.7" y2="570" stroke="#2563eb" stroke-width="5"/>
+<circle cx="390.0" cy="570" r="9" fill="#172554"/>
+<text class="value" x="803.7" y="575">0%</text>
+</g>
+</svg>

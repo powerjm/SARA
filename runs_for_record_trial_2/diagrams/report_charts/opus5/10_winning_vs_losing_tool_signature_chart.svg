@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="650" viewBox="0 0 1600 650" role="img">
+<title>Winning vs. losing tool signature</title>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .label { font: 650 17px system-ui, sans-serif; fill: #1e293b; }
+    .small { font: 15px system-ui, sans-serif; fill: #64748b; }
+    .value { font: 700 15px system-ui, sans-serif; fill: #172554; }
+    .legend { font: 15px system-ui, sans-serif; fill: #334155; }
+    .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .cell { font: 650 16px system-ui, sans-serif; fill: #172554; }
+    .white { font: 700 15px system-ui, sans-serif; fill: #fff; }
+  </style>
+<rect width="1600" height="650" fill="#f8fafc"/>
+<text class="title" x="60" y="56">Winning vs. losing tool signature</text>
+<text class="sub" x="60" y="103">OPUS5 report • source table 10, line 226</text>
+<g transform="translate(0,0)">
+<rect x="80" y="165" width="700" height="420" rx="16" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+<text class="label" x="105" y="203">Winners (34) — calls per run</text>
+<text class="small" x="105.0" y="251.0" text-anchor="start"><tspan x="105.0" dy="0">run_exploit_script</tspan></text>
+<rect x="390" y="232" width="330.0" height="25" rx="4" fill="#16a34a"/>
+<text class="value" x="730.0" y="250">3.79</text>
+<text class="small" x="105.0" y="315.0" text-anchor="start"><tspan x="105.0" dy="0">radare2_disassemble_at</tspan></text>
+<rect x="390" y="296" width="220.0" height="25" rx="4" fill="#16a34a"/>
+<text class="value" x="620.0" y="314">2.53</text>
+<text class="small" x="105.0" y="379.0" text-anchor="start"><tspan x="105.0" dy="0">enumerate_gadgets</tspan></text>
+<rect x="390" y="360" width="158.6" height="25" rx="4" fill="#16a34a"/>
+<text class="value" x="558.6" y="378">1.82</text>
+<text class="small" x="105.0" y="443.0" text-anchor="start"><tspan x="105.0" dy="0">radare2_search_pattern</tspan></text>
+<rect x="390" y="424" width="122.8" height="25" rx="4" fill="#16a34a"/>
+<text class="value" x="522.8" y="442">1.41</text>
+<text class="small" x="105.0" y="507.0" text-anchor="start"><tspan x="105.0" dy="0">gdb_disassemble</tspan></text>
+<rect x="390" y="488" width="117.7" height="25" rx="4" fill="#16a34a"/>
+<text class="value" x="517.7" y="506">1.35</text>
+<rect x="840" y="165" width="700" height="420" rx="16" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+<text class="label" x="865" y="203">Losers (58) — calls per run</text>
+<text class="small" x="865.0" y="251.0" text-anchor="start"><tspan x="865.0" dy="0">enumerate_gadgets</tspan></text>
+<rect x="1150" y="232" width="330.0" height="25" rx="4" fill="#dc2626"/>
+<text class="value" x="1490.0" y="250">7.10</text>
+<text class="small" x="865.0" y="315.0" text-anchor="start"><tspan x="865.0" dy="0">radare2_search_pattern</tspan></text>
+<rect x="1150" y="296" width="216.3" height="25" rx="4" fill="#dc2626"/>
+<text class="value" x="1376.3" y="314">4.66</text>
+<text class="small" x="865.0" y="379.0" text-anchor="start"><tspan x="865.0" dy="0">radare2_disassemble_at</tspan></text>
+<rect x="1150" y="360" width="168.2" height="25" rx="4" fill="#dc2626"/>
+<text class="value" x="1328.2" y="378">3.62</text>
+<text class="small" x="865.0" y="443.0" text-anchor="start"><tspan x="865.0" dy="0">run_exploit_script</tspan></text>
+<rect x="1150" y="424" width="157.8" height="25" rx="4" fill="#dc2626"/>
+<text class="value" x="1317.8" y="442">3.40</text>
+<text class="small" x="865.0" y="507.0" text-anchor="start"><tspan x="865.0" dy="0">ropper_search_gadget</tspan></text>
+<rect x="1150" y="488" width="153.0" height="25" rx="4" fill="#dc2626"/>
+<text class="value" x="1313.0" y="506">3.29</text>
+</g>
+</svg>

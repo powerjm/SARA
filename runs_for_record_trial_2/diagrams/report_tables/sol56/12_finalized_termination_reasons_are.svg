@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="486" viewBox="0 0 1600 486" role="img" aria-labelledby="title desc">
+<title id="title">Finalized termination reasons are</title>
+<desc id="desc">Table 12 from RUN_FOR_RECORD_ANALYSIS.Sol56.md, source line 339.</desc>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .head { font: 700 17px system-ui, sans-serif; fill: #fff; }
+    .cell { font: 17px system-ui, sans-serif; fill: #1e293b; }
+    .cellStrong { font: 700 17px system-ui, sans-serif; fill: #172554; }
+    .source { font: 14px system-ui, sans-serif; fill: #64748b; }
+  </style>
+<rect width="1600" height="486" fill="#f8fafc"/>
+<text id="title" class="title" x="60" y="88">Finalized termination reasons are</text>
+<text class="sub" x="60" y="114">RUN_FOR_RECORD_ANALYSIS.Sol56.md • Table 12 • source line 339</text>
+<rect x="60" y="156" width="1480" height="258" rx="16" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+<path d="M76 156 H1524 Q1540 156 1540 172 V214 H60 V172 Q60 156 76 156 Z" fill="#172554"/>
+<text class="head" x="75.0" y="198.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">Termination reason</tspan></text>
+<line x1="1423.3" y1="156" x2="1423.3" y2="414" stroke="#cbd5e1"/>
+<text class="head" x="1481.6" y="198.0" text-anchor="middle" xml:space="preserve"><tspan x="1481.6" dy="0">Count</tspan></text>
+<rect x="60" y="214" width="1480" height="50" fill="#ffffff"/>
+<line x1="60" y1="214" x2="1540" y2="214" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="248.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">Success</tspan></text>
+<text class="cell" x="1481.6" y="248.0" text-anchor="middle" xml:space="preserve"><tspan x="1481.6" dy="0">34</tspan></text>
+<rect x="60" y="264" width="1480" height="50" fill="#f1f5f9"/>
+<line x1="60" y1="264" x2="1540" y2="264" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="298.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">Token budget</tspan></text>
+<text class="cell" x="1481.6" y="298.0" text-anchor="middle" xml:space="preserve"><tspan x="1481.6" dy="0">40</tspan></text>
+<rect x="60" y="314" width="1480" height="50" fill="#ffffff"/>
+<line x1="60" y1="314" x2="1540" y2="314" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="348.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">Wall-clock budget</tspan></text>
+<text class="cell" x="1481.6" y="348.0" text-anchor="middle" xml:space="preserve"><tspan x="1481.6" dy="0">12</tspan></text>
+<rect x="60" y="364" width="1480" height="50" fill="#f1f5f9"/>
+<line x1="60" y1="364" x2="1540" y2="364" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="398.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">Truncated response/context</tspan></text>
+<text class="cell" x="1481.6" y="398.0" text-anchor="middle" xml:space="preserve"><tspan x="1481.6" dy="0">6</tspan></text>
+<text class="source" x="60" y="459">Source: RUN_FOR_RECORD_ANALYSIS.Sol56.md, Markdown table beginning at line 339</text>
+</svg>

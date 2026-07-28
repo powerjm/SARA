@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="690" viewBox="0 0 1600 690" role="img">
+<title>Backend/target-aligned premium sensitivity cohort</title>
+<style>
+ .title{font:700 34px system-ui,sans-serif;fill:#172554}
+ .sub{font:17px system-ui,sans-serif;fill:#475569}
+ .label{font:650 17px system-ui,sans-serif;fill:#1e293b}
+ .small{font:15px system-ui,sans-serif;fill:#64748b}
+ .value{font:700 15px system-ui,sans-serif;fill:#172554}
+ .legend{font:15px system-ui,sans-serif;fill:#334155}
+ .axis{font:14px system-ui,sans-serif;fill:#64748b}
+ .white{font:700 15px system-ui,sans-serif;fill:#fff}
+ .source{font:14px system-ui,sans-serif;fill:#64748b}
+ </style>
+<rect width="1600" height="690" fill="#f8fafc"/>
+<text class="title" x="60" y="57">Backend/target-aligned premium sensitivity cohort</text>
+<text class="sub" x="60" y="103">Claude Sonnet + GPT-5 on BroncoCTF and ROPBench ex005</text>
+<g transform="translate(0,0)">
+<line x1="380.0" y1="175" x2="380.0" y2="530" stroke="#e2e8f0"/>
+<text class="axis" x="380.0" y="164" text-anchor="middle">0%</text>
+<line x1="586.0" y1="175" x2="586.0" y2="530" stroke="#e2e8f0"/>
+<text class="axis" x="586.0" y="164" text-anchor="middle">20%</text>
+<line x1="792.0" y1="175" x2="792.0" y2="530" stroke="#e2e8f0"/>
+<text class="axis" x="792.0" y="164" text-anchor="middle">40%</text>
+<line x1="998.0" y1="175" x2="998.0" y2="530" stroke="#e2e8f0"/>
+<text class="axis" x="998.0" y="164" text-anchor="middle">60%</text>
+<line x1="1204.0" y1="175" x2="1204.0" y2="530" stroke="#e2e8f0"/>
+<text class="axis" x="1204.0" y="164" text-anchor="middle">80%</text>
+<line x1="1410.0" y1="175" x2="1410.0" y2="530" stroke="#e2e8f0"/>
+<text class="axis" x="1410.0" y="164" text-anchor="middle">100%</text>
+<text class="label" x="60" y="246">Trial 1</text>
+<line x1="380.0" y1="240" x2="446.1" y2="240" stroke="#94a3b8" stroke-width="7"/>
+<circle cx="380.0" cy="240" r="12" fill="#172554"/>
+<text class="value" x="405.0" y="246">0/56 = 0.0% [0.00%, 6.42%]</text>
+<text class="label" x="60" y="371">Trial 2</text>
+<line x1="993.2" y1="365" x2="1314.8" y2="365" stroke="#2563eb" stroke-width="7"/>
+<circle cx="1195.4" cy="365" r="12" fill="#172554"/>
+<text class="value" x="1220.4" y="371">19/24 = 79.2% [59.53%, 90.76%]</text>
+<text class="label" x="60" y="496">Trial 3</text>
+<line x1="668.4" y1="490" x2="1121.6" y2="490" stroke="#16a34a" stroke-width="7"/>
+<circle cx="895.0" cy="490" r="12" fill="#172554"/>
+<text class="value" x="920.0" y="496">8/16 = 50.0% [28.00%, 72.00%]</text>
+<rect x="60" y="560" width="1420" height="72" rx="12" fill="#fef3c7"/>
+<text class="small" x="84" y="590">Wilson intervals describe run-level sampling only. They do not adjust for clustered replicates, structured attrition,</text>
+<text class="small" x="84" y="616">or changes in targets, backends, prompts, tools, schemas, and resource envelopes.</text>
+<text class="source" x="60" y="668">Source: finalized records; prompt arms and replicate exposure still differ</text>
+</g>
+</svg>
