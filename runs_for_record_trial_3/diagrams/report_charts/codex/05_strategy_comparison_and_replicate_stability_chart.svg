@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="456" viewBox="0 0 1600 456" role="img">
+<title>6. Strategy comparison and replicate stability</title>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .label { font: 650 17px system-ui, sans-serif; fill: #1e293b; }
+    .small { font: 15px system-ui, sans-serif; fill: #64748b; }
+    .value { font: 700 15px system-ui, sans-serif; fill: #172554; }
+    .legend { font: 15px system-ui, sans-serif; fill: #334155; }
+    .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .cell { font: 650 16px system-ui, sans-serif; fill: #172554; }
+    .white { font: 700 15px system-ui, sans-serif; fill: #fff; }
+  </style>
+<rect width="1600" height="456" fill="#f8fafc"/>
+<text class="title" x="60" y="56">6. Strategy comparison and replicate stability</text>
+<text class="sub" x="60" y="103">CODEX report • source table 05, line 167</text>
+<g transform="translate(0,0)">
+<rect x="650" y="122" width="18" height="18" rx="3" fill="#16a34a"/>
+<text class="legend" x="677" y="137">success rate</text>
+<rect x="806" y="122" width="18" height="18" rx="3" fill="#2563eb"/>
+<text class="legend" x="833" y="137">success count</text>
+<line x1="400.0" y1="175" x2="400.0" y2="333" stroke="#e2e8f0"/>
+<text class="axis" x="400.0" y="166" text-anchor="middle">0</text>
+<line x1="670.0" y1="175" x2="670.0" y2="333" stroke="#e2e8f0"/>
+<text class="axis" x="670.0" y="166" text-anchor="middle">11.25</text>
+<line x1="940.0" y1="175" x2="940.0" y2="333" stroke="#e2e8f0"/>
+<text class="axis" x="940.0" y="166" text-anchor="middle">22.5</text>
+<line x1="1210.0" y1="175" x2="1210.0" y2="333" stroke="#e2e8f0"/>
+<text class="axis" x="1210.0" y="166" text-anchor="middle">33.75</text>
+<line x1="1480.0" y1="175" x2="1480.0" y2="333" stroke="#e2e8f0"/>
+<text class="axis" x="1480.0" y="166" text-anchor="middle">45</text>
+<text class="label" x="60.0" y="208.0" text-anchor="start"><tspan x="60.0" dy="0">Recon first</tspan></text>
+<rect x="400" y="184.0" width="1022.4" height="19.0" rx="4" fill="#16a34a"/>
+<text class="value" x="1432.4" y="199.0">42.6</text>
+<rect x="400" y="205.0" width="552.0" height="19.0" rx="4" fill="#2563eb"/>
+<text class="value" x="962.0" y="220.0">23</text>
+<text class="label" x="60.0" y="286.0" text-anchor="start"><tspan x="60.0" dy="0">Template backward</tspan></text>
+<rect x="400" y="262.0" width="799.2" height="19.0" rx="4" fill="#16a34a"/>
+<text class="value" x="1209.2" y="277.0">33.3</text>
+<rect x="400" y="283.0" width="432.0" height="19.0" rx="4" fill="#2563eb"/>
+<text class="value" x="842.0" y="298.0">18</text>
+<rect x="60" y="373" width="1420" height="54" rx="12" fill="#e0f2fe"/>
+<text class="small" x="84" y="406">The two series use different units; labels preserve the original values.</text>
+</g>
+</svg>

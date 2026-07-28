@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="463" viewBox="0 0 1600 463" role="img">
+<title>Headline token accounting by trial</title>
+<style>
+ .title{font:700 34px system-ui,sans-serif;fill:#172554}
+ .sub{font:17px system-ui,sans-serif;fill:#475569}
+ .label{font:650 17px system-ui,sans-serif;fill:#1e293b}
+ .small{font:15px system-ui,sans-serif;fill:#64748b}
+ .value{font:700 15px system-ui,sans-serif;fill:#172554}
+ .legend{font:15px system-ui,sans-serif;fill:#334155}
+ .axis{font:14px system-ui,sans-serif;fill:#64748b}
+ .white{font:700 15px system-ui,sans-serif;fill:#fff}
+ .source{font:14px system-ui,sans-serif;fill:#64748b}
+ </style>
+<rect width="1600" height="463" fill="#f8fafc"/>
+<text class="title" x="60" y="57">Headline token accounting by trial</text>
+<text class="sub" x="60" y="103">Publication-ready table derived from finalized record metadata</text>
+<g transform="translate(0,0)">
+<rect x="60" y="175" width="1480" height="52" rx="10" fill="#172554"/>
+<text class="white" x="152.5" y="206.0" text-anchor="middle"><tspan x="152.5" dy="0">Trial</tspan></text>
+<text class="white" x="337.5" y="206.0" text-anchor="middle"><tspan x="337.5" dy="0">n</tspan></text>
+<text class="white" x="522.5" y="206.0" text-anchor="middle"><tspan x="522.5" dy="0">Prompt</tspan></text>
+<text class="white" x="707.5" y="206.0" text-anchor="middle"><tspan x="707.5" dy="0">Completion</tspan></text>
+<text class="white" x="892.5" y="206.0" text-anchor="middle"><tspan x="892.5" dy="0">Total</tspan></text>
+<text class="white" x="1077.5" y="206.0" text-anchor="middle"><tspan x="1077.5" dy="0">Prompt share</tspan></text>
+<text class="white" x="1262.5" y="206.0" text-anchor="middle"><tspan x="1262.5" dy="0">Median</tspan></text>
+<text class="white" x="1447.5" y="206.0" text-anchor="middle"><tspan x="1447.5" dy="0">Iter-token r</tspan></text>
+<rect x="60" y="227" width="1480" height="52" fill="#fff"/>
+<text class="label" x="152.5" y="258.0" text-anchor="middle"><tspan x="152.5" dy="0">Trial 1</tspan></text>
+<text class="small" x="337.5" y="258.0" text-anchor="middle"><tspan x="337.5" dy="0">553</tspan></text>
+<text class="small" x="522.5" y="258.0" text-anchor="middle"><tspan x="522.5" dy="0">47.20M</tspan></text>
+<text class="small" x="707.5" y="258.0" text-anchor="middle"><tspan x="707.5" dy="0">6.62M</tspan></text>
+<text class="small" x="892.5" y="258.0" text-anchor="middle"><tspan x="892.5" dy="0">53.82M</tspan></text>
+<text class="small" x="1077.5" y="258.0" text-anchor="middle"><tspan x="1077.5" dy="0">87.7%</tspan></text>
+<text class="small" x="1262.5" y="258.0" text-anchor="middle"><tspan x="1262.5" dy="0">63.9k</tspan></text>
+<text class="small" x="1447.5" y="258.0" text-anchor="middle"><tspan x="1447.5" dy="0">0.918</tspan></text>
+<rect x="60" y="279" width="1480" height="52" fill="#f1f5f9"/>
+<text class="label" x="152.5" y="310.0" text-anchor="middle"><tspan x="152.5" dy="0">Trial 2</tspan></text>
+<text class="small" x="337.5" y="310.0" text-anchor="middle"><tspan x="337.5" dy="0">46</tspan></text>
+<text class="small" x="522.5" y="310.0" text-anchor="middle"><tspan x="522.5" dy="0">12.77M</tspan></text>
+<text class="small" x="707.5" y="310.0" text-anchor="middle"><tspan x="707.5" dy="0">609.5k</tspan></text>
+<text class="small" x="892.5" y="310.0" text-anchor="middle"><tspan x="892.5" dy="0">13.38M</tspan></text>
+<text class="small" x="1077.5" y="310.0" text-anchor="middle"><tspan x="1077.5" dy="0">95.4%</tspan></text>
+<text class="small" x="1262.5" y="310.0" text-anchor="middle"><tspan x="1262.5" dy="0">260.4k</tspan></text>
+<text class="small" x="1447.5" y="310.0" text-anchor="middle"><tspan x="1447.5" dy="0">0.898</tspan></text>
+<rect x="60" y="331" width="1480" height="52" fill="#fff"/>
+<text class="label" x="152.5" y="362.0" text-anchor="middle"><tspan x="152.5" dy="0">Trial 3</tspan></text>
+<text class="small" x="337.5" y="362.0" text-anchor="middle"><tspan x="337.5" dy="0">108</tspan></text>
+<text class="small" x="522.5" y="362.0" text-anchor="middle"><tspan x="522.5" dy="0">20.30M</tspan></text>
+<text class="small" x="707.5" y="362.0" text-anchor="middle"><tspan x="707.5" dy="0">1.33M</tspan></text>
+<text class="small" x="892.5" y="362.0" text-anchor="middle"><tspan x="892.5" dy="0">21.63M</tspan></text>
+<text class="small" x="1077.5" y="362.0" text-anchor="middle"><tspan x="1077.5" dy="0">93.8%</tspan></text>
+<text class="small" x="1262.5" y="362.0" text-anchor="middle"><tspan x="1262.5" dy="0">150.3k</tspan></text>
+<text class="small" x="1447.5" y="362.0" text-anchor="middle"><tspan x="1447.5" dy="0">0.930</tspan></text>
+<text class="source" x="60" y="441">Source: generated cohort token-metric tables</text>
+</g>
+</svg>

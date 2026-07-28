@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="700" viewBox="0 0 1600 700" role="img">
+<title>Aggregate token expenditure and observed yield</title>
+<style>
+ .title{font:700 34px system-ui,sans-serif;fill:#172554}
+ .sub{font:17px system-ui,sans-serif;fill:#475569}
+ .label{font:650 17px system-ui,sans-serif;fill:#1e293b}
+ .small{font:15px system-ui,sans-serif;fill:#64748b}
+ .value{font:700 15px system-ui,sans-serif;fill:#172554}
+ .legend{font:15px system-ui,sans-serif;fill:#334155}
+ .axis{font:14px system-ui,sans-serif;fill:#64748b}
+ .white{font:700 15px system-ui,sans-serif;fill:#fff}
+ .source{font:14px system-ui,sans-serif;fill:#64748b}
+ </style>
+<rect width="1600" height="700" fill="#f8fafc"/>
+<text class="title" x="60" y="57">Aggregate token expenditure and observed yield</text>
+<text class="sub" x="60" y="103">Tokens per success is a workload-level ratio, not a model-intrinsic efficiency estimate</text>
+<g transform="translate(0,0)">
+<rect x="60" y="165" width="700" height="470" rx="14" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+<text class="label" x="80" y="205">Aggregate finalized tokens</text>
+<text class="label" x="80" y="284">T1</text>
+<rect x="150" y="260" width="480.0" height="34" rx="5" fill="#94a3b8"/>
+<text class="value" x="640.0" y="283">53.82M</text>
+<text class="label" x="80" y="394">T2</text>
+<rect x="150" y="370" width="119.3" height="34" rx="5" fill="#2563eb"/>
+<text class="value" x="279.3" y="393">13.38M</text>
+<text class="label" x="80" y="504">T3</text>
+<rect x="150" y="480" width="193.0" height="34" rx="5" fill="#16a34a"/>
+<text class="value" x="353.0" y="503">21.63M</text>
+<rect x="820" y="165" width="700" height="470" rx="14" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+<text class="label" x="840" y="205">Tokens per observed success</text>
+<text class="label" x="840" y="284">T1</text>
+<text class="small" x="930" y="284">undefined (no observed success)</text>
+<text class="label" x="840" y="394">T2</text>
+<rect x="910" y="370" width="392.5" height="34" rx="5" fill="#2563eb"/>
+<text class="value" x="1312.5" y="393">431.5k</text>
+<text class="label" x="840" y="504">T3</text>
+<rect x="910" y="480" width="480.0" height="34" rx="5" fill="#16a34a"/>
+<text class="value" x="1400.0" y="503">527.7k</text>
+<text class="source" x="60" y="678">Source: finalized record.json tokens and outcomes</text>
+</g>
+</svg>

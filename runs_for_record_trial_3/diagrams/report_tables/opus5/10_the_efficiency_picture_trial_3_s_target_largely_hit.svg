@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="386" viewBox="0 0 1600 386" role="img" aria-labelledby="title desc">
+<title id="title">The efficiency picture (Trial 3&#x27;s target — largely hit)</title>
+<desc id="desc">Table 10 from RUN_FOR_RECORD_ANALYSIS.Opus5.md, source line 268.</desc>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .head { font: 700 17px system-ui, sans-serif; fill: #fff; }
+    .cell { font: 17px system-ui, sans-serif; fill: #1e293b; }
+    .cellStrong { font: 700 17px system-ui, sans-serif; fill: #172554; }
+    .source { font: 14px system-ui, sans-serif; fill: #64748b; }
+  </style>
+<rect width="1600" height="386" fill="#f8fafc"/>
+<text id="title" class="title" x="60" y="88">The efficiency picture (Trial 3&#x27;s target — largely hit)</text>
+<text class="sub" x="60" y="114">RUN_FOR_RECORD_ANALYSIS.Opus5.md • Table 10 • source line 268</text>
+<rect x="60" y="156" width="1480" height="158" rx="16" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+<path d="M76 156 H1524 Q1540 156 1540 172 V214 H60 V172 Q60 156 76 156 Z" fill="#172554"/>
+<text class="head" x="75.0" y="198.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">&#160;</tspan></text>
+<line x1="238.8" y1="156" x2="238.8" y2="314" stroke="#cbd5e1"/>
+<text class="head" x="293.2" y="198.0" text-anchor="middle" xml:space="preserve"><tspan x="293.2" dy="0">n</tspan></text>
+<line x1="347.7" y1="156" x2="347.7" y2="314" stroke="#cbd5e1"/>
+<text class="head" x="532.9" y="198.0" text-anchor="middle" xml:space="preserve"><tspan x="532.9" dy="0">median iters</tspan></text>
+<line x1="718.1" y1="156" x2="718.1" y2="314" stroke="#cbd5e1"/>
+<text class="head" x="733.1" y="198.0" text-anchor="start" xml:space="preserve"><tspan x="733.1" dy="0">median prompt</tspan></text>
+<line x1="950.1" y1="156" x2="950.1" y2="314" stroke="#cbd5e1"/>
+<text class="head" x="965.1" y="198.0" text-anchor="start" xml:space="preserve"><tspan x="965.1" dy="0">median completion</tspan></text>
+<line x1="1350.0" y1="156" x2="1350.0" y2="314" stroke="#cbd5e1"/>
+<text class="head" x="1365.0" y="198.0" text-anchor="start" xml:space="preserve"><tspan x="1365.0" dy="0">median total</tspan></text>
+<rect x="60" y="214" width="1480" height="50" fill="#ffffff"/>
+<line x1="60" y1="214" x2="1540" y2="214" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="248.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">SUCCESS</tspan></text>
+<text class="cell" x="293.2" y="248.0" text-anchor="middle" xml:space="preserve"><tspan x="293.2" dy="0">43</tspan></text>
+<text class="cell" x="532.9" y="248.0" text-anchor="middle" xml:space="preserve"><tspan x="532.9" dy="0">15</tspan></text>
+<text class="cell" x="733.1" y="248.0" text-anchor="start" xml:space="preserve"><tspan x="733.1" dy="0">97k</tspan></text>
+<text class="cell" x="965.1" y="248.0" text-anchor="start" xml:space="preserve"><tspan x="965.1" dy="0">10k</tspan></text>
+<text class="cell" x="1365.0" y="248.0" text-anchor="start" xml:space="preserve"><tspan x="1365.0" dy="0">112k</tspan></text>
+<rect x="60" y="264" width="1480" height="50" fill="#f1f5f9"/>
+<line x1="60" y1="264" x2="1540" y2="264" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="298.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">FAILURE</tspan></text>
+<text class="cell" x="293.2" y="298.0" text-anchor="middle" xml:space="preserve"><tspan x="293.2" dy="0">99</tspan></text>
+<text class="cell" x="532.9" y="298.0" text-anchor="middle" xml:space="preserve"><tspan x="532.9" dy="0">42</tspan></text>
+<text class="cell" x="733.1" y="298.0" text-anchor="start" xml:space="preserve"><tspan x="733.1" dy="0">331k</tspan></text>
+<text class="cell" x="965.1" y="298.0" text-anchor="start" xml:space="preserve"><tspan x="965.1" dy="0">15k</tspan></text>
+<text class="cell" x="1365.0" y="298.0" text-anchor="start" xml:space="preserve"><tspan x="1365.0" dy="0">354k</tspan></text>
+<text class="source" x="60" y="359">Source: RUN_FOR_RECORD_ANALYSIS.Opus5.md, Markdown table beginning at line 268</text>
+</svg>

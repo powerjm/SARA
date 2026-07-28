@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="586" viewBox="0 0 1600 586" role="img" aria-labelledby="title desc">
+<title id="title">Wilson 95% CIs on per-backend success (all attempted runs; not paired)</title>
+<desc id="desc">Table 12 from RUN_FOR_RECORD_ANALYSIS.Opus5.md, source line 309.</desc>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .head { font: 700 17px system-ui, sans-serif; fill: #fff; }
+    .cell { font: 17px system-ui, sans-serif; fill: #1e293b; }
+    .cellStrong { font: 700 17px system-ui, sans-serif; fill: #172554; }
+    .source { font: 14px system-ui, sans-serif; fill: #64748b; }
+  </style>
+<rect width="1600" height="586" fill="#f8fafc"/>
+<text id="title" class="title" x="60" y="88">Wilson 95% CIs on per-backend success (all attempted runs; not paired)</text>
+<text class="sub" x="60" y="114">RUN_FOR_RECORD_ANALYSIS.Opus5.md • Table 12 • source line 309</text>
+<rect x="60" y="156" width="1480" height="358" rx="16" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+<path d="M76 156 H1524 Q1540 156 1540 172 V214 H60 V172 Q60 156 76 156 Z" fill="#172554"/>
+<text class="head" x="75.0" y="198.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">Backend</tspan></text>
+<line x1="679.9" y1="156" x2="679.9" y2="514" stroke="#cbd5e1"/>
+<text class="head" x="754.8" y="198.0" text-anchor="middle" xml:space="preserve"><tspan x="754.8" dy="0">success</tspan></text>
+<line x1="829.7" y1="156" x2="829.7" y2="514" stroke="#cbd5e1"/>
+<text class="head" x="886.2" y="198.0" text-anchor="middle" xml:space="preserve"><tspan x="886.2" dy="0">rate</tspan></text>
+<line x1="942.6" y1="156" x2="942.6" y2="514" stroke="#cbd5e1"/>
+<text class="head" x="1241.3" y="198.0" text-anchor="middle" xml:space="preserve"><tspan x="1241.3" dy="0">95% CI</tspan></text>
+<rect x="60" y="214" width="1480" height="50" fill="#ffffff"/>
+<line x1="60" y1="214" x2="1540" y2="214" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="248.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">claude-opus</tspan></text>
+<text class="cell" x="754.8" y="248.0" text-anchor="middle" xml:space="preserve"><tspan x="754.8" dy="0">19/36</tspan></text>
+<text class="cell" x="886.2" y="248.0" text-anchor="middle" xml:space="preserve"><tspan x="886.2" dy="0">52.8%</tspan></text>
+<text class="cell" x="1241.3" y="248.0" text-anchor="middle" xml:space="preserve"><tspan x="1241.3" dy="0">[37.0, 68.0]</tspan></text>
+<rect x="60" y="264" width="1480" height="50" fill="#f1f5f9"/>
+<line x1="60" y1="264" x2="1540" y2="264" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="298.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">gpt-5</tspan></text>
+<text class="cell" x="754.8" y="298.0" text-anchor="middle" xml:space="preserve"><tspan x="754.8" dy="0">13/36</tspan></text>
+<text class="cell" x="886.2" y="298.0" text-anchor="middle" xml:space="preserve"><tspan x="886.2" dy="0">36.1%</tspan></text>
+<text class="cell" x="1241.3" y="298.0" text-anchor="middle" xml:space="preserve"><tspan x="1241.3" dy="0">[22.5, 52.4]</tspan></text>
+<rect x="60" y="314" width="1480" height="50" fill="#ffffff"/>
+<line x1="60" y1="314" x2="1540" y2="314" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="348.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">claude-sonnet</tspan></text>
+<text class="cell" x="754.8" y="348.0" text-anchor="middle" xml:space="preserve"><tspan x="754.8" dy="0">9/36</tspan></text>
+<text class="cell" x="886.2" y="348.0" text-anchor="middle" xml:space="preserve"><tspan x="886.2" dy="0">25.0%</tspan></text>
+<text class="cell" x="1241.3" y="348.0" text-anchor="middle" xml:space="preserve"><tspan x="1241.3" dy="0">[13.8, 41.1]</tspan></text>
+<rect x="60" y="364" width="1480" height="50" fill="#f1f5f9"/>
+<line x1="60" y1="364" x2="1540" y2="364" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="398.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">gpt-oss-20b</tspan></text>
+<text class="cell" x="754.8" y="398.0" text-anchor="middle" xml:space="preserve"><tspan x="754.8" dy="0">2/14</tspan></text>
+<text class="cell" x="886.2" y="398.0" text-anchor="middle" xml:space="preserve"><tspan x="886.2" dy="0">14.3%</tspan></text>
+<text class="cell" x="1241.3" y="398.0" text-anchor="middle" xml:space="preserve"><tspan x="1241.3" dy="0">[4.0, 39.9]</tspan></text>
+<rect x="60" y="414" width="1480" height="50" fill="#ffffff"/>
+<line x1="60" y1="414" x2="1540" y2="414" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="448.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">qwen3-30b-abliterated</tspan></text>
+<text class="cell" x="754.8" y="448.0" text-anchor="middle" xml:space="preserve"><tspan x="754.8" dy="0">0/12</tspan></text>
+<text class="cell" x="886.2" y="448.0" text-anchor="middle" xml:space="preserve"><tspan x="886.2" dy="0">0%</tspan></text>
+<text class="cell" x="1241.3" y="448.0" text-anchor="middle" xml:space="preserve"><tspan x="1241.3" dy="0">[0.0, 24.3]</tspan></text>
+<rect x="60" y="464" width="1480" height="50" fill="#f1f5f9"/>
+<line x1="60" y1="464" x2="1540" y2="464" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="498.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">whiterabbitneo-v3-7b</tspan></text>
+<text class="cell" x="754.8" y="498.0" text-anchor="middle" xml:space="preserve"><tspan x="754.8" dy="0">0/12</tspan></text>
+<text class="cell" x="886.2" y="498.0" text-anchor="middle" xml:space="preserve"><tspan x="886.2" dy="0">0%</tspan></text>
+<text class="cell" x="1241.3" y="498.0" text-anchor="middle" xml:space="preserve"><tspan x="1241.3" dy="0">[0.0, 39.9]</tspan></text>
+<text class="source" x="60" y="559">Source: RUN_FOR_RECORD_ANALYSIS.Opus5.md, Markdown table beginning at line 309</text>
+</svg>

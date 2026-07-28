@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="549" viewBox="0 0 1600 549" role="img">
+<title>Median total tokens by backend</title>
+<style>
+ .title{font:700 34px system-ui,sans-serif;fill:#172554}
+ .sub{font:17px system-ui,sans-serif;fill:#475569}
+ .label{font:650 17px system-ui,sans-serif;fill:#1e293b}
+ .small{font:15px system-ui,sans-serif;fill:#64748b}
+ .value{font:700 15px system-ui,sans-serif;fill:#172554}
+ .legend{font:15px system-ui,sans-serif;fill:#334155}
+ .axis{font:14px system-ui,sans-serif;fill:#64748b}
+ .white{font:700 15px system-ui,sans-serif;fill:#fff}
+ .source{font:14px system-ui,sans-serif;fill:#64748b}
+ </style>
+<rect width="1600" height="549" fill="#f8fafc"/>
+<text class="title" x="60" y="57">Median total tokens by backend</text>
+<text class="sub" x="60" y="103">Within-trial finalized records; grey denotes no representation</text>
+<g transform="translate(0,0)">
+<text class="label" x="747.5" y="165" text-anchor="middle">Trial 1</text>
+<text class="label" x="1032.5" y="165" text-anchor="middle">Trial 2</text>
+<text class="label" x="1317.5" y="165" text-anchor="middle">Trial 3</text>
+<text class="label" x="60.0" y="236.0" text-anchor="start"><tspan x="60.0" dy="0">Claude Opus</tspan></text>
+<rect x="610" y="200" width="275" height="59" rx="8" fill="rgb(228,112,113)"/>
+<text class="white" x="747.5" y="227" text-anchor="middle">206.7k</text>
+<text class="white" x="747.5" y="248" text-anchor="middle">n=75</text>
+<rect x="895" y="200" width="275" height="59" rx="8" fill="#e2e8f0"/>
+<text class="small" x="1032.5" y="236" text-anchor="middle">not represented</text>
+<rect x="1180" y="200" width="275" height="59" rx="8" fill="rgb(228,113,114)"/>
+<text class="white" x="1317.5" y="227" text-anchor="middle">205.7k</text>
+<text class="white" x="1317.5" y="248" text-anchor="middle">n=36</text>
+<text class="label" x="60.0" y="302.0" text-anchor="start"><tspan x="60.0" dy="0">Claude Sonnet</tspan></text>
+<rect x="610" y="266" width="275" height="59" rx="8" fill="rgb(227,108,109)"/>
+<text class="white" x="747.5" y="293" text-anchor="middle">213.2k</text>
+<text class="white" x="747.5" y="314" text-anchor="middle">n=95</text>
+<rect x="895" y="266" width="275" height="59" rx="8" fill="rgb(223,70,71)"/>
+<text class="white" x="1032.5" y="293" text-anchor="middle">271.2k</text>
+<text class="white" x="1032.5" y="314" text-anchor="middle">n=23</text>
+<rect x="1180" y="266" width="275" height="59" rx="8" fill="rgb(220,38,38)"/>
+<text class="white" x="1317.5" y="293" text-anchor="middle">321.5k</text>
+<text class="white" x="1317.5" y="314" text-anchor="middle">n=36</text>
+<text class="label" x="60.0" y="368.0" text-anchor="start"><tspan x="60.0" dy="0">GPT-5</tspan></text>
+<rect x="610" y="332" width="275" height="59" rx="8" fill="rgb(236,200,204)"/>
+<text class="value" x="747.5" y="359" text-anchor="middle">69.3k</text>
+<text class="value" x="747.5" y="380" text-anchor="middle">n=188</text>
+<rect x="895" y="332" width="275" height="59" rx="8" fill="rgb(229,127,129)"/>
+<text class="white" x="1032.5" y="359" text-anchor="middle">182.8k</text>
+<text class="white" x="1032.5" y="380" text-anchor="middle">n=23</text>
+<rect x="1180" y="332" width="275" height="59" rx="8" fill="rgb(234,177,180)"/>
+<text class="value" x="1317.5" y="359" text-anchor="middle">105.8k</text>
+<text class="value" x="1317.5" y="380" text-anchor="middle">n=36</text>
+<text class="label" x="60.0" y="434.0" text-anchor="start"><tspan x="60.0" dy="0">Gemini Pro</tspan></text>
+<rect x="610" y="398" width="275" height="59" rx="8" fill="rgb(241,241,245)"/>
+<text class="value" x="747.5" y="425" text-anchor="middle">6.5k</text>
+<text class="value" x="747.5" y="446" text-anchor="middle">n=195</text>
+<rect x="895" y="398" width="275" height="59" rx="8" fill="#e2e8f0"/>
+<text class="small" x="1032.5" y="434" text-anchor="middle">not represented</text>
+<rect x="1180" y="398" width="275" height="59" rx="8" fill="#e2e8f0"/>
+<text class="small" x="1317.5" y="434" text-anchor="middle">not represented</text>
+<text class="source" x="60" y="527">Source: finalized record.json total-token metadata</text>
+</g>
+</svg>

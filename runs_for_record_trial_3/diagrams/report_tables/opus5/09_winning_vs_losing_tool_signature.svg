@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="386" viewBox="0 0 1600 386" role="img" aria-labelledby="title desc">
+<title id="title">Winning vs. losing tool signature</title>
+<desc id="desc">Table 9 from RUN_FOR_RECORD_ANALYSIS.Opus5.md, source line 256.</desc>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .head { font: 700 17px system-ui, sans-serif; fill: #fff; }
+    .cell { font: 17px system-ui, sans-serif; fill: #1e293b; }
+    .cellStrong { font: 700 17px system-ui, sans-serif; fill: #172554; }
+    .source { font: 14px system-ui, sans-serif; fill: #64748b; }
+  </style>
+<rect width="1600" height="386" fill="#f8fafc"/>
+<text id="title" class="title" x="60" y="88">Winning vs. losing tool signature</text>
+<text class="sub" x="60" y="114">RUN_FOR_RECORD_ANALYSIS.Opus5.md • Table 09 • source line 256</text>
+<rect x="60" y="156" width="1480" height="158" rx="16" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+<path d="M76 156 H1524 Q1540 156 1540 172 V214 H60 V172 Q60 156 76 156 Z" fill="#172554"/>
+<text class="head" x="75.0" y="198.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">&#160;</tspan></text>
+<line x1="237.0" y1="156" x2="237.0" y2="314" stroke="#cbd5e1"/>
+<text class="head" x="252.0" y="198.0" text-anchor="start" xml:space="preserve"><tspan x="252.0" dy="0">top tools (summed)</tspan></text>
+<rect x="60" y="214" width="1480" height="50" fill="#ffffff"/>
+<line x1="60" y1="214" x2="1540" y2="214" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="248.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">Winners (43)</tspan></text>
+<text class="cell" x="252.0" y="248.0" text-anchor="start" xml:space="preserve"><tspan x="252.0" dy="0">find_gadget 319 · run_exploit_script 268 · radare2_disassemble_at 260 · gdb_disassemble 176 · radare2_recon 74</tspan></text>
+<rect x="60" y="264" width="1480" height="50" fill="#f1f5f9"/>
+<line x1="60" y1="264" x2="1540" y2="264" stroke="#e2e8f0"/>
+<text class="cellStrong" x="75.0" y="298.0" text-anchor="start" xml:space="preserve"><tspan x="75.0" dy="0">Losers (99)</tspan></text>
+<text class="cell" x="252.0" y="298.0" text-anchor="start" xml:space="preserve"><tspan x="252.0" dy="0">find_gadget 1712 · run_exploit_script 1479 · radare2_disassemble_at 804 · radare2_recon 591 · gdb_disassemble 283</tspan></text>
+<text class="source" x="60" y="359">Source: RUN_FOR_RECORD_ANALYSIS.Opus5.md, Markdown table beginning at line 256</text>
+</svg>

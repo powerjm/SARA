@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="825" viewBox="0 0 1600 825" role="img">
+<title>Prompt tokens dominate every backend’s recorded usage</title>
+<style>
+  .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+  .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+  .label { font: 650 17px system-ui, sans-serif; fill: #1e293b; }
+  .small { font: 15px system-ui, sans-serif; fill: #64748b; }
+  .value { font: 700 15px system-ui, sans-serif; fill: #172554; }
+  .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+  .legend { font: 15px system-ui, sans-serif; fill: #334155; }
+  .white { font: 700 15px system-ui, sans-serif; fill: #fff; }
+  .source { font: 14px system-ui, sans-serif; fill: #64748b; }
+</style>
+<rect width="1600" height="825" fill="#f8fafc"/>
+<text class="title" x="60" y="58">Prompt tokens dominate every backend’s recorded usage</text>
+<text class="sub" x="60" y="103">Aggregate prompt and completion shares; repeated context and tool output are charged as prompt tokens</text>
+<rect x="970" y="125" width="18" height="18" rx="3" fill="#2563eb"/><text class="legend" x="998" y="140">prompt</text>
+<rect x="1120" y="125" width="18" height="18" rx="3" fill="#f59e0b"/><text class="legend" x="1148" y="140">completion</text>
+<line x1="355.0" y1="175" x2="355.0" y2="725" stroke="#e2e8f0"/>
+<text class="axis" x="355.0" y="165" text-anchor="middle">0%</text>
+<line x1="571.0" y1="175" x2="571.0" y2="725" stroke="#e2e8f0"/>
+<text class="axis" x="571.0" y="165" text-anchor="middle">20%</text>
+<line x1="787.0" y1="175" x2="787.0" y2="725" stroke="#e2e8f0"/>
+<text class="axis" x="787.0" y="165" text-anchor="middle">40%</text>
+<line x1="1003.0" y1="175" x2="1003.0" y2="725" stroke="#e2e8f0"/>
+<text class="axis" x="1003.0" y="165" text-anchor="middle">60%</text>
+<line x1="1219.0" y1="175" x2="1219.0" y2="725" stroke="#e2e8f0"/>
+<text class="axis" x="1219.0" y="165" text-anchor="middle">80%</text>
+<line x1="1435.0" y1="175" x2="1435.0" y2="725" stroke="#e2e8f0"/>
+<text class="axis" x="1435.0" y="165" text-anchor="middle">100%</text>
+<text class="label" x="60" y="240">Claude Sonnet</text>
+<rect x="355" y="215" width="1029.0" height="42" rx="5" fill="#2563eb"/>
+<rect x="1384.0" y="215" width="51.0" height="42" rx="5" fill="#f59e0b"/>
+<text class="white" x="869.5" y="242" text-anchor="middle">95.3% prompt</text>
+<text class="small" x="355" y="281">10.0M aggregate tokens · 475k completion</text>
+<text class="label" x="60" y="330">Claude Opus</text>
+<rect x="355" y="305" width="1037.7" height="42" rx="5" fill="#2563eb"/>
+<rect x="1392.7" y="305" width="42.3" height="42" rx="5" fill="#f59e0b"/>
+<text class="white" x="873.8" y="332" text-anchor="middle">96.1% prompt</text>
+<text class="small" x="355" y="371">7.6M aggregate tokens · 297k completion</text>
+<text class="label" x="60" y="420">GPT-5</text>
+<rect x="355" y="395" width="928.3" height="42" rx="5" fill="#2563eb"/>
+<rect x="1283.3" y="395" width="151.7" height="42" rx="5" fill="#f59e0b"/>
+<text class="white" x="819.1" y="422" text-anchor="middle">85.9% prompt</text>
+<text class="small" x="355" y="461">4.0M aggregate tokens · 562k completion</text>
+<text class="label" x="60" y="510">GPT-OSS 20B</text>
+<rect x="355" y="485" width="990.2" height="42" rx="5" fill="#2563eb"/>
+<rect x="1345.2" y="485" width="89.8" height="42" rx="5" fill="#f59e0b"/>
+<text class="white" x="850.1" y="512" text-anchor="middle">91.7% prompt</text>
+<text class="small" x="355" y="551">9.2M aggregate tokens · 763k completion</text>
+<text class="label" x="60" y="600">Qwen3 Abliterated</text>
+<rect x="355" y="575" width="886.1" height="42" rx="5" fill="#2563eb"/>
+<rect x="1241.1" y="575" width="193.9" height="42" rx="5" fill="#f59e0b"/>
+<text class="white" x="798.0" y="602" text-anchor="middle">82.0% prompt</text>
+<text class="small" x="355" y="641">9.6M aggregate tokens · 1.7M completion</text>
+<text class="label" x="60" y="690">WhiteRabbitNeo 7B</text>
+<rect x="355" y="665" width="1063.4" height="42" rx="5" fill="#2563eb"/>
+<rect x="1418.4" y="665" width="16.6" height="42" rx="5" fill="#f59e0b"/>
+<text class="white" x="886.7" y="692" text-anchor="middle">98.5% prompt</text>
+<text class="small" x="355" y="731">7.4M aggregate tokens · 114k completion</text>
+<text class="source" x="60" y="803">Source: Trial 3 finalized record.json metadata (n=146)</text>
+</svg>

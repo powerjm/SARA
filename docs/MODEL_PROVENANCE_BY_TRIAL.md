@@ -38,12 +38,14 @@ Notes:
 
 ## Sampling & pricing as recorded (identical across all three trials)
 
-| Model | Vendor / API | temperature (requested) | seed (requested) | Price USD/Mtok (prompt / completion) | Pricing `as_of` |
-|---|---|---|---|---|---|
-| `claude-opus-4-7` | Anthropic Messages | 0.2 | 0 | 5.00 / 25.00 | 2026-07-21 |
-| `claude-sonnet-4-6` | Anthropic Messages | 0.2 | 0 | 3.00 / 15.00 | 2026-07-21 |
-| `gpt-5` | OpenAI Chat Completions | 0.2 ⚠️ | 0 ⚠️ | 1.25 / 10.00 | 2026-07-21 |
-| `gemini-pro-latest` | Google Gemini API | 0.2 | 0 | 2.00 / 12.00 | 2026-07-22 |
+| Model | Vendor / API | Max context (tokens) | temperature (requested) | seed (requested) | Price USD/Mtok (prompt / completion) | Pricing `as_of` |
+|---|---|---|---|---|---|---|
+| `claude-opus-4-7` | Anthropic Messages | 1,000,000 (1M) | 0.2 | 0 | 5.00 / 25.00 | 2026-07-21 |
+| `claude-sonnet-4-6` | Anthropic Messages | 1,000,000 (1M) | 0.2 | 0 | 3.00 / 15.00 | 2026-07-21 |
+| `gpt-5` | OpenAI Chat Completions | 400,000 (400K) | 0.2 ⚠️ | 0 ⚠️ | 1.25 / 10.00 | 2026-07-21 |
+| `gemini-pro-latest` | Google Gemini API | 1,048,576 (1M) | 0.2 | 0 | 2.00 / 12.00 | 2026-07-22 |
+
+**Max context = the provider-published maximum context window for the model** (prompt + completion combined). ⚠️ **Not captured in the `RunRecord`s** — premium backends serve a fixed provider-side context and report `None` for the loaded-context telemetry (`Backend.context_window`, schema v6; see [`../backends/base.py`](../backends/base.py) L175–181), so these are the *published* ceilings, not a value read back from the runs. The Anthropic figures come from the Models API / model card (1M input, applies to both Opus 4.7 and Sonnet 4.6); GPT-5 is OpenAI's 400K total window (272K input + 128K output); `gemini-pro-latest` is the Gemini Pro tier's 1,048,576-token window. Because `gpt-5` and `gemini-pro-latest` are floating aliases (see the ⚠️ note above), re-verify the ceiling against the provider docs for the exact build if the thesis needs it. The per-run token *budget* the harness actually enforced (`limits.tokens`, e.g. 1M in Trial 3) is a separate cap and is stored in each trial's config — it is not the model's context window.
 
 Pricing snapshot version `2026-07-22` for all trials (rates snapshotted into every
 `RunRecord.cost.pricing`).

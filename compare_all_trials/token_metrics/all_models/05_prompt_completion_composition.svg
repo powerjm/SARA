@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1876" viewBox="0 0 1600 1876" role="img">
+<title>Prompt and completion token composition</title>
+<style>
+ .title{font:700 34px system-ui,sans-serif;fill:#172554}
+ .sub{font:17px system-ui,sans-serif;fill:#475569}
+ .label{font:650 17px system-ui,sans-serif;fill:#1e293b}
+ .small{font:15px system-ui,sans-serif;fill:#64748b}
+ .value{font:700 15px system-ui,sans-serif;fill:#172554}
+ .legend{font:15px system-ui,sans-serif;fill:#334155}
+ .axis{font:14px system-ui,sans-serif;fill:#64748b}
+ .white{font:700 15px system-ui,sans-serif;fill:#fff}
+ .source{font:14px system-ui,sans-serif;fill:#64748b}
+ </style>
+<rect width="1600" height="1876" fill="#f8fafc"/>
+<text class="title" x="60" y="57">Prompt and completion token composition</text>
+<text class="sub" x="60" y="103">Aggregate shares by backend within trial</text>
+<g transform="translate(0,0)">
+<rect x="1000" y="120" width="18" height="18" fill="#2563eb"/><text class="legend" x="1028" y="135">Prompt</text>
+<rect x="1160" y="120" width="18" height="18" fill="#f59e0b"/><text class="legend" x="1188" y="135">Completion</text>
+<text class="label" x="60" y="205">Trial 1</text>
+<text class="small" x="150.0" y="202.0" text-anchor="start"><tspan x="150.0" dy="0">Claude Opus</tspan></text>
+<rect x="430" y="180" width="955.3" height="30" fill="#2563eb"/>
+<rect x="1385.3" y="180" width="34.7" height="30" fill="#f59e0b"/>
+<text class="small" x="430" y="232">96.5% prompt · 14.85M total</text>
+<text class="small" x="150.0" y="269.0" text-anchor="start"><tspan x="150.0" dy="0">Claude Sonnet</tspan></text>
+<rect x="430" y="247" width="926.3" height="30" fill="#2563eb"/>
+<rect x="1356.3" y="247" width="63.7" height="30" fill="#f59e0b"/>
+<text class="small" x="430" y="299">93.6% prompt · 20.15M total</text>
+<text class="small" x="150.0" y="336.0" text-anchor="start"><tspan x="150.0" dy="0">Devstral Small</tspan></text>
+<rect x="430" y="314" width="968.9" height="30" fill="#2563eb"/>
+<rect x="1398.9" y="314" width="21.1" height="30" fill="#f59e0b"/>
+<text class="small" x="430" y="366">97.9% prompt · 27.27M total</text>
+<text class="small" x="150.0" y="403.0" text-anchor="start"><tspan x="150.0" dy="0">Dolphin Mistral 24B</tspan></text>
+<rect x="430" y="381" width="936.1" height="30" fill="#2563eb"/>
+<rect x="1366.1" y="381" width="53.9" height="30" fill="#f59e0b"/>
+<text class="small" x="430" y="433">94.6% prompt · 27.01M total</text>
+<text class="small" x="150.0" y="470.0" text-anchor="start"><tspan x="150.0" dy="0">GPT-5</tspan></text>
+<rect x="430" y="448" width="720.0" height="30" fill="#2563eb"/>
+<rect x="1150.0" y="448" width="270.0" height="30" fill="#f59e0b"/>
+<text class="small" x="430" y="500">72.7% prompt · 17.34M total</text>
+<text class="small" x="150.0" y="537.0" text-anchor="start"><tspan x="150.0" dy="0">GPT-OSS 20B</tspan></text>
+<rect x="430" y="515" width="773.6" height="30" fill="#2563eb"/>
+<rect x="1203.6" y="515" width="216.4" height="30" fill="#f59e0b"/>
+<text class="small" x="430" y="567">78.1% prompt · 19.12M total</text>
+<text class="small" x="150.0" y="604.0" text-anchor="start"><tspan x="150.0" dy="0">Gemini Pro</tspan></text>
+<rect x="430" y="582" width="943.9" height="30" fill="#2563eb"/>
+<rect x="1373.9" y="582" width="46.1" height="30" fill="#f59e0b"/>
+<text class="small" x="430" y="634">95.3% prompt · 1.47M total</text>
+<text class="small" x="150.0" y="671.0" text-anchor="start"><tspan x="150.0" dy="0">Qwen2.5 Coder 32B</tspan></text>
+<rect x="430" y="649" width="730.3" height="30" fill="#2563eb"/>
+<rect x="1160.3" y="649" width="259.7" height="30" fill="#f59e0b"/>
+<text class="small" x="430" y="701">73.8% prompt · 6.63M total</text>
+<text class="small" x="150.0" y="738.0" text-anchor="start"><tspan x="150.0" dy="0">Qwen3 Abliterated</tspan></text>
+<rect x="430" y="716" width="823.4" height="30" fill="#2563eb"/>
+<rect x="1253.4" y="716" width="166.6" height="30" fill="#f59e0b"/>
+<text class="small" x="430" y="768">83.2% prompt · 25.04M total</text>
+<text class="small" x="150.0" y="805.0" text-anchor="start"><tspan x="150.0" dy="0">Qwen3 Coder 30B</tspan></text>
+<rect x="430" y="783" width="939.5" height="30" fill="#2563eb"/>
+<rect x="1369.5" y="783" width="50.5" height="30" fill="#f59e0b"/>
+<text class="small" x="430" y="835">94.9% prompt · 28.60M total</text>
+<text class="small" x="150.0" y="872.0" text-anchor="start"><tspan x="150.0" dy="0">WhiteRabbitNeo 7B</tspan></text>
+<rect x="430" y="850" width="963.4" height="30" fill="#2563eb"/>
+<rect x="1393.4" y="850" width="26.6" height="30" fill="#f59e0b"/>
+<text class="small" x="430" y="902">97.3% prompt · 35.41M total</text>
+<text class="label" x="60" y="977">Trial 2</text>
+<text class="small" x="150.0" y="974.0" text-anchor="start"><tspan x="150.0" dy="0">Claude Sonnet</tspan></text>
+<rect x="430" y="952" width="962.5" height="30" fill="#2563eb"/>
+<rect x="1392.5" y="952" width="27.5" height="30" fill="#f59e0b"/>
+<text class="small" x="430" y="1004">97.2% prompt · 7.30M total</text>
+<text class="small" x="150.0" y="1041.0" text-anchor="start"><tspan x="150.0" dy="0">GPT-5</tspan></text>
+<rect x="430" y="1019" width="923.8" height="30" fill="#2563eb"/>
+<rect x="1353.8" y="1019" width="66.2" height="30" fill="#f59e0b"/>
+<text class="small" x="430" y="1071">93.3% prompt · 6.08M total</text>
+<text class="small" x="150.0" y="1108.0" text-anchor="start"><tspan x="150.0" dy="0">GPT-OSS 20B</tspan></text>
+<rect x="430" y="1086" width="938.8" height="30" fill="#2563eb"/>
+<rect x="1368.8" y="1086" width="51.2" height="30" fill="#f59e0b"/>
+<text class="small" x="430" y="1138">94.8% prompt · 11.78M total</text>
+<text class="small" x="150.0" y="1175.0" text-anchor="start"><tspan x="150.0" dy="0">Qwen3 Abliterated</tspan></text>
+<rect x="430" y="1153" width="832.7" height="30" fill="#2563eb"/>
+<rect x="1262.7" y="1153" width="157.3" height="30" fill="#f59e0b"/>
+<text class="small" x="430" y="1205">84.1% prompt · 2.10M total</text>
+<text class="small" x="150.0" y="1242.0" text-anchor="start"><tspan x="150.0" dy="0">Qwen3 Coder 30B</tspan></text>
+<rect x="430" y="1220" width="984.6" height="30" fill="#2563eb"/>
+<rect x="1414.6" y="1220" width="5.4" height="30" fill="#f59e0b"/>
+<text class="small" x="430" y="1272">99.5% prompt · 1.90M total</text>
+<text class="small" x="150.0" y="1309.0" text-anchor="start"><tspan x="150.0" dy="0">WhiteRabbitNeo 7B</tspan></text>
+<rect x="430" y="1287" width="969.9" height="30" fill="#2563eb"/>
+<rect x="1399.9" y="1287" width="20.1" height="30" fill="#f59e0b"/>
+<text class="small" x="430" y="1339">98.0% prompt · 3.14M total</text>
+<text class="label" x="60" y="1414">Trial 3</text>
+<text class="small" x="150.0" y="1411.0" text-anchor="start"><tspan x="150.0" dy="0">Claude Opus</tspan></text>
+<rect x="430" y="1389" width="951.2" height="30" fill="#2563eb"/>
+<rect x="1381.2" y="1389" width="38.8" height="30" fill="#f59e0b"/>
+<text class="small" x="430" y="1441">96.1% prompt · 7.59M total</text>
+<text class="small" x="150.0" y="1478.0" text-anchor="start"><tspan x="150.0" dy="0">Claude Sonnet</tspan></text>
+<rect x="430" y="1456" width="943.2" height="30" fill="#2563eb"/>
+<rect x="1373.2" y="1456" width="46.8" height="30" fill="#f59e0b"/>
+<text class="small" x="430" y="1508">95.3% prompt · 10.04M total</text>
+<text class="small" x="150.0" y="1545.0" text-anchor="start"><tspan x="150.0" dy="0">GPT-5</tspan></text>
+<rect x="430" y="1523" width="850.9" height="30" fill="#2563eb"/>
+<rect x="1280.9" y="1523" width="139.1" height="30" fill="#f59e0b"/>
+<text class="small" x="430" y="1575">85.9% prompt · 4.00M total</text>
+<text class="small" x="150.0" y="1612.0" text-anchor="start"><tspan x="150.0" dy="0">GPT-OSS 20B</tspan></text>
+<rect x="430" y="1590" width="907.6" height="30" fill="#2563eb"/>
+<rect x="1337.6" y="1590" width="82.4" height="30" fill="#f59e0b"/>
+<text class="small" x="430" y="1642">91.7% prompt · 9.17M total</text>
+<text class="small" x="150.0" y="1679.0" text-anchor="start"><tspan x="150.0" dy="0">Qwen3 Abliterated</tspan></text>
+<rect x="430" y="1657" width="812.2" height="30" fill="#2563eb"/>
+<rect x="1242.2" y="1657" width="177.8" height="30" fill="#f59e0b"/>
+<text class="small" x="430" y="1709">82.0% prompt · 9.60M total</text>
+<text class="small" x="150.0" y="1746.0" text-anchor="start"><tspan x="150.0" dy="0">WhiteRabbitNeo 7B</tspan></text>
+<rect x="430" y="1724" width="974.8" height="30" fill="#2563eb"/>
+<rect x="1404.8" y="1724" width="15.2" height="30" fill="#f59e0b"/>
+<text class="small" x="430" y="1776">98.5% prompt · 7.39M total</text>
+<text class="source" x="60" y="1854">Source: finalized record.json prompt and completion token metadata</text>
+</g>
+</svg>

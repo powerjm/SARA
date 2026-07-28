@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="534" viewBox="0 0 1600 534" role="img">
+<title>9. Token and cost accounting</title>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .label { font: 650 17px system-ui, sans-serif; fill: #1e293b; }
+    .small { font: 15px system-ui, sans-serif; fill: #64748b; }
+    .value { font: 700 15px system-ui, sans-serif; fill: #172554; }
+    .legend { font: 15px system-ui, sans-serif; fill: #334155; }
+    .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .cell { font: 650 16px system-ui, sans-serif; fill: #172554; }
+    .white { font: 700 15px system-ui, sans-serif; fill: #fff; }
+  </style>
+<rect width="1600" height="534" fill="#f8fafc"/>
+<text class="title" x="60" y="56">9. Token and cost accounting</text>
+<text class="sub" x="60" y="103">CODEX report • source table 07, line 317</text>
+<g transform="translate(0,0)">
+<rect x="650" y="122" width="18" height="18" rx="3" fill="#2563eb"/>
+<text class="legend" x="677" y="137">prompt</text>
+<rect x="752" y="122" width="18" height="18" rx="3" fill="#f59e0b"/>
+<text class="legend" x="779" y="137">completion</text>
+<line x1="400.0" y1="175" x2="400.0" y2="411" stroke="#e2e8f0"/>
+<text class="axis" x="400.0" y="166" text-anchor="middle">0</text>
+<line x1="670.0" y1="175" x2="670.0" y2="411" stroke="#e2e8f0"/>
+<text class="axis" x="670.0" y="166" text-anchor="middle">2.5e+06</text>
+<line x1="940.0" y1="175" x2="940.0" y2="411" stroke="#e2e8f0"/>
+<text class="axis" x="940.0" y="166" text-anchor="middle">5e+06</text>
+<line x1="1210.0" y1="175" x2="1210.0" y2="411" stroke="#e2e8f0"/>
+<text class="axis" x="1210.0" y="166" text-anchor="middle">7.5e+06</text>
+<line x1="1480.0" y1="175" x2="1480.0" y2="411" stroke="#e2e8f0"/>
+<text class="axis" x="1480.0" y="166" text-anchor="middle">1e+07</text>
+<text class="label" x="60.0" y="208.0" text-anchor="start"><tspan x="60.0" dy="0">Claude Opus</tspan></text>
+<rect x="400" y="184.0" width="787.7" height="19.0" rx="4" fill="#2563eb"/>
+<text class="value" x="1197.7" y="199.0">7.29M</text>
+<rect x="400" y="205.0" width="32.1" height="19.0" rx="4" fill="#f59e0b"/>
+<text class="value" x="442.1" y="220.0">297k</text>
+<text class="label" x="60.0" y="286.0" text-anchor="start"><tspan x="60.0" dy="0">Claude Sonnet</tspan></text>
+<rect x="400" y="262.0" width="1033.2" height="19.0" rx="4" fill="#2563eb"/>
+<text class="value" x="1443.2" y="277.0">9.57M</text>
+<rect x="400" y="283.0" width="51.2" height="19.0" rx="4" fill="#f59e0b"/>
+<text class="value" x="461.2" y="298.0">475k</text>
+<text class="label" x="60.0" y="364.0" text-anchor="start"><tspan x="60.0" dy="0">GPT-5</tspan></text>
+<rect x="400" y="340.0" width="371.5" height="19.0" rx="4" fill="#2563eb"/>
+<text class="value" x="781.5" y="355.0">3.44M</text>
+<rect x="400" y="361.0" width="60.7" height="19.0" rx="4" fill="#f59e0b"/>
+<text class="value" x="470.7" y="376.0">562k</text>
+<rect x="60" y="451" width="1420" height="54" rx="12" fill="#e0f2fe"/>
+<text class="small" x="84" y="484">Recorded costs: Claude Opus: $43.90 • Claude Sonnet: $35.82 • GPT-5: $9.92</text>
+</g>
+</svg>

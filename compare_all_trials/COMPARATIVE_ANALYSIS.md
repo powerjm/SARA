@@ -435,3 +435,22 @@ schema v4 did not store per-record tool counts.
 10. [Premium target heatmap](diagrams/10_premium_target_heatmap.svg)
 11. [Premium resources](diagrams/11_premium_resources.svg)
 12. [Tool-workflow evolution](diagrams/12_tool_workflow_evolution.svg)
+
+## Companion token-metric packages
+
+Two parallel token-analysis packages apply identical metrics and display
+designs to different cohorts:
+
+- [All finalized models](token_metrics/all_models/INDEX.md)
+- [Trial-specific premium models](token_metrics/premium_models/INDEX.md)
+
+Each package contains:
+
+- seven token diagrams in PNG and editable SVG;
+- headline, termination, backend, strategy, target, and backend-target CSV
+  tables;
+- consolidated Markdown tables; and
+- five publication-ready table diagrams in PNG and SVG.
+
+[`generate_token_metric_packages.py`](generate_token_metric_packages.py)
+reproduces both packages from finalized `record.json` metadata only.
