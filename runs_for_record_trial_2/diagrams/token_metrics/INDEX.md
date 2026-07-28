@@ -46,9 +46,11 @@ more iterations and are more likely to exhaust the budget.
 
    ![Prompt and completion composition](05_prompt_completion_composition.png)
 
-6. **Tokens versus iterations** — total tokens rise strongly with turn count;
-   the relationship is descriptive and partly mechanical because accumulated
-   context is reintroduced across iterations.
+6. **Tokens versus iterations** — total tokens rise strongly with turn count.
+   The dashed quadratic reference is a least-squares `k × iterations²` curve
+   scaled on observations below 490k tokens; it is illustrative rather than a
+   formal complexity estimate. The relationship is partly mechanical because
+   accumulated context is reintroduced across iterations.
 
    ![Total tokens versus iterations](06_tokens_vs_iterations.png)
 

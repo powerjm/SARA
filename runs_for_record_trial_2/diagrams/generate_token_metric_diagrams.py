@@ -427,6 +427,26 @@ def tokens_vs_iterations(records: list[dict[str, Any]]) -> str:
         body.append(
             f'<circle cx="{x:.1f}" cy="{y:.1f}" r="7" fill="{color}" fill-opacity="0.72" stroke="#fff" stroke-width="1.5"/>'
         )
+
+    # Scale a k*n^2 reference to the uncapped observations. Excluding records
+    # at or above 490k avoids treating the soft-budget pileup as unconstrained
+    # quadratic growth.
+    uncapped = [record for record in records if record["tokens"]["total"] < 490_000]
+    coefficient = sum(
+        record["iterations"] ** 2 * record["tokens"]["total"]
+        for record in uncapped
+    ) / sum(record["iterations"] ** 4 for record in uncapped)
+    curve_points = []
+    for iterations in range(0, 101):
+        token_count = coefficient * iterations**2
+        if token_count > 650_000:
+            break
+        x = x0 + plot_width * iterations / 100
+        y = y0 + plot_height * (1 - token_count / 650_000)
+        curve_points.append(f"{x:.1f},{y:.1f}")
+    body.append(
+        f'<polyline points="{" ".join(curve_points)}" fill="none" stroke="{NAVY}" stroke-width="5" stroke-dasharray="11 8"/>'
+    )
     legend = (
         ("success", GREEN),
         ("token budget", RED),
@@ -434,13 +454,19 @@ def tokens_vs_iterations(records: list[dict[str, Any]]) -> str:
         ("truncated", PURPLE),
     )
     for index, (label, color) in enumerate(legend):
-        x = 720 + index * 195
+        x = 500 + index * 205
         body.extend(
             [
                 f'<circle cx="{x}" cy="140" r="8" fill="{color}"/>',
                 f'<text class="legend" x="{x + 17}" y="145">{label}</text>',
             ]
         )
+    body.extend(
+        [
+            f'<line x1="1320" y1="140" x2="1360" y2="140" stroke="{NAVY}" stroke-width="5" stroke-dasharray="10 7"/>',
+            '<text class="legend" x="1372" y="145">O(n²)</text>',
+        ]
+    )
     correlation = pearson(
         [record["iterations"] for record in records],
         [record["tokens"]["total"] for record in records],
@@ -450,11 +476,13 @@ def tokens_vs_iterations(records: list[dict[str, Any]]) -> str:
             '<text class="label" x="825" y="785" text-anchor="middle">Iterations</text>',
             f'<rect x="60" y="752" width="430" height="58" rx="11" fill="#e0f2fe"/>',
             f'<text class="value" x="82" y="786">Pearson r = {correlation:.3f} (descriptive)</text>',
+            f'<rect x="1080" y="752" width="425" height="58" rx="11" fill="#ede9fe"/>',
+            f'<text class="value" x="1102" y="786">Reference fit: tokens ≈ {coefficient:.0f} × iterations²</text>',
         ]
     )
     return base_svg(
         "Total tokens increase strongly with iteration count",
-        "Each point is one finalized run, colored by terminal outcome",
+        "Each point is one finalized run; dashed O(n²) reference is scaled to observations below 490k tokens",
         850,
         body,
     )
@@ -561,9 +589,11 @@ more iterations and are more likely to exhaust the budget.
 
    ![Prompt and completion composition](05_prompt_completion_composition.png)
 
-6. **Tokens versus iterations** — total tokens rise strongly with turn count;
-   the relationship is descriptive and partly mechanical because accumulated
-   context is reintroduced across iterations.
+6. **Tokens versus iterations** — total tokens rise strongly with turn count.
+   The dashed quadratic reference is a least-squares `k × iterations²` curve
+   scaled on observations below 490k tokens; it is illustrative rather than a
+   formal complexity estimate. The relationship is partly mechanical because
+   accumulated context is reintroduced across iterations.
 
    ![Total tokens versus iterations](06_tokens_vs_iterations.png)
 
