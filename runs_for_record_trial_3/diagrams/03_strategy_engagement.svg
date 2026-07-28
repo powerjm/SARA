@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Trial 3 strategy engagement</title>
+  <desc id="desc">Marker success and runnable-or-higher rates for template-backward and recon-first prompting.</desc>
+  <style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .headline { font: 800 31px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 18px system-ui, sans-serif; fill: #475569; }
+    .section { font: 700 15px system-ui, sans-serif; fill: #64748b; letter-spacing: 1.5px; }
+    .label { font: 650 18px system-ui, sans-serif; fill: #1e293b; }
+    .small { font: 15px system-ui, sans-serif; fill: #475569; }
+    .smalllight { font: 15px system-ui, sans-serif; fill: #dbeafe; }
+    .tiny { font: 13px system-ui, sans-serif; fill: #64748b; }
+    .value { font: 700 18px system-ui, sans-serif; fill: #172554; }
+    .big { font: 800 42px system-ui, sans-serif; fill: #fff; }
+    .bigdark { font: 800 42px system-ui, sans-serif; fill: #172554; }
+    .white { font: 700 16px system-ui, sans-serif; fill: #fff; }
+    .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .source { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .mono { font: 17px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fill: #123b4a; }
+    .panel { fill: #fff; stroke: #cbd5e1; stroke-width: 2; }
+  </style>
+  <rect width="1200" height="720" fill="#f8fafc"/>
+<text class="title" x="65" y="66">Prompt strategy: modest directional separation in Trial 3</text>
+<text class="sub" x="65" y="102">Solid bars show marker success; pale bars show the share reaching RAN or higher</text>
+<line x1="315" y1="155" x2="315" y2="520" stroke="#cbd5e1"/>
+<line x1="635" y1="155" x2="635" y2="520" stroke="#e2e8f0"/>
+<line x1="955" y1="155" x2="955" y2="520" stroke="#cbd5e1"/>
+<text class="axis" x="305" y="145">0%</text><text class="axis" x="620" y="145">50%</text><text class="axis" x="940" y="145">100%</text>
+<text class="label" x="65" y="263">Template backward</text>
+<rect x="315" y="223" width="484.3" height="54" rx="8" fill="#cbd5e1"/>
+<rect x="315" y="223" width="173.0" height="54" rx="8" fill="#7c3aed"/>
+<text class="value" x="975" y="257">27.0% (20/74)</text>
+<text class="small" x="315" y="307">RAN+ 75.7% · premium success 18/54 (33.3%) · median script calls 3</text>
+<text class="label" x="65" y="443">Recon first</text>
+<rect x="315" y="403" width="488.9" height="54" rx="8" fill="#cbd5e1"/>
+<rect x="315" y="403" width="204.4" height="54" rx="8" fill="#0f766e"/>
+<text class="value" x="975" y="437">31.9% (23/72)</text>
+<text class="small" x="315" y="487">RAN+ 76.4% · premium success 23/54 (42.6%) · median script calls 3</text>
+<rect x="65" y="565" width="1070" height="86" rx="14" fill="#e0f2fe"/>
+<text class="small" x="92" y="600">Balanced premium comparison: recon first 23/54 versus template backward 18/54.</text>
+<text class="small" x="92" y="627">Simple Fisher p≈0.428; clustered replicates and two samples per cell support direction, not an established effect.</text>
+<text class="source" x="65" y="694">Source: 146 finalized RunRecords; premium-only statistic removes ordered local-arm missingness</text>
+</svg>

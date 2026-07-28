@@ -1,0 +1,506 @@
+<title>SARA — Trials 1·2·3 Comparison</title>
+<style>
+  :root{
+    color-scheme: light;
+    --plane:#eef1f5; --surface:#ffffff; --surface-2:#f5f7fa;
+    --ink:#10141b; --ink-2:#495264; --muted:#7a8496;
+    --hair:rgba(16,20,27,.10); --hair-2:rgba(16,20,27,.06);
+    --accent:#2a78d6; --accent-soft:rgba(42,120,214,.12);
+    --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100;
+    --crit:#d03b3b; --good:#0ca30c; --warn:#c98500; --serious:#ec835a;
+    --track:#e7ebf1;
+    --seq-0:#e8f0fc; --seq-1:#c2dbf7; --seq-2:#86b6ef; --seq-3:#3987e5; --seq-4:#256abf; --seq-5:#184f95;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+    --sans:system-ui,-apple-system,"Segoe UI",sans-serif;
+    --t1:#3f4652; --t2:#eb6834; --t3:#2a78d6;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:where(:not([data-theme="light"])){
+      color-scheme:dark;
+      --plane:#0c0e12; --surface:#15181e; --surface-2:#1b1f26;
+      --ink:#f2f4f8; --ink-2:#aab3c2; --muted:#7c8698;
+      --hair:rgba(255,255,255,.10); --hair-2:rgba(255,255,255,.05);
+      --accent:#4b93ea; --accent-soft:rgba(75,147,234,.16);
+      --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+      --crit:#e05656; --good:#22b422; --warn:#d99a1e; --serious:#ec835a;
+      --track:#252a33;
+      --seq-0:#12233c; --seq-1:#173a63; --seq-2:#1c5cab; --seq-3:#2a78d6; --seq-4:#5598e7; --seq-5:#86b6ef;
+      --t1:#c2cad8; --t2:#d95926; --t3:#4b93ea;
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme:dark;
+    --plane:#0c0e12; --surface:#15181e; --surface-2:#1b1f26;
+    --ink:#f2f4f8; --ink-2:#aab3c2; --muted:#7c8698;
+    --hair:rgba(255,255,255,.10); --hair-2:rgba(255,255,255,.05);
+    --accent:#4b93ea; --accent-soft:rgba(75,147,234,.16);
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+    --crit:#e05656; --good:#22b422; --warn:#d99a1e; --serious:#ec835a;
+    --track:#252a33;
+    --seq-0:#12233c; --seq-1:#173a63; --seq-2:#1c5cab; --seq-3:#2a78d6; --seq-4:#5598e7; --seq-5:#86b6ef;
+    --t1:#c2cad8; --t2:#d95926; --t3:#4b93ea;
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--plane);color:var(--ink);font-family:var(--sans);
+    line-height:1.5;-webkit-font-smoothing:antialiased;font-size:15px}
+  .wrap{max-width:1120px;margin:0 auto;padding:clamp(18px,4vw,44px) clamp(16px,4vw,32px) 72px}
+  .mono{font-family:var(--mono)}
+  .tnum{font-variant-numeric:tabular-nums}
+  h1,h2,h3{margin:0;text-wrap:balance;letter-spacing:-.01em}
+  a{color:var(--accent)}
+
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--accent);font-weight:600}
+  .sub{color:var(--ink-2);font-size:14px}
+
+  .mast{display:grid;grid-template-columns:1.4fr 1fr;gap:28px;align-items:end;
+    padding-bottom:22px;border-bottom:1px solid var(--hair);margin-bottom:26px}
+  @media(max-width:720px){.mast{grid-template-columns:1fr;gap:20px}}
+  .mast h1{font-size:clamp(26px,4.4vw,40px);font-weight:700;margin:10px 0 6px}
+  .verdict{background:var(--surface);border:1px solid var(--hair);border-radius:14px;
+    padding:16px 18px;position:relative;overflow:hidden}
+  .verdict::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--good)}
+  .verdict .big{font-family:var(--mono);font-size:clamp(24px,4.2vw,36px);font-weight:700;
+    letter-spacing:-.02em;line-height:1;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .verdict .big .t1c{color:var(--muted)} .verdict .big .arw{color:var(--muted);font-size:.7em}
+  .verdict .big .t2c{color:var(--t2)} .verdict .big .t3c{color:var(--good)}
+  .verdict .lab{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--muted);margin-top:8px}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11.5px;
+    font-weight:600;padding:3px 9px;border-radius:999px;letter-spacing:.03em}
+  .chip.good{background:rgba(12,163,12,.14);color:var(--good);margin-top:12px}
+  .chip.dot::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+
+  .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:26px 0 8px}
+  @media(max-width:900px){.kpis{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:480px){.kpis{grid-template-columns:repeat(2,1fr)}}
+  .kpi{background:var(--surface);border:1px solid var(--hair);border-radius:12px;padding:14px}
+  .kpi .v{font-family:var(--mono);font-size:20px;font-weight:700;letter-spacing:-.01em;line-height:1.15}
+  .kpi .v .d{font-size:12px;color:var(--muted);font-weight:600}
+  .kpi .k{font-size:12px;color:var(--ink-2);margin-top:5px}
+  .kpi .s{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:2px}
+
+  section{margin-top:40px}
+  .part{margin-top:52px}
+  .part-h{display:flex;align-items:center;gap:14px;padding:12px 18px;border-radius:12px;
+    background:var(--surface-2);border:1px solid var(--hair);margin-bottom:8px}
+  .part-h .pn{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.1em;
+    text-transform:uppercase;color:#fff;background:var(--accent);padding:4px 10px;border-radius:6px}
+  .part-h h2{font-size:19px;font-weight:700}
+  .part-h .pd{font-size:13px;color:var(--ink-2);margin-left:auto;text-align:right}
+  @media(max-width:600px){.part-h{flex-wrap:wrap}.part-h .pd{margin-left:0;text-align:left;width:100%}}
+
+  .sec-h{display:flex;align-items:baseline;gap:12px;margin-bottom:4px;flex-wrap:wrap}
+  .sec-h h3{font-size:17px;font-weight:700}
+  .sec-h .n{font-family:var(--mono);font-size:12px;color:var(--muted)}
+  .lede{color:var(--ink-2);max-width:80ch;margin:8px 0 18px;font-size:14px}
+  .lede b{color:var(--ink);font-weight:650}
+
+  .card{background:var(--surface);border:1px solid var(--hair);border-radius:14px;padding:20px 22px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:760px){.grid2{grid-template-columns:1fr}}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:760px){.grid3{grid-template-columns:1fr}}
+
+  .rows{display:flex;flex-direction:column;gap:9px}
+  .row{display:grid;grid-template-columns:150px 1fr 92px;align-items:center;gap:12px}
+  @media(max-width:560px){.row{grid-template-columns:104px 1fr 76px}}
+  .row .rl{font-size:12.5px;color:var(--ink-2);text-align:right;font-family:var(--mono)}
+  .row .rl small{color:var(--muted);display:block;font-size:10.5px;letter-spacing:.02em}
+  .track{background:var(--track);border-radius:5px;height:22px;position:relative;overflow:hidden}
+  .fill{height:100%;border-radius:5px;min-width:2px;transition:width .9s cubic-bezier(.2,.7,.2,1);
+    display:flex;align-items:center;justify-content:flex-end;padding-right:7px;color:#fff;
+    font-family:var(--mono);font-size:11.5px;font-weight:600}
+  .row .rv{font-family:var(--mono);font-size:13px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+  .row .rv small{color:var(--muted);font-weight:400;font-size:11px}
+
+  .legend{display:flex;gap:16px;flex-wrap:wrap;margin:2px 0 16px;font-size:12.5px;color:var(--ink-2)}
+  .legend span{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono)}
+  .sw{width:11px;height:11px;border-radius:3px;flex:none}
+
+  .stgrid{display:flex;flex-direction:column;gap:18px}
+  .strow{display:grid;grid-template-columns:180px 1fr;gap:14px;align-items:center}
+  @media(max-width:560px){.strow{grid-template-columns:1fr}}
+  .stname{font-family:var(--mono);font-size:13px;font-weight:600}
+  .stname small{display:block;color:var(--muted);font-weight:400;font-size:11px;letter-spacing:.02em}
+  .stbars{display:flex;flex-direction:column;gap:5px}
+  .mini{display:grid;grid-template-columns:32px 1fr 118px;align-items:center;gap:8px}
+  .mini .ml{font-size:11px;color:var(--muted);font-family:var(--mono);text-align:right}
+  .mini .mt{height:15px;background:var(--track);border-radius:4px;overflow:hidden}
+  .mini .mf{height:100%;border-radius:4px;transition:width .9s cubic-bezier(.2,.7,.2,1)}
+  .mini .mv{font-family:var(--mono);font-size:11.5px;font-weight:600;text-align:right}
+  .mini .mv small{color:var(--muted);font-weight:400}
+
+  .heat{width:100%;border-collapse:separate;border-spacing:3px;font-family:var(--mono)}
+  .heat th{font-size:11px;font-weight:600;color:var(--ink-2);padding:6px 4px;text-align:center}
+  .heat th.rowh{text-align:right;font-weight:600;font-size:12px;white-space:nowrap;padding-right:10px}
+  .heat td{text-align:center;font-size:12px;font-weight:600;padding:9px 6px;border-radius:6px;color:#fff}
+  .heat td.na{background:var(--track);color:var(--muted)}
+  .heat td small{font-weight:400;opacity:.85;font-size:10px}
+  .scalebar{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:11px;color:var(--muted);font-family:var(--mono)}
+  .scalegrad{height:10px;width:150px;border-radius:3px;background:linear-gradient(90deg,var(--seq-0),var(--seq-2),var(--seq-3),var(--seq-5))}
+
+  .tbl{width:100%;border-collapse:collapse;font-size:13px}
+  .tbl th{font-family:var(--mono);font-size:11px;letter-spacing:.04em;text-transform:uppercase;
+    color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1px solid var(--hair)}
+  .tbl th.num,.tbl td.num{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--mono)}
+  .tbl td{padding:9px 10px;border-bottom:1px solid var(--hair-2)}
+  .tbl tr:hover td{background:var(--surface-2)}
+  .tbl .bn{font-family:var(--mono);font-size:12.5px}
+  .tag{font-family:var(--mono);font-size:10.5px;padding:1px 7px;border-radius:999px;font-weight:600}
+  .tag.g{background:rgba(12,163,12,.15);color:var(--good)}
+  .tag.r{background:rgba(208,59,59,.15);color:var(--crit)}
+
+  .callout{display:flex;gap:14px;align-items:flex-start}
+  .callout .num{font-family:var(--mono);font-size:26px;font-weight:700;line-height:1;flex:none}
+  .callout h3{font-size:15px;font-weight:650;margin-bottom:4px}
+  .callout p{margin:0;font-size:13px;color:var(--ink-2)}
+
+  .recs{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(max-width:760px){.recs{grid-template-columns:1fr}}
+  .rec{background:var(--surface);border:1px solid var(--hair);border-radius:12px;padding:16px 18px;
+    display:flex;gap:14px}
+  .rec .rank{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--accent);
+    background:var(--accent-soft);width:30px;height:30px;border-radius:8px;display:grid;place-items:center;flex:none}
+  .rec h3{font-size:14.5px;font-weight:650;margin-bottom:4px}
+  .rec p{margin:0;font-size:13px;color:var(--ink-2)}
+  .rec .impact{font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;
+    color:var(--good);font-weight:600;margin-top:7px;display:inline-block}
+
+  footer{margin-top:52px;padding-top:20px;border-top:1px solid var(--hair);
+    color:var(--muted);font-size:12px;font-family:var(--mono);line-height:1.7}
+
+  @media (prefers-reduced-motion:reduce){.fill,.mini .mf{transition:none}}
+</style>
+
+<div class="wrap">
+
+  <!-- MASTHEAD -->
+  <div class="mast">
+    <div>
+      <div class="eyebrow">SARA · Sans Agentic ROP Analysis</div>
+      <h1>Three trials: step up, then hold</h1>
+      <div class="sub">Independent cross-trial read · <span class="mono">1,755 · 92 · 146</span> finalized records · record metadata only · Jul 27 2026</div>
+      <span class="chip good">✓ Capability appeared at Trial 2 and held at Trial 3 — the dip is apparatus, not models</span>
+    </div>
+    <div class="verdict" title="Validator-confirmed full-matrix success across trials">
+      <div class="big tnum"><span class="t1c">0%</span><span class="arw">→</span><span class="t2c">37%</span><span class="arw">→</span><span class="t3c">29.5%</span></div>
+      <div class="lab">full-matrix success · T1 → T2 → T3</div>
+      <div class="sub" style="margin-top:10px;font-size:12.5px">Not rise-and-fall. The T1→T2 jump is the real capability event (the execution loop); T3's lower aggregate is a <b>halved premium clock</b> + a block of <b>unsolvable CGC targets</b>, on top of retained capability and a new top model.</div>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpis">
+    <div class="kpi"><div class="v tnum"><span style="color:var(--muted)">0</span> <span class="d">·</span> <span style="color:var(--t2)">34</span> <span class="d">·</span> <span style="color:var(--good)">43</span></div><div class="k">confirmed successes</div><div class="s">of 1755 · 92 · 146</div></div>
+    <div class="kpi"><div class="v tnum"><span style="color:var(--muted)">31%</span> <span class="d">→</span> <span style="color:var(--good)">75–76%</span></div><div class="k">reached validator</div><div class="s">plateaus after T1</div></div>
+    <div class="kpi"><div class="v tnum" style="color:var(--crit)">0 / 773</div><div class="k">CGC successes</div><div class="s">the true invariant</div></div>
+    <div class="kpi"><div class="v tnum"><span style="color:var(--muted)">0</span> <span class="d">·</span> <span style="color:var(--t2)">67%</span> <span class="d">·</span> <span style="color:var(--t3)">38%</span></div><div class="k">premium success</div><div class="s">31/34 · 41/43 of wins</div></div>
+    <div class="kpi"><div class="v tnum" style="color:var(--t3)">52.8%</div><div class="k">Opus — best model</div><div class="s">new in T3 · 19/36</div></div>
+  </div>
+
+  <!-- BOTTOM LINE -->
+  <section style="margin-top:30px">
+    <div class="card" style="border-left:4px solid var(--good)">
+      <div class="eyebrow" style="color:var(--ink-2)">Bottom line</div>
+      <p class="lede" style="margin:8px 0 0;max-width:96ch;font-size:14.5px">
+        Every figure in the companion <span class="mono">COMPARATIVE_ANALYSIS.md</span> reproduces exactly. What the
+        numbers describe is a <b>step-up-and-hold</b>, not a rise-and-fall. Trial 1 (0%) had no execution loop — only 2
+        tools. Trial 2 gave the agent 22 tools and a write-run-debug loop, and capability appeared (37%). Trial 3 <b>held</b>
+        that capability and added the strongest model in the series (Opus, 52.8%) — its lower aggregate is two identified,
+        fixable apparatus artifacts: a <b>premium wall-clock halved to 300 s</b> (100% of Trial-3 premium failures are
+        timeouts) and a <b>block of CGC targets nothing can solve</b> (0/63). The one result that never moves is the CGC
+        wall: <b>0 successes in 773 records</b>. Part A reads the full matrix; Part B isolates the premier model class.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ PART A ============ -->
+  <div class="part">
+    <div class="part-h">
+      <span class="pn">Part A</span>
+      <h2>The full test matrix</h2>
+      <div class="pd">every finalized record · the apparatus as it actually ran</div>
+    </div>
+  </div>
+
+  <!-- PRIMARY ENDPOINT -->
+  <section>
+    <div class="sec-h"><h3>Two discontinuities of very different kinds</h3><span class="n">v4→v5→v6 · schema-safe rungs</span></div>
+    <p class="lede">The <b>T1→T2</b> jump is the real capability event — 0 to 37% is far outside noise, and validator
+      reach more than doubled when the agent got an execution loop. The <b>T2→T3</b> move is not: Wilson intervals
+      overlap (Fisher p≈0.26), and <b>engagement is flat</b> (75%→76%). Only conversion fell — and Part A's later panels
+      show why.</p>
+    <div class="card">
+      <div class="legend">
+        <span><i class="sw" style="background:var(--t1)"></i>Trial 1 · n=1,755</span>
+        <span><i class="sw" style="background:var(--t2)"></i>Trial 2 · n=92</span>
+        <span><i class="sw" style="background:var(--t3)"></i>Trial 3 · n=146</span>
+      </div>
+      <div class="stgrid" id="primary"></div>
+    </div>
+  </section>
+
+  <!-- BACKEND CLASS -->
+  <section>
+    <div class="sec-h"><h3>Success is a premium phenomenon at every stage</h3><span class="n">by backend class</span></div>
+    <p class="lede">Premium (hosted) models account for <b>31/34</b> Trial-2 and <b>41/43</b> Trial-3 successes. Local
+      open-weight wins are rare (all GPT-OSS-20B); the unrestricted class has <b>never</b> produced a marker. "LLM agents
+      can build ROP chains" is really "frontier hosted models can, given budget."</p>
+    <div class="card">
+      <div class="legend">
+        <span><i class="sw" style="background:var(--t1)"></i>Trial 1</span>
+        <span><i class="sw" style="background:var(--t2)"></i>Trial 2</span>
+        <span><i class="sw" style="background:var(--t3)"></i>Trial 3</span>
+        <span style="color:var(--muted)">│ success % within class</span>
+      </div>
+      <div class="stgrid" id="classbars"></div>
+    </div>
+  </section>
+
+  <!-- CGC INVARIANT + BINDING CONSTRAINT -->
+  <section>
+    <div class="sec-h"><h3>One true invariant, one migrating constraint</h3><span class="n">what never changed · what always bound</span></div>
+    <div class="grid2">
+      <div class="card"><div class="callout"><div class="num tnum" style="color:var(--crit)">0/773</div>
+        <div><h3>CGC is unsolved across all three apparatuses</h3>
+        <p>Across four CGC programs (CADET, CROMU, EAGLE, NRFIN) and three trials, <b>no finalized record ever reached a marker</b> — 235 reached the validator and converted none (T1 690·187, T2 20·12, T3 63·36). The corpus's cleanest negative capability result, and the one cross-trial finding that is genuinely about capability, not apparatus.</p></div></div></div>
+      <div class="card">
+        <div class="stname" style="margin-bottom:10px">The binding constraint migrated · premium failures</div>
+        <div class="rows">
+          <div class="row"><div class="rl">Trial 1<small>token wall + refusals</small></div><div class="track"><div class="fill" style="width:100%;background:var(--t1)" title="346 budget_exhausted + 200 safeguard_refusal">tokens ×346 · refuse ×200</div></div><div class="rv tnum">—</div></div>
+          <div class="row"><div class="rl">Trial 2<small>token wall (600s ample)</small></div><div class="track"><div class="fill" style="width:80%;background:var(--t2)" title="12 token_budget, 2 wall_clock, 1 truncated">token ×12 · wall ×2</div></div><div class="rv tnum">—</div></div>
+          <div class="row"><div class="rl" style="color:var(--crit)">Trial 3<small>TIME wall (300s cap)</small></div><div class="track"><div class="fill" style="width:100%;background:var(--crit)" title="63 of 63 premium failures are wall_clock timeouts">wall_clock ×63 · 100%</div></div><div class="rv tnum">100%</div></div>
+        </div>
+        <p style="font-size:12px;color:var(--ink-2);margin:12px 0 0">Token-wall → relaxed → <b>time-wall</b>. T3 doubled tokens to 1M but halved the premium clock to 300 s — <b>every</b> premium failure is now a timeout. Zero premium failures in T2 or T3 are wrong-exploits.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- RESOURCES -->
+  <section>
+    <div class="sec-h"><h3>More effective was never cheaper per success</h3><span class="n">finalized-record resources</span></div>
+    <p class="lede">Trial 3's tool curation cut median tokens 39% vs Trial 2, but wall time and iterations rose — <b>more,
+      cheaper steps, stopped by the clock</b>. Interaction intensity climbs monotonically (18.3→26.9→41.6 calls/record)
+      while success does not: <b>call volume is not a capability proxy</b>.</p>
+    <div class="card" style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr><th>Finalized-record measure</th><th class="num" style="color:var(--t1)">Trial 1</th><th class="num" style="color:var(--t2)">Trial 2</th><th class="num" style="color:var(--t3)">Trial 3</th></tr></thead>
+        <tbody id="resbody"></tbody>
+      </table>
+      <p style="font-size:11px;color:var(--muted);font-family:var(--mono);margin:10px 0 0">Trial-1 tool-call total is from metadata/log analysis (schema v4 stored no per-record tool counts). Configured limits are checkpointed, not hard bounds.</p>
+    </div>
+  </section>
+
+  <!-- ============ PART B ============ -->
+  <div class="part">
+    <div class="part-h">
+      <span class="pn">Part B</span>
+      <h2>The premier (premium) model class</h2>
+      <div class="pd">hosted / frontier backends · per-trial membership + aligned cohort</div>
+    </div>
+  </div>
+
+  <!-- MEMBERSHIP + PREMIUM ENDPOINT -->
+  <section>
+    <div class="sec-h"><h3>A moving panel, and a step-then-retreat</h3><span class="n">premium membership changes each trial</span></div>
+    <p class="lede">The premium <b>class</b> is not a fixed panel: T1 {Sonnet, Opus, GPT-5, <b>Gemini</b>}, T2 {Sonnet,
+      GPT-5}, T3 {Sonnet, Opus, GPT-5}. So the premium endpoint mixes composition change with apparatus change. The
+      step to 67% (T2) then retreat to 38% (T3) is real — but two things de-fang the retreat.</p>
+    <div class="card">
+      <div class="legend">
+        <span><i class="sw" style="background:var(--t1)"></i>Trial 1 · 553 premium</span>
+        <span><i class="sw" style="background:var(--t2)"></i>Trial 2 · 46</span>
+        <span><i class="sw" style="background:var(--t3)"></i>Trial 3 · 108</span>
+      </div>
+      <div class="stgrid" id="premend"></div>
+    </div>
+    <div class="grid2" style="margin-top:16px">
+      <div class="card"><div class="callout"><div class="num tnum" style="color:var(--good)">86→57</div>
+        <div><h3>Strip CGC and the "decline" mostly vanishes</h3>
+        <p>Premium success on <b>solvable</b> targets: <b>86.1% (T2) → 56.9% (T3)</b>; the whole 36-record premium CGC block scores zero by construction. The residual gap tracks the 300 s clock — premium reach fell 93.5%→80.6%, and every premium failure is a timeout.</p></div></div></div>
+      <div class="card"><div class="callout"><div class="num tnum" style="color:var(--muted)">0/358</div>
+        <div><h3>Trial 1's premium zero is real, not just Gemini</h3>
+        <p>Gemini refused 189/195 and drags T1's premium aggregate — but excluding it, the other premium backends still went <b>0/358</b>. T1's zero is the missing execution loop, not a refusal artifact. Gemini deepens it; it doesn't create it.</p></div></div></div>
+    </div>
+  </section>
+
+  <!-- PER-BACKEND HEATMAP -->
+  <section>
+    <div class="sec-h"><h3>Per-backend premium — Opus is the strongest model in the series</h3><span class="n">success rate · backend × trial</span></div>
+    <p class="lede"><b>Opus, added in Trial 3, posts 52.8% — the highest of any single backend in any trial</b> — and does
+      it under T3's harsher 300 s clock on a panel that includes the 0/12 CGC block. Sonnet and GPT-5 look lower in T3,
+      but the target panel doubled and the clock halved: composition + time, not a model regression.</p>
+    <div class="card" style="overflow-x:auto">
+      <table class="heat">
+        <thead><tr><th class="rowh">backend</th><th>Trial 1</th><th>Trial 2</th><th>Trial 3</th></tr></thead>
+        <tbody id="premheat"></tbody>
+      </table>
+      <div class="scalebar"><span>0%</span><div class="scalegrad"></div><span>90%</span><span style="margin-left:8px">success rate · cell shows shells/n</span></div>
+    </div>
+  </section>
+
+  <!-- ALIGNED COHORT -->
+  <section>
+    <div class="sec-h"><h3>The cleanest three-trial view: aligned premium cohort</h3><span class="n">Sonnet + GPT-5 × BroncoCTF + ROPBench ex005</span></div>
+    <p class="lede">The only backend/target cell present in <b>all three</b> trials. The step-up-and-hold shape survives
+      alignment: <b>0 → 79% → 50%</b>. But Trial 3's half is softened two ways — conversion after reaching the validator
+      is a gentler 79%→<b>61.5%</b>, and the reach drop is the time cap in miniature: <b>GPT-5's validator reach fell
+      12/12 → 5/8</b>. A third of its runs never landed a first candidate.</p>
+    <div class="card">
+      <div class="legend">
+        <span><i class="sw" style="background:var(--t1)"></i>Trial 1 · n=56</span>
+        <span><i class="sw" style="background:var(--t2)"></i>Trial 2 · n=24</span>
+        <span><i class="sw" style="background:var(--t3)"></i>Trial 3 · n=16</span>
+      </div>
+      <div class="stgrid" id="aligned"></div>
+    </div>
+  </section>
+
+  <!-- PREMIUM RESOURCES -->
+  <section>
+    <div class="sec-h"><h3>Cheaper per run, dearer per success</h3><span class="n">premium resources</span></div>
+    <p class="lede">Premium successes got <b>cheaper in tokens</b> (150,870 → 112,162 median) yet <b>cost per success
+      rose</b> (\$1.14 → \$2.19), because yield fell under the time cap. Lower per-run tokens did not buy lower cost per
+      success — worth stating precisely in the thesis.</p>
+    <div class="card" style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr><th>Premium measure</th><th class="num" style="color:var(--t1)">Trial 1</th><th class="num" style="color:var(--t2)">Trial 2</th><th class="num" style="color:var(--t3)">Trial 3</th></tr></thead>
+        <tbody id="presbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- THESIS TAKEAWAYS -->
+  <section>
+    <div class="sec-h"><h3>How to state it in the thesis</h3><span class="n">the dip is dials, not walls</span></div>
+    <div class="recs">
+      <div class="rec"><div class="rank">1</div><div><h3>The arc is step-up-and-hold</h3><p>0→37→29.5% full-matrix, 0→79→50% aligned. T1→T2 is the real capability transition (execution loop); T3 holds it.</p><span class="impact">▲ framing</span></div></div>
+      <div class="rec"><div class="rank">2</div><div><h3>The binding constraint migrated to time</h3><p>Token wall (T1) → relaxed (T2) → time wall (T3). 100% of T3 premium failures are 300 s timeouts. Restore ≥600 s.</p><span class="impact">▲ dominant lever</span></div></div>
+      <div class="rec"><div class="rank">3</div><div><h3>Composition drives the T3 dip</h3><p>+36-record premium CGC block scores 0 by construction; premium-excl-CGC is 86%→57%, and that residual is the clock.</p><span class="impact">▲ composition</span></div></div>
+      <div class="rec"><div class="rank">4</div><div><h3>Premium owns capability; T3 added the best model</h3><p>31/34 and 41/43 of wins are premium. Opus (52.8%) is the strongest single backend in the series.</p><span class="impact">▲ stratify</span></div></div>
+      <div class="rec"><div class="rank">5</div><div><h3>CGC is the one true invariant</h3><p>0/773 across four programs and three apparatuses. Lead the limitations section with it.</p><span class="impact">▲ real barrier</span></div></div>
+      <div class="rec"><div class="rank">6</div><div><h3>Keep the compound-intervention caveat</h3><p>No two trials differ by one variable; no shared prompt arm spans all three. Descriptive, system-level comparisons only.</p><span class="impact">▲ validity</span></div></div>
+    </div>
+  </section>
+
+  <footer>
+    SARA · Sans Agentic ROP Analysis — SANS.edu master's thesis instrument · Trials 1·2·3 comparison<br>
+    Sources: trial1/trial2 run appendices · runs_for_record_trial_3/runs/*/record.json (v6) · companion: compare_all_trials/COMPARATIVE_ANALYSIS.md (Codex) &amp; COMPARATIVE_ANALYSIS.Claude.md<br>
+    All figures recomputed independently from the archived records; every companion-document figure reproduced exactly. Compound intervention — no single cause isolable; the wall-clock signal is clean (100% of T3 premium failures). Generated 2026-07-27.
+  </footer>
+</div>
+
+<script>
+  var C={T1:'var(--t1)',T2:'var(--t2)',T3:'var(--t3)'};
+  // helper: build a stgrid of grouped 3-series bars.
+  // groups: [{name, sub, max, series:[[label,pct,valText,colorKey],...]}]
+  function build(el,groups){
+    groups.forEach(function(g){
+      var row=document.createElement('div');row.className='strow';
+      var bars='<div class="stbars">';
+      g.series.forEach(function(s){
+        var w=Math.max(0.6,s[1]/g.max*100);
+        bars+='<div class="mini"><div class="ml">'+s[0]+'</div>'+
+          '<div class="mt"><div class="mf" style="width:'+w+'%;background:'+C[s[3]]+'"></div></div>'+
+          '<div class="mv">'+s[2]+'</div></div>';
+      });
+      bars+='</div>';
+      row.innerHTML='<div class="stname">'+g.name+(g.sub?'<small>'+g.sub+'</small>':'')+'</div>'+bars;
+      el.appendChild(row);
+    });
+  }
+
+  // PART A — primary endpoint (max 100)
+  build(document.getElementById('primary'),[
+    {name:'Confirmed success',sub:'shell + marker',max:100,series:[
+      ['T1',0.0,'0 / 1,755 · 0.0%','T1'],['T2',37.0,'34 / 92 · 37.0%','T2'],['T3',29.5,'43 / 146 · 29.5%','T3']]},
+    {name:'Reached validator',sub:'a script ran',max:100,series:[
+      ['T1',30.8,'540 / 1,755 · 30.8%','T1'],['T2',75.0,'69 / 92 · 75.0%','T2'],['T3',76.0,'111 / 146 · 76.0%','T3']]},
+    {name:'Success | reached',sub:'conversion',max:100,series:[
+      ['T1',0.0,'0 / 540 · 0.0%','T1'],['T2',49.3,'34 / 69 · 49.3%','T2'],['T3',38.7,'43 / 111 · 38.7%','T3']]}
+  ]);
+
+  // PART A — backend class (max 70)
+  build(document.getElementById('classbars'),[
+    {name:'premium',sub:'hosted / frontier',max:70,series:[
+      ['T1',0,'0 / 553 · 0%','T1'],['T2',67.4,'31 / 46 · 67%','T2'],['T3',38.0,'41 / 108 · 38%','T3']]},
+    {name:'open-weight',sub:'local',max:70,series:[
+      ['T1',0,'0 / 662 · 0%','T1'],['T2',8.8,'3 / 34 · 9%','T2'],['T3',14.3,'2 / 14 · 14%','T3']]},
+    {name:'unrestricted',sub:'local',max:70,series:[
+      ['T1',0,'0 / 540 · 0%','T1'],['T2',0,'0 / 12 · 0%','T2'],['T3',0,'0 / 24 · 0%','T3']]}
+  ]);
+
+  // PART A — resources table
+  var res=[
+    ['Median total tokens','159,126','424,733','258,176'],
+    ['Median wall time','129.9 s','217.3 s','305.0 s'],
+    ['Median iterations','13','22','28.5'],
+    ['Total tokens','222.9 M','32.3 M','47.8 M'],
+    ['Finalized-record cost','$227.38','$35.48','$89.64'],
+    ['Tool calls (per record)','32,070 (18.3)','2,475 (26.9)','6,074 (41.6)']
+  ];
+  var rb=document.getElementById('resbody');
+  res.forEach(function(r){var tr=document.createElement('tr');
+    tr.innerHTML='<td class="bn">'+r[0]+'</td><td class="num">'+r[1]+'</td><td class="num">'+r[2]+'</td><td class="num">'+r[3]+'</td>';
+    rb.appendChild(tr);});
+
+  // PART B — premium endpoint (max 100)
+  build(document.getElementById('premend'),[
+    {name:'Confirmed success',sub:'',max:100,series:[
+      ['T1',0,'0 / 553 · 0.0%','T1'],['T2',67.4,'31 / 46 · 67.4%','T2'],['T3',38.0,'41 / 108 · 38.0%','T3']]},
+    {name:'Reached validator',sub:'',max:100,series:[
+      ['T1',52.8,'292 / 553 · 52.8%','T1'],['T2',93.5,'43 / 46 · 93.5%','T2'],['T3',80.6,'87 / 108 · 80.6%','T3']]},
+    {name:'Success | reached',sub:'',max:100,series:[
+      ['T1',0,'0 / 292 · 0.0%','T1'],['T2',72.1,'31 / 43 · 72.1%','T2'],['T3',47.1,'41 / 87 · 47.1%','T3']]}
+  ]);
+
+  // PART B — per-backend premium heatmap
+  var seq=['#e8f0fc','#c2dbf7','#86b6ef','#3987e5','#256abf','#184f95'];
+  function hc(v){ if(v==null) return null; var t=Math.max(0,Math.min(1,v/90)); return seq[Math.min(5,Math.round(t*5))]; }
+  function tc(v){ return (v!=null&&v>=40)?'#fff':'var(--ink)'; }
+  // [backend, [ [rate,cell]|null x3 ]]
+  var ph=[
+    ['Claude Sonnet',[[0,'0/95'],[65.2,'15/23'],[25.0,'9/36']]],
+    ['Claude Opus',[[0,'0/75'],null,[52.8,'19/36']]],
+    ['GPT-5',[[0,'0/188'],[69.6,'16/23'],[36.1,'13/36']]],
+    ['Gemini Pro',[[0,'0/195'],null,null]]
+  ];
+  var pht=document.getElementById('premheat');
+  ph.forEach(function(r){
+    var tr=document.createElement('tr');tr.innerHTML='<th class="rowh">'+r[0]+'</th>';
+    r[1].forEach(function(c){
+      var td=document.createElement('td');
+      if(c==null){td.className='na';td.innerHTML='—';}
+      else{td.style.background=hc(c[0]);td.style.color=tc(c[0]);
+        td.innerHTML=(c[0]).toFixed(0)+'%<br><small>'+c[1]+'</small>';
+        td.title=r[0]+' · '+c[1]+' · '+c[0].toFixed(1)+'%';}
+      tr.appendChild(td);
+    });
+    pht.appendChild(tr);
+  });
+
+  // PART B — aligned cohort (max 100)
+  build(document.getElementById('aligned'),[
+    {name:'Reached validator',sub:'',max:100,series:[
+      ['T1',76.8,'43 / 56 · 76.8%','T1'],['T2',100,'24 / 24 · 100%','T2'],['T3',81.3,'13 / 16 · 81.3%','T3']]},
+    {name:'Confirmed success',sub:'',max:100,series:[
+      ['T1',0,'0 / 56 · 0.0%','T1'],['T2',79.2,'19 / 24 · 79.2%','T2'],['T3',50.0,'8 / 16 · 50.0%','T3']]},
+    {name:'Success | reached',sub:'',max:100,series:[
+      ['T1',0,'0 / 43 · 0.0%','T1'],['T2',79.2,'19 / 24 · 79.2%','T2'],['T3',61.5,'8 / 13 · 61.5%','T3']]}
+  ]);
+
+  // PART B — premium resources table
+  var pres=[
+    ['Median total tokens','63,895','260,375.5','150,305'],
+    ['Median wall time','146.8 s','216.7 s','302.9 s'],
+    ['Median iterations','7','17.5','19.5'],
+    ['Median tokens (successes)','—','150,870','112,162'],
+    ['Cost per observed success','undefined','$1.14','$2.19']
+  ];
+  var pb=document.getElementById('presbody');
+  pres.forEach(function(r){var tr=document.createElement('tr');
+    tr.innerHTML='<td class="bn">'+r[0]+'</td><td class="num">'+r[1]+'</td><td class="num">'+r[2]+'</td><td class="num">'+r[3]+'</td>';
+    pb.appendChild(tr);});
+</script>

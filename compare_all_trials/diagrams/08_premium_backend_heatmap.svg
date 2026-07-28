@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="549" viewBox="0 0 1600 549" role="img">
+<title>Premium-model success by backend</title>
+<style>
+ .title{font:700 34px system-ui,sans-serif;fill:#172554}
+ .sub{font:17px system-ui,sans-serif;fill:#475569}
+ .label{font:650 17px system-ui,sans-serif;fill:#1e293b}
+ .small{font:15px system-ui,sans-serif;fill:#64748b}
+ .value{font:700 15px system-ui,sans-serif;fill:#172554}
+ .legend{font:15px system-ui,sans-serif;fill:#334155}
+ .axis{font:14px system-ui,sans-serif;fill:#64748b}
+ .white{font:700 15px system-ui,sans-serif;fill:#fff}
+ .source{font:14px system-ui,sans-serif;fill:#64748b}
+ </style>
+<rect width="1600" height="549" fill="#f8fafc"/>
+<text class="title" x="60" y="57">Premium-model success by backend</text>
+<text class="sub" x="60" y="103">Full realized target/prompt matrices within each trial</text>
+<g transform="translate(0,0)">
+<text class="label" x="747.5" y="165" text-anchor="middle">Trial 1</text>
+<text class="label" x="1032.5" y="165" text-anchor="middle">Trial 2</text>
+<text class="label" x="1317.5" y="165" text-anchor="middle">Trial 3</text>
+<text class="label" x="60.0" y="236.0" text-anchor="start"><tspan x="60.0" dy="0">Claude Sonnet</tspan></text>
+<rect x="610" y="200" width="275" height="59" rx="8" fill="rgb(241,245,249)"/>
+<text class="value" x="747.5" y="227" text-anchor="middle">0.0%</text>
+<text class="value" x="747.5" y="248" text-anchor="middle">0/95</text>
+<rect x="895" y="200" width="275" height="59" rx="8" fill="rgb(98,192,135)"/>
+<text class="white" x="1032.5" y="227" text-anchor="middle">65.2%</text>
+<text class="white" x="1032.5" y="248" text-anchor="middle">15/23</text>
+<rect x="1180" y="200" width="275" height="59" rx="8" fill="rgb(186,224,205)"/>
+<text class="value" x="1317.5" y="227" text-anchor="middle">25.0%</text>
+<text class="value" x="1317.5" y="248" text-anchor="middle">9/36</text>
+<text class="label" x="60.0" y="302.0" text-anchor="start"><tspan x="60.0" dy="0">Claude Opus</tspan></text>
+<rect x="610" y="266" width="275" height="59" rx="8" fill="rgb(241,245,249)"/>
+<text class="value" x="747.5" y="293" text-anchor="middle">0.0%</text>
+<text class="value" x="747.5" y="314" text-anchor="middle">0/75</text>
+<rect x="895" y="266" width="275" height="59" rx="8" fill="#e2e8f0"/>
+<text class="small" x="1032.5" y="302" text-anchor="middle">not represented</text>
+<rect x="1180" y="266" width="275" height="59" rx="8" fill="rgb(125,202,157)"/>
+<text class="white" x="1317.5" y="293" text-anchor="middle">52.8%</text>
+<text class="white" x="1317.5" y="314" text-anchor="middle">19/36</text>
+<text class="label" x="60.0" y="368.0" text-anchor="start"><tspan x="60.0" dy="0">GPT-5</tspan></text>
+<rect x="610" y="332" width="275" height="59" rx="8" fill="rgb(241,245,249)"/>
+<text class="value" x="747.5" y="359" text-anchor="middle">0.0%</text>
+<text class="value" x="747.5" y="380" text-anchor="middle">0/188</text>
+<rect x="895" y="332" width="275" height="59" rx="8" fill="rgb(89,188,127)"/>
+<text class="white" x="1032.5" y="359" text-anchor="middle">69.6%</text>
+<text class="white" x="1032.5" y="380" text-anchor="middle">16/23</text>
+<rect x="1180" y="332" width="275" height="59" rx="8" fill="rgb(162,215,186)"/>
+<text class="value" x="1317.5" y="359" text-anchor="middle">36.1%</text>
+<text class="value" x="1317.5" y="380" text-anchor="middle">13/36</text>
+<text class="label" x="60.0" y="434.0" text-anchor="start"><tspan x="60.0" dy="0">Gemini Pro</tspan></text>
+<rect x="610" y="398" width="275" height="59" rx="8" fill="rgb(241,245,249)"/>
+<text class="value" x="747.5" y="425" text-anchor="middle">0.0%</text>
+<text class="value" x="747.5" y="446" text-anchor="middle">0/195</text>
+<rect x="895" y="398" width="275" height="59" rx="8" fill="#e2e8f0"/>
+<text class="small" x="1032.5" y="434" text-anchor="middle">not represented</text>
+<rect x="1180" y="398" width="275" height="59" rx="8" fill="#e2e8f0"/>
+<text class="small" x="1317.5" y="434" text-anchor="middle">not represented</text>
+<text class="source" x="60" y="527">Source: finalized records; backend rows do not align target or prompt exposure</text>
+</g>
+</svg>

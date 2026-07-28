@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="720" viewBox="0 0 1600 720" role="img">
+<title>Planned-matrix accounting across all trials</title>
+<style>
+ .title{font:700 34px system-ui,sans-serif;fill:#172554}
+ .sub{font:17px system-ui,sans-serif;fill:#475569}
+ .label{font:650 17px system-ui,sans-serif;fill:#1e293b}
+ .small{font:15px system-ui,sans-serif;fill:#64748b}
+ .value{font:700 15px system-ui,sans-serif;fill:#172554}
+ .legend{font:15px system-ui,sans-serif;fill:#334155}
+ .axis{font:14px system-ui,sans-serif;fill:#64748b}
+ .white{font:700 15px system-ui,sans-serif;fill:#fff}
+ .source{font:14px system-ui,sans-serif;fill:#64748b}
+ </style>
+<rect width="1600" height="720" fill="#f8fafc"/>
+<text class="title" x="60" y="57">Planned-matrix accounting across all trials</text>
+<text class="sub" x="60" y="103">Finalized, initiated-but-unfinalized, and never-started planned runs</text>
+<g transform="translate(0,0)">
+<rect x="810" y="120" width="18" height="18" fill="#2563eb"/><text class="legend" x="838" y="135">Finalized</text>
+<rect x="985" y="120" width="18" height="18" fill="#f59e0b"/><text class="legend" x="1013" y="135">Initiated, unfinalized</text>
+<rect x="1240" y="120" width="18" height="18" fill="#e2e8f0"/><text class="legend" x="1268" y="135">Never started</text>
+<text class="label" x="60" y="250">Trial 1</text>
+<rect x="330.0" y="220" width="877.5" height="54" fill="#2563eb"/>
+<rect x="1207.5" y="220" width="170.5" height="54" fill="#f59e0b"/>
+<rect x="1378.0" y="220" width="52.0" height="54" fill="#e2e8f0"/>
+<text class="small" x="330" y="302">1,755/2,200 finalized (79.8%) · 341 partial · 104 absent</text>
+<text class="label" x="60" y="380">Trial 2</text>
+<rect x="330.0" y="350" width="702.8" height="54" fill="#2563eb"/>
+<rect x="1032.8" y="350" width="30.6" height="54" fill="#f59e0b"/>
+<rect x="1063.3" y="350" width="366.7" height="54" fill="#e2e8f0"/>
+<text class="small" x="330" y="432">92/144 finalized (63.9%) · 4 partial · 48 absent</text>
+<text class="label" x="60" y="510">Trial 3</text>
+<rect x="330.0" y="480" width="743.5" height="54" fill="#2563eb"/>
+<rect x="1073.5" y="480" width="15.3" height="54" fill="#f59e0b"/>
+<rect x="1088.8" y="480" width="341.2" height="54" fill="#e2e8f0"/>
+<text class="small" x="330" y="562">146/216 finalized (67.6%) · 3 partial · 67 absent</text>
+<rect x="60" y="590" width="1420" height="72" rx="12" fill="#fef3c7"/>
+<text class="small" x="84" y="620">Coverage is structured by backend, target order, provider/cost interruption, and batch execution. Finalized records are not</text>
+<text class="small" x="84" y="646">simple random samples of their planned matrices.</text>
+<text class="source" x="60" y="698">Source: experiment matrices and archive directory accounting</text>
+</g>
+</svg>

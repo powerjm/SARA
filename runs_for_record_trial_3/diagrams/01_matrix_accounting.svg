@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Trial 3 run-for-record matrix accounting</title>
+  <desc id="desc">216 planned, 149 initiated, 146 finalized, 3 incomplete, and 67 never started.</desc>
+  <style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .headline { font: 800 31px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 18px system-ui, sans-serif; fill: #475569; }
+    .section { font: 700 15px system-ui, sans-serif; fill: #64748b; letter-spacing: 1.5px; }
+    .label { font: 650 18px system-ui, sans-serif; fill: #1e293b; }
+    .small { font: 15px system-ui, sans-serif; fill: #475569; }
+    .smalllight { font: 15px system-ui, sans-serif; fill: #dbeafe; }
+    .tiny { font: 13px system-ui, sans-serif; fill: #64748b; }
+    .value { font: 700 18px system-ui, sans-serif; fill: #172554; }
+    .big { font: 800 42px system-ui, sans-serif; fill: #fff; }
+    .bigdark { font: 800 42px system-ui, sans-serif; fill: #172554; }
+    .white { font: 700 16px system-ui, sans-serif; fill: #fff; }
+    .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .source { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .mono { font: 17px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fill: #123b4a; }
+    .panel { fill: #fff; stroke: #cbd5e1; stroke-width: 2; }
+  </style>
+  <rect width="1200" height="720" fill="#f8fafc"/>
+
+  <text class="title" x="70" y="68">Trial 3 run-for-record matrix accounting</text>
+  <text class="sub" x="70" y="103">9 binaries × 6 backends × 2 strategies × 2 replicates</text>
+
+  <rect x="70" y="155" width="250" height="230" rx="18" fill="#172554"/>
+  <text class="big" x="195" y="235" text-anchor="middle">216</text>
+  <text class="white" x="195" y="278" text-anchor="middle">planned runs</text>
+  <text class="smalllight" x="195" y="318" text-anchor="middle">100% of matrix</text>
+  <path d="M330 270 H385" stroke="#94a3b8" stroke-width="5"/><path d="M385 270 l-14 -10 v20 z" fill="#94a3b8"/>
+
+  <rect x="395" y="155" width="250" height="230" rx="18" fill="#2563eb"/>
+  <text class="big" x="520" y="235" text-anchor="middle">149</text>
+  <text class="white" x="520" y="278" text-anchor="middle">attempt directories</text>
+  <text class="smalllight" x="520" y="318" text-anchor="middle">69.0% of planned</text>
+  <path d="M655 270 H710" stroke="#94a3b8" stroke-width="5"/><path d="M710 270 l-14 -10 v20 z" fill="#94a3b8"/>
+
+  <rect x="720" y="155" width="250" height="230" rx="18" fill="#0f766e"/>
+  <text class="big" x="845" y="235" text-anchor="middle">146</text>
+  <text class="white" x="845" y="278" text-anchor="middle">finalized records</text>
+  <text class="smalllight" x="845" y="318" text-anchor="middle">67.6% of planned</text>
+
+  <path d="M520 395 V448" stroke="#94a3b8" stroke-width="4"/><path d="M520 448 l-10 -14 h20 z" fill="#94a3b8"/>
+  <rect x="395" y="460" width="250" height="150" rx="16" fill="#f59e0b"/>
+  <text class="big" x="520" y="520" text-anchor="middle">3</text>
+  <text class="white" x="520" y="555" text-anchor="middle">incomplete attempts</text>
+  <text class="label" x="520" y="586" text-anchor="middle">2 errors + 1 interruption</text>
+
+  <path d="M195 395 V448" stroke="#94a3b8" stroke-width="4"/><path d="M195 448 l-10 -14 h20 z" fill="#94a3b8"/>
+  <rect x="70" y="460" width="250" height="150" rx="16" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2"/>
+  <text class="bigdark" x="195" y="520" text-anchor="middle">67</text>
+  <text class="label" x="195" y="555" text-anchor="middle">never started</text>
+  <text class="small" x="195" y="586" text-anchor="middle">31.0% of planned</text>
+
+  <rect x="720" y="430" width="410" height="180" rx="16" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+  <text class="label" x="750" y="472">Interpretation</text>
+  <text class="small" x="750" y="510">Premium: 108/108 finalized.</text>
+  <text class="small" x="750" y="538">Local: 38/108 finalized + 3 incomplete.</text>
+  <text class="small" x="750" y="566">Missingness is ordered by the batch sequence.</text>
+  <text class="source" x="70" y="678">Source: premium.log, local.log, and runs.tgz record/trace inventory • submitted artifacts not opened</text>
+
+</svg>

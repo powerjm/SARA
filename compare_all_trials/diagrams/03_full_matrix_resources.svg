@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="680" viewBox="0 0 1600 680" role="img">
+<title>Full-matrix resource profiles</title>
+<style>
+ .title{font:700 34px system-ui,sans-serif;fill:#172554}
+ .sub{font:17px system-ui,sans-serif;fill:#475569}
+ .label{font:650 17px system-ui,sans-serif;fill:#1e293b}
+ .small{font:15px system-ui,sans-serif;fill:#64748b}
+ .value{font:700 15px system-ui,sans-serif;fill:#172554}
+ .legend{font:15px system-ui,sans-serif;fill:#334155}
+ .axis{font:14px system-ui,sans-serif;fill:#64748b}
+ .white{font:700 15px system-ui,sans-serif;fill:#fff}
+ .source{font:14px system-ui,sans-serif;fill:#64748b}
+ </style>
+<rect width="1600" height="680" fill="#f8fafc"/>
+<text class="title" x="60" y="57">Full-matrix resource profiles</text>
+<text class="sub" x="60" y="103">Medians among finalized records; axes are independently scaled by panel</text>
+<g transform="translate(0,0)">
+<rect x="60" y="160" width="470" height="450" rx="14" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+<text class="label" x="85" y="200">Median total tokens</text>
+<text class="label" x="85" y="279">T1</text>
+<rect x="150" y="255" width="111.4" height="34" rx="5" fill="#94a3b8"/>
+<text class="value" x="271.4" y="278">159.1k</text>
+<text class="label" x="85" y="384">T2</text>
+<rect x="150" y="360" width="297.3" height="34" rx="5" fill="#2563eb"/>
+<text class="value" x="457.3" y="383">424.7k</text>
+<text class="label" x="85" y="489">T3</text>
+<rect x="150" y="465" width="180.7" height="34" rx="5" fill="#16a34a"/>
+<text class="value" x="340.7" y="488">258.2k</text>
+<rect x="570" y="160" width="470" height="450" rx="14" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+<text class="label" x="595" y="200">Median wall time</text>
+<text class="label" x="595" y="279">T1</text>
+<rect x="660" y="255" width="129.9" height="34" rx="5" fill="#94a3b8"/>
+<text class="value" x="799.9" y="278">129.9s</text>
+<text class="label" x="595" y="384">T2</text>
+<rect x="660" y="360" width="217.3" height="34" rx="5" fill="#2563eb"/>
+<text class="value" x="887.3" y="383">217.3s</text>
+<text class="label" x="595" y="489">T3</text>
+<rect x="660" y="465" width="305.0" height="34" rx="5" fill="#16a34a"/>
+<text class="value" x="975.0" y="488">305.0s</text>
+<rect x="1080" y="160" width="470" height="450" rx="14" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+<text class="label" x="1105" y="200">Median iterations</text>
+<text class="label" x="1105" y="279">T1</text>
+<rect x="1170" y="255" width="151.7" height="34" rx="5" fill="#94a3b8"/>
+<text class="value" x="1331.7" y="278">13.0</text>
+<text class="label" x="1105" y="384">T2</text>
+<rect x="1170" y="360" width="256.7" height="34" rx="5" fill="#2563eb"/>
+<text class="value" x="1436.7" y="383">22.0</text>
+<text class="label" x="1105" y="489">T3</text>
+<rect x="1170" y="465" width="332.5" height="34" rx="5" fill="#16a34a"/>
+<text class="value" x="1512.5" y="488">28.5</text>
+<text class="source" x="60" y="658">Source: finalized token, wall-clock, and iteration metadata</text>
+</g>
+</svg>

@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="920" viewBox="0 0 1400 920" role="img" aria-labelledby="title desc">
+  <title id="title">Trial 3 progress funnel</title>
+  <desc id="desc">Maximum progress tiers for 146 finalized Trial 3 records.</desc>
+  <style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .headline { font: 800 31px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 18px system-ui, sans-serif; fill: #475569; }
+    .section { font: 700 15px system-ui, sans-serif; fill: #64748b; letter-spacing: 1.5px; }
+    .label { font: 650 18px system-ui, sans-serif; fill: #1e293b; }
+    .small { font: 15px system-ui, sans-serif; fill: #475569; }
+    .smalllight { font: 15px system-ui, sans-serif; fill: #dbeafe; }
+    .tiny { font: 13px system-ui, sans-serif; fill: #64748b; }
+    .value { font: 700 18px system-ui, sans-serif; fill: #172554; }
+    .big { font: 800 42px system-ui, sans-serif; fill: #fff; }
+    .bigdark { font: 800 42px system-ui, sans-serif; fill: #172554; }
+    .white { font: 700 16px system-ui, sans-serif; fill: #fff; }
+    .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .source { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .mono { font: 17px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; fill: #123b4a; }
+    .panel { fill: #fff; stroke: #cbd5e1; stroke-width: 2; }
+  </style>
+  <rect width="1400" height="920" fill="#f8fafc"/>
+
+  <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#94a3b8"/></marker></defs>
+  <text class="title" x="55" y="58">What progress did finalized Trial 3 runs make?</text>
+  <text class="sub" x="55" y="92">Mutually exclusive maximum tiers; refusal is shown separately as an outcome overlay</text>
+
+  <rect x="470" y="130" width="310" height="90" rx="16" fill="#172554"/>
+  <text class="big" x="625" y="171" text-anchor="middle">146</text>
+  <text class="white" x="625" y="200" text-anchor="middle">finalized records</text>
+  <line x1="625" y1="220" x2="625" y2="286" stroke="#94a3b8" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="470" y1="175" x2="350" y2="175" stroke="#94a3b8" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="65" y="130" width="270" height="90" rx="16" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="2"/>
+  <text class="bigdark" x="200" y="171" text-anchor="middle">35</text>
+  <text class="label" x="200" y="200" text-anchor="middle">NONE</text>
+
+  <rect x="470" y="300" width="310" height="90" rx="16" fill="#2563eb"/>
+  <text class="big" x="625" y="341" text-anchor="middle">111</text>
+  <text class="white" x="625" y="370" text-anchor="middle">reached RAN or higher</text>
+  <line x1="625" y1="390" x2="625" y2="456" stroke="#94a3b8" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="780" y1="345" x2="970" y2="345" stroke="#94a3b8" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="985" y="300" width="280" height="90" rx="16" fill="#dbeafe" stroke="#bfdbfe" stroke-width="2"/>
+  <text class="bigdark" x="1125" y="341" text-anchor="middle">63</text>
+  <text class="label" x="1125" y="370" text-anchor="middle">RAN only</text>
+
+  <rect x="470" y="470" width="310" height="90" rx="16" fill="#7c3aed"/>
+  <text class="big" x="625" y="511" text-anchor="middle">48</text>
+  <text class="white" x="625" y="540" text-anchor="middle">CONTROL or MARKER</text>
+  <line x1="625" y1="560" x2="625" y2="626" stroke="#94a3b8" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="470" y1="515" x2="350" y2="515" stroke="#94a3b8" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="65" y="470" width="270" height="90" rx="16" fill="#fef3c7" stroke="#fde68a" stroke-width="2"/>
+  <text class="bigdark" x="200" y="511" text-anchor="middle">5</text>
+  <text class="label" x="200" y="540" text-anchor="middle">CONTROL only</text>
+
+  <rect x="470" y="640" width="310" height="100" rx="16" fill="#16a34a"/>
+  <text class="big" x="625" y="683" text-anchor="middle">43</text>
+  <text class="white" x="625" y="714" text-anchor="middle">MARKER · validator success</text>
+  <line x1="780" y1="690" x2="900" y2="690" stroke="#94a3b8" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="915" y="625" width="350" height="130" rx="15" fill="#fff" stroke="#cbd5e1" stroke-width="2"/>
+  <text class="bigdark" x="1090" y="666" text-anchor="middle">43 / 48</text>
+  <text class="label" x="1090" y="696" text-anchor="middle">CONTROL+ ended at MARKER</text>
+  <text class="small" x="1090" y="724" text-anchor="middle">hierarchical maximum-tier ratio: 89.6%</text>
+
+  <rect x="65" y="650" width="320" height="145" rx="15" fill="#fff1f2" stroke="#fecdd3" stroke-width="2"/>
+  <text class="label" x="90" y="683">Outcome overlays</text>
+  <text class="small" x="90" y="715">Refusal-classified: 4</text>
+  <text class="small" x="90" y="743">Script-execution runs: 111</text>
+  <text class="small" x="90" y="771">Refusals occupy 2 NONE + 2 RAN tiers.</text>
+
+  <rect x="470" y="785" width="795" height="70" rx="14" fill="#dcfce7"/>
+  <text class="label" x="500" y="817">Primary endpoint: 43/146 finalized records succeeded (29.5%).</text>
+  <text class="small" x="500" y="842">Maximum tiers are stored outcomes, not proof that every marker run first registered control.</text>
+  <text class="source" x="55" y="898">Source: 146 finalized RunRecords • submitted artifacts not opened</text>
+
+</svg>

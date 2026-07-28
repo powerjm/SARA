@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="880" viewBox="0 0 1600 880" role="img">
+<title>Backend × trial-specific prompting strategy</title>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .label { font: 650 17px system-ui, sans-serif; fill: #1e293b; }
+    .small { font: 15px system-ui, sans-serif; fill: #64748b; }
+    .value { font: 700 15px system-ui, sans-serif; fill: #172554; }
+    .legend { font: 15px system-ui, sans-serif; fill: #334155; }
+    .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .white { font: 700 15px system-ui, sans-serif; fill: #fff; }
+    .source { font: 14px system-ui, sans-serif; fill: #64748b; }
+  </style>
+<rect width="1600" height="880" fill="#f8fafc"/>
+<text class="title" x="60" y="57">Backend × trial-specific prompting strategy</text>
+<text class="sub" x="60" y="103">Success rate on shared targets; this display replaces an invalid cross-trial strategy delta</text>
+<g transform="translate(0,0)">
+<text class="label" x="443.5" y="190.0" text-anchor="middle"><tspan x="443.5" dy="0">T2 · Zero-shot</tspan></text>
+<text class="label" x="688.5" y="190.0" text-anchor="middle"><tspan x="688.5" dy="0">T2 · Chain of</tspan><tspan x="688.5" dy="21">thought</tspan></text>
+<text class="label" x="933.5" y="190.0" text-anchor="middle"><tspan x="933.5" dy="0">T2 · ReAct</tspan></text>
+<text class="label" x="1178.5" y="190.0" text-anchor="middle"><tspan x="1178.5" dy="0">T3 · Template</tspan><tspan x="1178.5" dy="21">backward</tspan></text>
+<text class="label" x="1423.5" y="190.0" text-anchor="middle"><tspan x="1423.5" dy="0">T3 · Recon first</tspan></text>
+<text class="label" x="60.0" y="287.0" text-anchor="start"><tspan x="60.0" dy="0">Claude Sonnet</tspan></text>
+<rect x="325" y="245" width="237" height="84" rx="10" fill="rgb(58,177,103)"/>
+<text class="white" x="443.5" y="281" text-anchor="middle">83.3%</text>
+<text class="white" x="443.5" y="306" text-anchor="middle">5/6</text>
+<rect x="570" y="245" width="237" height="84" rx="10" fill="rgb(95,190,132)"/>
+<text class="white" x="688.5" y="281" text-anchor="middle">66.7%</text>
+<text class="white" x="688.5" y="306" text-anchor="middle">4/6</text>
+<rect x="815" y="245" width="237" height="84" rx="10" fill="rgb(22,163,74)"/>
+<text class="white" x="933.5" y="281" text-anchor="middle">100.0%</text>
+<text class="white" x="933.5" y="306" text-anchor="middle">6/6</text>
+<rect x="1060" y="245" width="237" height="84" rx="10" fill="rgb(95,190,132)"/>
+<text class="white" x="1178.5" y="281" text-anchor="middle">66.7%</text>
+<text class="white" x="1178.5" y="306" text-anchor="middle">4/6</text>
+<rect x="1305" y="245" width="237" height="84" rx="10" fill="rgb(95,190,132)"/>
+<text class="white" x="1423.5" y="281" text-anchor="middle">66.7%</text>
+<text class="white" x="1423.5" y="306" text-anchor="middle">4/6</text>
+<text class="label" x="60.0" y="379.0" text-anchor="start"><tspan x="60.0" dy="0">GPT-5</tspan></text>
+<rect x="325" y="337" width="237" height="84" rx="10" fill="rgb(58,177,103)"/>
+<text class="white" x="443.5" y="373" text-anchor="middle">83.3%</text>
+<text class="white" x="443.5" y="398" text-anchor="middle">5/6</text>
+<rect x="570" y="337" width="237" height="84" rx="10" fill="rgb(58,177,103)"/>
+<text class="white" x="688.5" y="373" text-anchor="middle">83.3%</text>
+<text class="white" x="688.5" y="398" text-anchor="middle">5/6</text>
+<rect x="815" y="337" width="237" height="84" rx="10" fill="rgb(22,163,74)"/>
+<text class="white" x="933.5" y="373" text-anchor="middle">100.0%</text>
+<text class="white" x="933.5" y="398" text-anchor="middle">6/6</text>
+<rect x="1060" y="337" width="237" height="84" rx="10" fill="rgb(168,218,191)"/>
+<text class="value" x="1178.5" y="373" text-anchor="middle">33.3%</text>
+<text class="value" x="1178.5" y="398" text-anchor="middle">2/6</text>
+<rect x="1305" y="337" width="237" height="84" rx="10" fill="rgb(132,204,162)"/>
+<text class="white" x="1423.5" y="373" text-anchor="middle">50.0%</text>
+<text class="white" x="1423.5" y="398" text-anchor="middle">3/6</text>
+<text class="label" x="60.0" y="471.0" text-anchor="start"><tspan x="60.0" dy="0">GPT-OSS 20B</tspan></text>
+<rect x="325" y="429" width="237" height="84" rx="10" fill="rgb(204,231,220)"/>
+<text class="value" x="443.5" y="465" text-anchor="middle">16.7%</text>
+<text class="value" x="443.5" y="490" text-anchor="middle">1/6</text>
+<rect x="570" y="429" width="237" height="84" rx="10" fill="rgb(168,218,191)"/>
+<text class="value" x="688.5" y="465" text-anchor="middle">33.3%</text>
+<text class="value" x="688.5" y="490" text-anchor="middle">2/6</text>
+<rect x="815" y="429" width="237" height="84" rx="10" fill="rgb(241,245,249)"/>
+<text class="value" x="933.5" y="465" text-anchor="middle">0.0%</text>
+<text class="value" x="933.5" y="490" text-anchor="middle">0/6</text>
+<rect x="1060" y="429" width="237" height="84" rx="10" fill="rgb(22,163,74)"/>
+<text class="white" x="1178.5" y="465" text-anchor="middle">100.0%</text>
+<text class="white" x="1178.5" y="490" text-anchor="middle">2/2</text>
+<rect x="1305" y="429" width="237" height="84" rx="10" fill="rgb(241,245,249)"/>
+<text class="value" x="1423.5" y="465" text-anchor="middle">0.0%</text>
+<text class="value" x="1423.5" y="490" text-anchor="middle">0/1</text>
+<text class="label" x="60.0" y="563.0" text-anchor="start"><tspan x="60.0" dy="0">Qwen3 Abliterated</tspan></text>
+<rect x="325" y="521" width="237" height="84" rx="10" fill="rgb(241,245,249)"/>
+<text class="value" x="443.5" y="557" text-anchor="middle">0.0%</text>
+<text class="value" x="443.5" y="582" text-anchor="middle">0/2</text>
+<rect x="570" y="521" width="237" height="84" rx="10" fill="rgb(241,245,249)"/>
+<text class="value" x="688.5" y="557" text-anchor="middle">0.0%</text>
+<text class="value" x="688.5" y="582" text-anchor="middle">0/2</text>
+<rect x="815" y="521" width="237" height="84" rx="10" fill="rgb(241,245,249)"/>
+<text class="value" x="933.5" y="557" text-anchor="middle">0.0%</text>
+<text class="value" x="933.5" y="582" text-anchor="middle">0/2</text>
+<rect x="1060" y="521" width="237" height="84" rx="10" fill="rgb(241,245,249)"/>
+<text class="value" x="1178.5" y="557" text-anchor="middle">0.0%</text>
+<text class="value" x="1178.5" y="582" text-anchor="middle">0/2</text>
+<rect x="1305" y="521" width="237" height="84" rx="10" fill="rgb(241,245,249)"/>
+<text class="value" x="1423.5" y="557" text-anchor="middle">0.0%</text>
+<text class="value" x="1423.5" y="582" text-anchor="middle">0/2</text>
+<text class="label" x="60.0" y="655.0" text-anchor="start"><tspan x="60.0" dy="0">WhiteRabbitNeo 7B</tspan></text>
+<rect x="325" y="613" width="237" height="84" rx="10" fill="rgb(241,245,249)"/>
+<text class="value" x="443.5" y="649" text-anchor="middle">0.0%</text>
+<text class="value" x="443.5" y="674" text-anchor="middle">0/2</text>
+<rect x="570" y="613" width="237" height="84" rx="10" fill="rgb(241,245,249)"/>
+<text class="value" x="688.5" y="649" text-anchor="middle">0.0%</text>
+<text class="value" x="688.5" y="674" text-anchor="middle">0/2</text>
+<rect x="815" y="613" width="237" height="84" rx="10" fill="rgb(241,245,249)"/>
+<text class="value" x="933.5" y="649" text-anchor="middle">0.0%</text>
+<text class="value" x="933.5" y="674" text-anchor="middle">0/2</text>
+<rect x="1060" y="613" width="237" height="84" rx="10" fill="rgb(241,245,249)"/>
+<text class="value" x="1178.5" y="649" text-anchor="middle">0.0%</text>
+<text class="value" x="1178.5" y="674" text-anchor="middle">0/2</text>
+<rect x="1305" y="613" width="237" height="84" rx="10" fill="rgb(241,245,249)"/>
+<text class="value" x="1423.5" y="649" text-anchor="middle">0.0%</text>
+<text class="value" x="1423.5" y="674" text-anchor="middle">0/2</text>
+<rect x="60" y="735" width="1420" height="82" rx="12" fill="#fef3c7"/>
+<text class="small" x="84" y="765">There is no shared prompting strategy between Trials 2 and 3. Columns are trial-specific arms, not matched treatments.</text>
+<text class="small" x="84" y="791">Rates use the three shared targets; missing Trial 3 local target blocks remain visibly unfilled.</text>
+<text class="source" x="60" y="858">Source: finalized record.json metadata on ret2win, BroncoCTF, and ROPBench ex005</text>
+</g>
+</svg>

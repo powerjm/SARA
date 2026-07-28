@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="730" viewBox="0 0 1600 730" role="img">
+<title>Tool use became narrower but more intensive</title>
+<style>
+    .title { font: 700 34px system-ui, sans-serif; fill: #172554; }
+    .sub { font: 17px system-ui, sans-serif; fill: #475569; }
+    .label { font: 650 17px system-ui, sans-serif; fill: #1e293b; }
+    .small { font: 15px system-ui, sans-serif; fill: #64748b; }
+    .value { font: 700 15px system-ui, sans-serif; fill: #172554; }
+    .legend { font: 15px system-ui, sans-serif; fill: #334155; }
+    .axis { font: 14px system-ui, sans-serif; fill: #64748b; }
+    .white { font: 700 15px system-ui, sans-serif; fill: #fff; }
+    .source { font: 14px system-ui, sans-serif; fill: #64748b; }
+  </style>
+<rect width="1600" height="730" fill="#f8fafc"/>
+<text class="title" x="60" y="57">Tool use became narrower but more intensive</text>
+<text class="sub" x="60" y="103">Normalized shares of recorded tool calls</text>
+<g transform="translate(0,0)">
+<rect x="280" y="130" width="18" height="18" rx="3" fill="#2563eb"/>
+<text class="legend" x="307" y="145">gadget search</text>
+<rect x="530" y="130" width="18" height="18" rx="3" fill="#16a34a"/>
+<text class="legend" x="557" y="145">run script</text>
+<rect x="780" y="130" width="18" height="18" rx="3" fill="#f59e0b"/>
+<text class="legend" x="807" y="145">raw submit</text>
+<rect x="1030" y="130" width="18" height="18" rx="3" fill="#0f766e"/>
+<text class="legend" x="1057" y="145">radare2</text>
+<rect x="1280" y="130" width="18" height="18" rx="3" fill="#7c3aed"/>
+<text class="legend" x="1307" y="145">ropper</text>
+<rect x="280" y="164" width="18" height="18" rx="3" fill="#0891b2"/>
+<text class="legend" x="307" y="179">ghidra</text>
+<rect x="530" y="164" width="18" height="18" rx="3" fill="#94a3b8"/>
+<text class="legend" x="557" y="179">gdb</text>
+<rect x="780" y="164" width="18" height="18" rx="3" fill="#db2777"/>
+<text class="legend" x="807" y="179">pwntools</text>
+<rect x="1030" y="164" width="18" height="18" rx="3" fill="#e2e8f0"/>
+<text class="legend" x="1057" y="179">other</text>
+<text class="label" x="60" y="315">Trial 2</text>
+<rect x="300.0" y="280" width="226.0" height="62" fill="#2563eb"/>
+<text class="white" x="413.0" y="307" text-anchor="middle">gadget search</text>
+<text class="white" x="413.0" y="329" text-anchor="middle">19.2%</text>
+<rect x="526.0" y="280" width="155.4" height="62" fill="#16a34a"/>
+<text class="white" x="603.7" y="307" text-anchor="middle">run script</text>
+<text class="white" x="603.7" y="329" text-anchor="middle">13.2%</text>
+<rect x="681.4" y="280" width="11.0" height="62" fill="#f59e0b"/>
+<rect x="692.4" y="280" width="431.5" height="62" fill="#0f766e"/>
+<text class="white" x="908.1" y="307" text-anchor="middle">radare2</text>
+<text class="white" x="908.1" y="329" text-anchor="middle">36.6%</text>
+<rect x="1123.9" y="280" width="143.5" height="62" fill="#7c3aed"/>
+<text class="white" x="1195.6" y="307" text-anchor="middle">ropper</text>
+<text class="white" x="1195.6" y="329" text-anchor="middle">12.2%</text>
+<rect x="1267.4" y="280" width="103.9" height="62" fill="#0891b2"/>
+<text class="white" x="1319.3" y="307" text-anchor="middle">ghidra</text>
+<text class="white" x="1319.3" y="329" text-anchor="middle">8.8%</text>
+<rect x="1371.3" y="280" width="58.6" height="62" fill="#94a3b8"/>
+<rect x="1429.9" y="280" width="50.1" height="62" fill="#db2777"/>
+<text class="small" x="300" y="368">2,475 recorded calls · 26.9 per finalized record</text>
+<text class="label" x="60" y="480">Trial 3</text>
+<rect x="300.0" y="445" width="394.6" height="62" fill="#2563eb"/>
+<text class="white" x="497.3" y="472" text-anchor="middle">gadget search</text>
+<text class="white" x="497.3" y="494" text-anchor="middle">33.4%</text>
+<rect x="694.6" y="445" width="339.4" height="62" fill="#16a34a"/>
+<text class="white" x="864.3" y="472" text-anchor="middle">run script</text>
+<text class="white" x="864.3" y="494" text-anchor="middle">28.8%</text>
+<rect x="1034.0" y="445" width="9.9" height="62" fill="#f59e0b"/>
+<rect x="1043.9" y="445" width="336.9" height="62" fill="#0f766e"/>
+<text class="white" x="1212.3" y="472" text-anchor="middle">radare2</text>
+<text class="white" x="1212.3" y="494" text-anchor="middle">28.5%</text>
+<rect x="1380.7" y="445" width="99.3" height="62" fill="#94a3b8"/>
+<text class="white" x="1430.4" y="472" text-anchor="middle">gdb</text>
+<text class="white" x="1430.4" y="494" text-anchor="middle">8.4%</text>
+<text class="small" x="300" y="533">6,074 recorded calls · 41.6 per finalized record</text>
+<rect x="60" y="585" width="1420" height="82" rx="12" fill="#e0f2fe"/>
+<text class="small" x="84" y="615">Trial 3 reduced the advertised surface from 22 to 8 tools and concentrated behavior in gadget search, script execution,</text>
+<text class="small" x="84" y="641">and radare2. Two WhiteRabbit outliers alone contributed 603 Trial 3 calls, so aggregate composition is not a typical-run profile.</text>
+<text class="source" x="60" y="708">Source: finalized RunRecord tool_call_counts; misspelled radare2 calls grouped with radare2</text>
+</g>
+</svg>
